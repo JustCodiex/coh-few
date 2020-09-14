@@ -1,0 +1,5 @@
+atmospheres =
+{
+	{ 62019, "MP_Lowlands.aps" },
+	{ 62018, "MP_LOWLANDS_STORMY_00.APS" },
+}

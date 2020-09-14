@@ -1,0 +1,19 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+
+
+    "..\\vehicles\\hzb\\hzb",
+	"..\\vehicles\\MP28\\MP28",
+
+
+	-- Main Mesh
+    "..\\vehicles\\zhao_xingwen\\zhao_xingwen",
+	"..\\vehicles\\tou4\\tou4",
+	"..\\props\\binoculars",
+	
+
+}
+

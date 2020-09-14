@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$19010429",
+	scenariodescription = "$19010429",
+	maxplayers = 6,
+	date = "2016/7/30 0:01",
+	scenarioabbrname = "$19010429",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		288,
+		576,
+	},
+	music = "sound/music/road_to_mortar",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

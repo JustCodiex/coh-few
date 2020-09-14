@@ -1,0 +1,8 @@
+model =
+{
+
+    "..\\..\\Common\\CompleteMotionTree3.abp",
+    "..\\..\\allies\\soldiers\\Weapons\\M3_GreaseGun",
+    "..\\..\\allies\\vehicles\\Jap_soldier2\\Jap_soldier2",
+	"..\\..\\allies\\Soldiers\\tank_crew\\tanker_helmet",
+}

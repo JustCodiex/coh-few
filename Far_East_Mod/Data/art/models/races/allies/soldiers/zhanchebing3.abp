@@ -1,0 +1,15 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons in Use
+   "Weapons\\M1911A1_Colt_45",
+
+
+	-- Main Mesh
+    "..\\Soldiers\\tank_crew\\tank_crew",
+	"..\\Soldiers\\tank_crew\\tanker_helmet2",
+	"..\\vehicles\\tou4\\tou4",
+}
+

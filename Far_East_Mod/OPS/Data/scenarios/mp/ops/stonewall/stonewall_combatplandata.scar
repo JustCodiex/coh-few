@@ -1,0 +1,126 @@
+
+COMBAT_PLAN.INVASION = {
+
+	ALLIES = {
+			GENERIC = {
+				ThrowGrenadeNoReqs = {
+					{
+						action		= "use_ability",	
+						ability 	= ABILITY.ALLIES.GRENADE_NOREQS,
+					},
+					{
+						action 		= "pause",			
+						waitTime	= 5,
+					},
+					{
+						action 		= "find cover",
+					},
+					{
+						action 		= "attack",			
+					},
+				},
+				FlankLeftThrowGrenadeNoReqs = {
+					{
+						action 		= "move",			
+						offset		= {x = -15, y = 0, z = 20},
+					},
+					{
+						action 		= "pause",			
+						waitTime	= 5,
+					},
+					{
+						action		= "use_ability",	
+						ability 	= ABILITY.ALLIES.GRENADE_NOREQS,
+					},
+					{
+						action 		= "find cover",
+					},
+					{
+						action 		= "attack",			
+					},
+				},
+				FlankRightThrowGrenadeNoReqs = {
+					{
+						action 		= "move",			
+						offset		= {x = 15, y = 0, z = 20},
+					},
+					{
+						action 		= "pause",			
+						waitTime	= 5,
+					},
+					{
+						action		= "use_ability",	
+						ability 	= ABILITY.ALLIES.GRENADE_NOREQS,
+					},
+					{
+						action 		= "find cover",
+					},
+					{
+						action 		= "attack",			
+					},
+				},
+			},
+		},
+		
+	AXIS = {
+			GENERIC = {
+				ThrowGrenadeNoReqs = {
+					{
+						action		= "use_ability",	
+						ability 	= ABILITY.COHO.UMS.PUSH.AXIS_GRENADE_NOREQS_NOCOST, -- uses Push version
+					},
+					{
+						action 		= "pause",			
+						waitTime	= 5,
+					},
+					{
+						action 		= "find cover",
+					},
+					{
+						action 		= "attack",			
+					},
+				},
+				FlankLeftThrowGrenadeNoReqs = {
+					{
+						action 		= "move",			
+						offset		= {x = -15, y = 0, z = 20},
+					},
+					{
+						action 		= "pause",			
+						waitTime	= 5,
+					},
+					{
+						action		= "use_ability",	
+						ability 	= ABILITY.COHO.UMS.PUSH.AXIS_GRENADE_NOREQS_NOCOST, -- uses Push version
+					},
+					{
+						action 		= "find cover",
+					},
+					{
+						action 		= "attack",			
+					},
+				},
+				FlankRightThrowGrenadeNoReqs = {
+					{
+						action 		= "move",			
+						offset		= {x = 15, y = 0, z = 20},
+					},
+					{
+						action 		= "pause",			
+						waitTime	= 5,
+					},
+					{
+						action		= "use_ability",	
+						ability 	= ABILITY.COHO.UMS.PUSH.AXIS_GRENADE_NOREQS_NOCOST, -- uses Push version
+					},
+					{
+						action 		= "find cover",
+					},
+					{
+						action 		= "attack",			
+					},
+				},
+			},
+		},
+	}		
+

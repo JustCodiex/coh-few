@@ -1,0 +1,27 @@
+-- Mod specific data should go here
+
+--[[
+
+Artillery Limits:
+We're limiting the AI's ability to use certain artillery objects as an experimental way of decreasing the annoyance people are experiencing
+with the AI's use of artillery, which leads to them claiming it's overpowered. We believe the artillery is somewhere around what it should be
+We are however going to limit the AI's usage of the artillery
+
+]]
+
+-- Chinese Units
+allied_purchase_limits[BP_GetID(SBP.ALLIES.FELDKANONE_96)] = 2;
+allied_purchase_limits[BP_GetID(SBP.ALLIES.MORTAR_CHUANJAN)] = 2;
+allied_purchase_limits[BP_GetID(SBP.ALLIES.MORTAR_STANDARD)] = 2;
+allied_purchase_limits[BP_GetID(SBP.ALLIES.MORTAR_REINFORCE)] = 2;
+
+-- Japanese Units
+axis_purchase_limits[BP_GetID(SBP.AXIS.ARTYILLERY_75MM94)] = 2;
+axis_purchase_limits[BP_GetID(SBP.AXIS.ARTYILLERY_MOUNTAIN_GUN)] = 1; -- limitting the mountain gun to 1 [More powerful?]
+axis_purchase_limits[BP_GetID(SBP.AXIS.MORTAR_GAS)] = 2;
+axis_purchase_limits[BP_GetID(SBP.AXIS.MORTAR)] = 2;
+
+function AI_GetMaxAllowedUnits( unit_demand )
+	local x = World_GetGameTime() / 60;
+	return math.floor(0.5 * x + 6 + unit_demand);
+end

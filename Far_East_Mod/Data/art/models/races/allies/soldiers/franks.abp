@@ -1,0 +1,6 @@
+model =
+{
+	"Rifleman.abp",
+	"Franks\\Franks",
+	"..\\..\\..\\Environment\\Art_Ambient\\Objects\\NIS_Objects\\cxp1\\NIS_N01_01_radio"
+}

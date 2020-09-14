@@ -1,0 +1,60 @@
+atmospheres =
+{
+
+}
+ 
+fixed_starting_locations = true
+
+humans_locked_to_same_team = false
+
+ignore_army_enhancements = true
+
+show_description_on_load = true
+
+disallow_ai_partners = true
+
+disallow_ai_changes = true
+
+operation_map_type = assault
+
+player_slots =
+
+{
+    allies =
+    {
+		human,
+		human,
+		human,
+		ai_hidden,
+    },
+
+    axis =
+    {
+		human,
+		human,
+		human,
+		ai_hidden,
+    },
+
+}
+
+hidden_score_tabs =
+{
+	territory,
+}
+
+hidden_score_columns = 
+{
+	infantry_friendlyfire,
+	infantry_reinforced,
+	infantry_veterancy,
+	vehicle_produced,
+	vehicle_friendlyfire,
+	vehicle_veterancy,
+	building_constructed,
+	total_territory,
+}
+
+can_switch_players_during_playback = false
+
+put_cpus_last_in_post_game_stats = true

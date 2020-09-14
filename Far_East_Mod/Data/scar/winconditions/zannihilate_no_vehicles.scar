@@ -1,0 +1,44 @@
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+-- zannihilate_no_vehicles.scar
+-- Programmer: CoDiEx
+-- Date: 16-12-2016
+-- Description: Disables all vehicles for the NRA and IJA. This will need updating if a new army is added to the game!
+-- Version: 1.1
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+import("ScarUtil.scar")
+import("no_vehicles_list.scar");
+
+g_CheckAnnihilate = true; -- Check for annihilation
+
+function OnInit() -- Called on scar initialization
+
+	for i=1, World_GetPlayerCount() do
+		
+		local player = World_GetPlayerAt(i);
+		local race = Player_GetRaceName(player);
+		
+		Player_SetPopCapOverride(player, 999);
+		
+		for k,v in pairs(t_removed[race].squads) do
+			Player_SetSquadProductionAvailability( player, v, ITEM_REMOVED );
+		end
+		
+		for k,v in pairs(t_removed[race].entities) do
+			Player_SetEntityProductionAvailability( player, v, ITEM_REMOVED );
+		end
+
+		for k,v in pairs(t_removed[race].abilities) do
+			Player_SetAbilityAvailability( player, v, ITEM_REMOVED );
+		end
+
+		for k,v in pairs(t_removed[race].upgrades) do
+			Player_SetUpgradeAvailability( player, v, ITEM_LOCKED );
+		end
+		
+	end
+	
+end
+
+Scar_AddInit(OnInit); -- Set a scar initialization function

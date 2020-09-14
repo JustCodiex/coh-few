@@ -1,0 +1,155 @@
+FEConst = {};
+
+-- A lot of these are currently duplicates from the vCoH luaconsts.scar file. However, the idea is they'll be removed from that file some day.
+
+SBP.CHINA = {
+
+	INFANTRY = {
+		
+		REGULARS											= BP_GetSquadBlueprint("sbps/races/allies/soldiers/guozdd_squad.lua"), -- NRA Regulars
+		HANDGUN_TEAM										= BP_GetSquadBlueprint("sbps/races/allies/soldiers/handgun_team.lua"), -- Pistol Team
+		SCOUTS												= BP_GetSquadBlueprint("sbps/races/allies/soldiers/spiter_squad.lua"), -- Scouts
+		SICHUAN_INFANTRY									= BP_GetSquadBlueprint("sbps/races/allies/soldiers/chuanjun_squad.lua"), -- Sichuan Infantry
+		SICHUAN_LMG											= BP_GetSquadBlueprint("sbps/races/allies/soldiers/chuanjunMG_squad.lua"), -- Sichuan LMG
+		SNIPER												= BP_GetSquadBlueprint("sbps/races/allies/soldiers/sniper_squad.lua"), -- Sniper Units
+		
+	},
+	
+	FIELD_GUNS = {
+		
+		
+		
+	},
+	
+	TEAM_WEAPONS = {
+		
+		HMG_TEAM											= BP_GetSquadBlueprint("sbps/races/allies/soldiers/heavy_machine_gun_section.lua"), -- Heavy Machine Gun Team
+		MORTAR_TEAM											= BP_GetSquadBlueprint("sbps/races/allies/soldiers/mortar_section.lua"), -- Mortar Team
+		
+	},
+	
+	VEHICLES = {
+		
+		VICKERS												= BP_GetSquadBlueprint("sbps/races/allies/vehicles/vickers.lua"), -- Vickers
+		FT17_LMG											= BP_GetSquadBlueprint("sbps/races/allies/vehicles/ft1g.lua"), -- French Vehicle [LMG variant]
+		
+	},
+	
+	TANKS = {
+		
+		
+		
+	},
+
+};
+
+SBP.JAPAN = {
+
+	INFANTRY = {
+		
+		KWANTUNG_ARMY										= BP_GetSquadBlueprint("sbps/races/axis/soldiers/guangdong_squad.lua"), -- Kwantung Infantry (Northeast China army stuff)
+		REGULARS											= BP_GetSquadBlueprint("sbps/races/axis/soldiers/j11_squad.lua"), -- IJA REGULARS
+		
+	},
+	
+	FIELD_GUNS = {
+		
+		
+		
+	},
+	
+	TEAM_WEAPONS = {
+		
+		
+		
+	},
+	
+	VEHICLES = {
+		
+		
+		
+	},
+	
+	TANKS = {
+		
+		
+		
+	},
+
+};
+
+UPG.JAPAN = {
+	
+	TECH = {
+		
+		PHASE3											= BP_GetUpgradeBlueprint("upgrade/axis/research/phase_3.lua"),
+		
+	},
+	
+	UNITS = {
+	
+	},
+	
+	CMD = {
+	
+	},
+	
+};
+
+ABILITY.JAPAN = {
+
+	THROW_SATCHEL_CHARGE_KWANTUNG						= BP_GetAbilityBlueprint("abilities/jap_throw_satchel_charge2.lua"),
+
+};
+
+FEConst.GetSBPFromRace = function(race)
+	if race == TRACE_CHINA then 
+		return SBP.CHINA 
+	else 
+		return SBP.JAPAN 
+	end
+end
+
+REWARDS = {
+
+	[TRACE_CHINA] = {
+		
+		{
+			ID													= "pistol_team",
+			UNLOCK												= BP_GetUpgradeBlueprint("upgrade/upgrade_china_handgun.lua"),
+			SBP = {
+				SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+			},
+			AI = {
+				SBP_REPLACE = {
+					SBP.CHINA.INFANTRY.SCOUTS
+				},
+				ENABLE_AI										= true,
+				WEIGHT											= 50,
+			},
+		},
+		
+		{
+			ID													= "sichuan_warriors",
+			UNLOCK												= BP_GetUpgradeBlueprint("upgrade/upgrade_china_chuanjun.lua"),
+			SBP = {
+				SBP.CHINA.INFANTRY.SICHUAN_INFANTRY,
+				SBP.CHINA.INFANTRY.SICHUAN_LMG,
+			},
+			AI = {
+				SBP_REPLACE = {
+					SBP.CHINA.INFANTRY.REGULARS,
+					SBP.CHINA.TEAM_WEAPONS.HMG_TEAM,
+				},
+				ENABLE_AI										= true,
+				WEIGHT											= 25,
+			},
+		},
+		
+	},
+	
+	[TRACE_JAPAN] = {
+		
+	},
+
+};

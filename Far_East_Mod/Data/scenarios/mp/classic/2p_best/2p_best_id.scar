@@ -1,0 +1,29 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+	mkr_54 = Marker_FromName("mkr_54","custom_marker")
+	mkr_55 = Marker_FromName("mkr_55","custom_marker")
+	mkr_56 = Marker_FromName("mkr_56","custom_marker")
+	mkr_57 = Marker_FromName("mkr_57","custom_marker")
+	mkr_58 = Marker_FromName("mkr_58","custom_marker")
+	mkr_59 = Marker_FromName("mkr_59","custom_marker")
+	mkr_60 = Marker_FromName("mkr_60","custom_marker")
+	mkr_61 = Marker_FromName("mkr_61","custom_marker")
+	mkr_62 = Marker_FromName("mkr_62","custom_marker")
+	mkr_63 = Marker_FromName("mkr_63","custom_marker")
+	mkr_64 = Marker_FromName("mkr_64","custom_marker")
+	mkr_65 = Marker_FromName("mkr_65","custom_marker")
+	mkr_base_attack = Marker_FromName("mkr_base_attack","green_marker")
+	mkr_intro_camera1 = Marker_FromName("mkr_intro_camera1","grey_marker")
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+	eg_cp5_building1 = EGroup_CreateIfNotFound("eg_cp5_building1")
+	eg_cp5_building2 = EGroup_CreateIfNotFound("eg_cp5_building2")
+	eg_cp5_building3 = EGroup_CreateIfNotFound("eg_cp5_building3")
+	eg_cp5_building4 = EGroup_CreateIfNotFound("eg_cp5_building4")
+	eg_cp5_building5 = EGroup_CreateIfNotFound("eg_cp5_building5")
+	eg_lz1_sniper = EGroup_CreateIfNotFound("eg_lz1_sniper")
+
+end

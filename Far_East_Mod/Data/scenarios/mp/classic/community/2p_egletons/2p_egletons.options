@@ -1,0 +1,5 @@
+atmospheres =
+{
+	{ 62001, "EGLETONS_DAY.APS" },
+	{ 62003, "mp_semois_stormy_00.aps" },
+}

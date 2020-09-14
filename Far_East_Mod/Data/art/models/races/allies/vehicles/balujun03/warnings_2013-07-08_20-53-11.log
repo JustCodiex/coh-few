@@ -1,0 +1,12 @@
+OBJECTEDITOR started at 2013-07-08 20:53
+OS NT 6.1, 0MB Physical Memory, 0 Physical Available, 1952 Virtual Available
+RUN-OPTIONS 
+WORKING-DIR D:\THQ\Far_East_Mod\Data\art\models\races\allies\vehicles\balujun
+USER tiger205
+
+20:53:12.94   PROFILE -- Time Line Profiling enabled
+20:53:12.94   ToolFramework: Opening Document: 'D:\THQ\Far_East_Mod\Data\art\models\races\allies\vehicles\balujun\balujun.rgo'
+20:53:14.49   ToolFramework: Closing Document: ''
+w32imeplatform.c/590:!Ime::Shutdown called when instance is NULL
+
+Application closed without errors

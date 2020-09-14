@@ -1,0 +1,11 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	-- Weapons
+	"..\\..\\commonwealth\\Soldiers\\Weapons\\maxin_sync",
+    "..\\..\\allies\\vehicles\\ty38\\ty38",
+
+	-- Mesh
+    "..\\..\\allies\\vehicles\\japmoter\\japmoter",
+}

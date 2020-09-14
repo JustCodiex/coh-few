@@ -1,0 +1,211 @@
+
+
+axis_buildorder = {
+	
+	-- Axis Sniper Build 1.0
+	{
+		name = "Sniper Build",
+		fuel_mult = 2.0,
+		vp_mult = 0.5,
+		tags = {},
+		list = {
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.AXIS.SNIPER, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+			{"produce", PITEM_Upgrade, UPG.AXIS.PHASE2, maxlimit = 1},
+		},
+	},
+	
+	-- Axis Sniper Build 2.0
+	{
+		name = "Yet Another Sniper Build",
+		vp_mult = 0.5,
+		tags = {},
+		list = {
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.AXIS.SNIPER, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.SNIPER, maxlimit = 1 },
+			{"produce", PITEM_Upgrade, UPG.AXIS.PHASE2, maxlimit = 1},
+		},
+	},
+	
+	-- Axis VP Rush 1.0 + Volks
+	{
+		name = "VP Rush 1.0 and Volks",
+		tags = {"vpgame","small map"},
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+		},
+	},
+	
+	-- Axis VP Rush 1.0 + Bike + Resource
+	{
+		name = "VP Rush 1.0 and Bike",
+		tags = {"vpgame","small map"},
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.MOTORCYCLE, maxlimit = 2 },
+			{"building", EBP.AXIS.OBSERVATION_POST, maxlimit = 2, bs_style = BS_Secure },
+			{"produce", PITEM_Spawn, SBP.AXIS.MOTORCYCLE, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.OBSERVATION_POST, maxlimit = 2, bs_style = BS_Secure },
+		},
+	},
+
+	-- Axis VP Rush 1.0 + HMG
+	{
+		name = "VP Rush 1.0 and HMG",
+		tags = {"vpgame","small map"},
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+		},
+	},
+	
+	-- Axis VP Rush 2.0 + Volks
+	{
+		name = "VP Rush 2.0 and Volks",
+		tags = {"vpgame","small map"},
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+		},
+	},
+	
+	-- Axis VP Rush 2.0 + Bike
+	{
+		name = "VP Rush 2.0 and Bike",
+		tags = {"vpgame","small map"},
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.MOTORCYCLE, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+		},
+	},
+	
+	-- Axis VP Rush 2.0 + HMG
+	{
+		name = "VP Rush 2.0 and HMG",
+		tags = {"vpgame","small map"},
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+		},
+	},
+	
+	-- Heavy Engineer Rush to Phase 2 Upgrade
+	{
+		name = "Heavy Engineers Rush to Upgrade Phase 2",
+		tags = {},
+		vp_mult = 2.0,	-- set VP demand to 2.0, but only in VP games
+		list = {
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 7 },
+			{"building", EBP.AXIS.OBSERVATION_POST, maxlimit = 1, bs_style = BS_Secure },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 7 },
+			{"building", EBP.AXIS.OBSERVATION_POST, maxlimit = 1, bs_style = BS_Secure },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 7 },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 7 },
+			{"produce", PITEM_Upgrade, UPG.AXIS.PHASE2, maxlimit = 1 },
+			{"building", EBP.AXIS.BUNKER, maxlimit = 3, bs_style = BS_Defend },
+			{"produce", PITEM_Upgrade, UPG.AXIS.BUNKER_MG42, maxlimit = 3 },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 7 },
+			{"building", EBP.AXIS.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+		},
+		
+		SetCustomPersonality = function()
+		
+			s_personality.trace("<SetCustomPersonality>")
+			s_personality.trace("   Increasing default heavy and medium vehicle demand")
+			s_personality.trace("   High budget for teching until 3rd tier")
+			
+			s_personality.self_demand_class_base_value = 
+			{
+				50, -- aiclass_heavy_vehicle
+				-30, -- aiclass_infantry
+				0, -- aiclass_light_vehicle
+				30, -- aiclass_medium_vehicle
+				0  -- aiclass_structure
+			}
+			
+			s_personality.tech_to_budget_levels = {15, 100, 100, 100, 100}
+			s_personality.phase4_random_wait_time = 60
+			
+			-- need higher fuel importance
+			s_personality.importance_fuelPoint = 15
+			
+			-- low chance of building veterancy building to conserve fuel
+			s_personality.axis_quarter_master_chance = 40
+			
+			-- more chance for vehicle veterancy
+			s_personality.axis_quarter_master_infantry_veterancy_demand = -20
+			s_personality.axis_quarter_master_vehicle_veterancy_demand = 20
+			
+		end
+	},
+	
+	-- this build-order builds the minimum recommended number of Pios before building a Basic; with HMG
+	{
+		name = "Min Pios and Basic with HMG",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.AXIS.HEAVYMG, maxlimit = 2 },
+		}
+	},	
+	
+	-- this build-order builds the minimum recommended number of Pios before building a Basic; with Sniper
+	{
+		name = "Min Pios and Basic with Sniper",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.AXIS.SNIPER, maxlimit = 2 },
+		}
+	},
+
+	-- this build-order builds the minimum recommended number of Pios before building a Basic; with Volks
+	{
+		name = "Min Pios and Basic with Volks",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.AXIS.QUARTERS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.AXIS.PIONEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.AXIS.VOLKSGRENADIER, maxlimit = 2 },
+		}
+	},
+	
+}
+

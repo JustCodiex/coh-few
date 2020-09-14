@@ -1,0 +1,182 @@
+function TW_Objective_Data()	
+
+	objectiveData = {
+		
+		obj_airstrip_strafe = 
+		{
+			
+			SetupUI = function() 
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000501,
+			Description = 10000501,
+			TitleEnd = 10000501,
+			Type = OT_Primary,
+			
+		},
+		obj_airstrip_bomb = 
+		{
+			
+			SetupUI = function()
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000502,
+			Description = 10000502,
+			TitleEnd = 10000502,
+			Type = OT_Primary,
+			
+		},
+		obj_airstrip_arty = 
+		{
+			
+			SetupUI = function()
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000520,
+			Description = 10000520,
+			TitleEnd = 10000520,
+			Type = OT_Primary,
+			
+		},
+		obj_airstrip_henschel = 
+		{
+			
+			SetupUI = function()
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000521,
+			Description = 10000521,
+			TitleEnd = 10000521,
+			Type = OT_Primary,
+			
+		},
+		objective = 
+		{
+			
+			SetupUI = function() 
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000518,
+			Description = 10000518,
+			TitleEnd = 10000518,
+			Type = OT_Primary,
+			
+		},
+		obj_manpower_anti_infantry = 
+		{
+			
+			SetupUI = function() 
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000505,
+			Description = 10000505,
+			TitleEnd = 10000505,
+			Type = OT_Primary,
+			
+		},
+		obj_manpower_stealth = 
+		{
+			
+			SetupUI = function() 
+			end,
+			
+			OnStart = function()
+			end,
+			
+			OnComplete = function()
+			end,
+			
+			IsComplete = function()
+				return false
+			end,
+			
+			OnFail = function()		
+			end,
+			
+			Title = 10000506,
+			Description = 10000506,
+			TitleEnd = 10000506,
+			Type = OT_Primary,
+			
+		},
+	}
+
+end

@@ -1,0 +1,10 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	"Weapons\\M1911A1_Colt_45",
+
+	"Officer\\Officer",
+	"Taggart\\Taggart",
+}

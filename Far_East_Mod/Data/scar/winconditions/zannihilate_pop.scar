@@ -1,0 +1,14 @@
+
+import("ScarUtil.scar")
+
+-- used to indicate we want annihilate to be checked
+g_CheckAnnihilate = true
+
+function OnInit()
+
+	for i=1, World_GetPlayerCount() do
+		 Player_SetPopCapOverride( World_GetPlayerAt(i), 999) 
+	end
+end
+
+Scar_AddInit(OnInit)

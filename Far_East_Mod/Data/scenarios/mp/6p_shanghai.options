@@ -1,0 +1,11 @@
+atmospheres =
+{
+	{ 62001, "default.aps" },
+	{ 62005, "caen_new_teal.aps" },
+	{ 62006, "mp_seine_river_docks_night_00.aps" },
+	{ 62007, "mp_coastal_harbour_rainy_00.aps" },
+	{ 62009, "cxp2_oosterbeek_daybreak_00.aps" },
+	{ 62010, "mp_lowlands.aps" },
+	{ 62013, "mp_6p_close_river_combat_hazy_00.aps" },
+	{ 62018, "mp_pointe_du_hoc_stormy_00.aps" },
+}

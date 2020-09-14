@@ -1,0 +1,5 @@
+atmospheres =
+{
+	{ 62005, "MP_RailsnMetal.APS" },
+	{ 62003, "MP_RAILSNMETAL_STORMY_00.APS" },
+}

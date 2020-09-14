@@ -1,0 +1,16 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+
+
+    "..\\vehicles\\MP28\\MP28",
+
+
+	-- Main Mesh
+    "..\\vehicles\\duzhandui\\duzhandui",
+	"..\\..\\Axis\\Soldiers\\gear\\bayonet",
+
+}
+

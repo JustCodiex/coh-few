@@ -1,0 +1,116 @@
+
+
+function COHEvent_OnHealth(callback, callbackParameters, target, delay)
+
+	local float_health = 0;
+	
+	if (scartype(target) == ST_EGROUP) then
+		float_health = EGroup_GetAvgHealth(target);
+	elseif (scartype(target) == ST_ENTITY) then
+		float_health = Entity_GetHealth(target);
+	elseif (scartype(target) == ST_SGROUP) then
+		float_health = SGroup_GetAvgHealth(target);
+	elseif (scartype(target) == ST_SQUAD) then
+		float_health = Squad_GetHealth(float_health);
+	end
+
+	table.insert(__ONHEALTLIST, {cbb = callback, cpar = callbackParameters, object = target, d = delay, originalHealth = float_health});
+
+	if not Rule_Exists(_UPDATEONHEALTH) then
+		Rule_Add(_UPDATEONHEALTH);
+	end
+
+end
+
+function COHEvent_OnPlayerCanSee(callback, callbackParameters, target, player, delay)
+
+	table.insert(__ONSPOTTEDLIST, {cbb = callback, cpar = callbackParameters, object = target, d = delay, spotter = player});
+	
+	if not Rule_Exists(_UPDATEONSPOTTED) then
+		Rule_Add(_UPDATEONSPOTTED);
+	end
+
+end
+
+function COHEvent_RemoveCallback(callback)
+	
+	for i = 1, #__ONHEALTLIST do
+		if (__ONHEALTLIST[i].cbb == callback) then
+			table.remove(__ONHEALTLIST, i);
+			return true;
+		end
+	end
+	
+	return false;
+	
+end
+
+__ONHEALTLIST = {};
+
+function _UPDATEONHEALTH()
+	for i=1, #__ONHEALTLIST do
+		if (scartype(__ONHEALTLIST[i].object) == ST_EGROUP) then
+			if (EGroup_GetAvgHealth(__ONHEALTLIST[i].object) ~= __ONHEALTLIST[i].originalHealth) then
+				Rule_AddDelayedOneShotWithParameters(__ONHEALTLIST[i].cbb, __ONHEALTLIST[i].d, __ONHEALTLIST[i].cpar);
+				table.remove(__ONHEALTLIST, i);
+				break;
+			end
+		elseif (scartype(__ONHEALTLIST[i].object) == ST_ENTITY) then
+			if (Entity_GetHealth(__ONHEALTLIST[i].object) ~= __ONHEALTLIST[i].originalHealth) then
+				Rule_AddDelayedOneShotWithParameters(__ONHEALTLIST[i].cbb, __ONHEALTLIST[i].d, __ONHEALTLIST[i].cpar);
+				table.remove(__ONHEALTLIST, i);
+				break;
+			end
+		elseif (scartype(__ONHEALTLIST[i].object) == ST_SGROUP) then
+			if (SGroup_GetAvgHealth(__ONHEALTLIST[i].object) ~= __ONHEALTLIST[i].originalHealth) then
+				Rule_AddDelayedOneShotWithParameters(__ONHEALTLIST[i].cbb, __ONHEALTLIST[i].d, __ONHEALTLIST[i].cpar);
+				table.remove(__ONHEALTLIST, i);
+				break;
+			end
+		elseif (scartype(__ONHEALTLIST[i].object) == ST_SQUAD) then
+			if (Squad_GetHealth(__ONHEALTLIST[i].object) ~= __ONHEALTLIST[i].originalHealth) then
+				Rule_AddDelayedOneShotWithParameters(__ONHEALTLIST[i].cbb, __ONHEALTLIST[i].d, __ONHEALTLIST[i].cpar);
+				table.remove(__ONHEALTLIST, i);
+				break;
+			end
+		end
+	end
+	if (#__ONHEALTLIST == 0) then
+		Rule_RemoveMe();
+	end
+end
+
+__ONSPOTTEDLIST = {};
+
+function _UPDATEONSPOTTED()
+	for i = 1, #__ONSPOTTEDLIST do
+		if Player_CanSeeElement(__ONSPOTTEDLIST[i].spotter, __ONSPOTTEDLIST[i].object, ALL) then
+			Rule_AddDelayedOneShotWithParameters(__ONSPOTTEDLIST[i].cbb, __ONSPOTTEDLIST[i].d, __ONSPOTTEDLIST[i].cpar);
+			table.remove(__ONSPOTTEDLIST, i);
+			break;
+		end
+	end
+	if (#__ONSPOTTEDLIST == 0) then
+		Rule_RemoveMe();
+	end
+end
+
+function Player_CanSeeElement(player, element, all)
+	if scartype(element) == ST_SGROUP then
+		return Player_CanSeeSGroup(player, element, all);
+	elseif scartype(element) == ST_EGROUP then
+		return Player_CanSeeEGroup(player, element, all);
+	elseif scartype(element) == ST_ENTITY then
+		return Player_CanSeeEntity(player, element);
+	elseif scartype(element) == ST_SQUAD then
+		return Player_CanSeeSquad(player, element);
+	else
+		local pos = assert(Util_GetPosition(element));
+		if pos ~= nil then
+			return Player_CanSeePosition(player, pos);
+		else
+			return false;
+		end
+	end
+end
+

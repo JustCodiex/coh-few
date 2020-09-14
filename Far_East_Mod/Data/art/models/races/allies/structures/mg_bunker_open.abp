@@ -1,0 +1,7 @@
+model =
+{
+	"mg_bunker_open",
+	--"Flag.abp",
+	"..\\..\\Common\\Weapons\\HEAVY_MACHINE_GUNS",
+	"..\\vehicles\\max\\max",
+}

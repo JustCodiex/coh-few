@@ -1,0 +1,7 @@
+model =
+{
+	"mg42marker",
+	"..\\..\\..\\Common\\Weapons\\HEAVY_MACHINE_GUNS",
+	"..\\..\\Soldiers\\Weapons\\30Cal_M1917_Browning",
+	"..\\jeep2\\jeep2",
+}

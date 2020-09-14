@@ -1,0 +1,43 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "bone_p47_thunderbolt_chasis_00",
+		subtype = "",
+		transform_m00 = 1,
+		transform_m01 = 0,
+		transform_m02 = 0,
+		transform_m10 = 0,
+		transform_m11 = 0,
+		transform_m12 = -1,
+		transform_m20 = -0,
+		transform_m21 = 1,
+		transform_m22 = 0,
+		transform_m30 = 0.04093,
+		transform_m31 = 1.70357,
+		transform_m32 = 0.58129,
+		type = "",
+	},
+	Marker001 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "cnt_ax_v1_flying_bomb_master_hub",
+		subtype = "",
+		transform_m00 = 1,
+		transform_m01 = 0,
+		transform_m02 = 0,
+		transform_m10 = 0,
+		transform_m11 = 0,
+		transform_m12 = -1,
+		transform_m20 = -0,
+		transform_m21 = 1,
+		transform_m22 = 0,
+		transform_m30 = 0.31343,
+		transform_m31 = -0.06979,
+		transform_m32 = 1.45947,
+		type = "",
+	},
+}

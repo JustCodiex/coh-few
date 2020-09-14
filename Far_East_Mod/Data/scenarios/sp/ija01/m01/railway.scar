@@ -1,0 +1,626 @@
+--[[
+
+	Objectives:
+	
+	Part 1:
+		opening dialog
+		
+	1: Plant Explosives without being spotted
+		Chinese Infantry will be walking close to specific sections of the railway at set intervals
+	2: Plant Explosives before next train arrives
+		Plant the explosives before the train arrives
+		
+		if completed:
+			play NIS showing train pass by
+			fade to black
+		
+	Part 2:
+		night turns to day
+		show artillery bombardment
+	
+		show AI Japanese infantry assault barracks (die easily, Chinese will have machine guns)
+		Chinese infantry will run back and forth between the ammo dump and machine guns (Supply them with ammo)
+	
+	3: Take out Ammunition Dump
+		Player must capture the ammunition dump stopping the ammunition flow to the Chinese machine guns
+	4: Neutralize Chinese Barracks
+		Player must destroy the Chinese HQ
+
+]]
+
+import("ScarUtil.scar");
+import("CampaignUtil.scar");
+
+sp_achievement_ignore = true; -- So we don't load non-essential stuff (some achievements are still tracked)
+
+function OnGameSetup()
+
+	player1 = Setup_Player(1, 11005508, TRACE_JAPAN, 1);
+	player2 = Setup_Player(2, 11005508, TRACE_JAPAN, 1);
+	player3 = Setup_Player(3, 11005509, TRACE_CHINA, 2);
+
+end
+
+function OnGameRestore()
+	
+	player1 = World_GetPlayerAt(1);
+	player2 = World_GetPlayerAt(2);
+	player3 = World_GetPlayerAt(3);
+	
+	Game_DefaultGameRestore();
+	
+end
+
+function OnGameInit()
+
+	SetupDifficulty();
+	SetupObjectives();
+	SetupPlayer();
+
+	railway_spawn();
+	railway_spawnAI();
+	
+	Rule_Add(railway_open);
+
+end
+
+function SetupDifficulty()
+
+	t_difficulty = {};
+	t_difficulty.medal_time = Util_SelectBasedOnDifficulty(20 * 60, 10 * 60, 10 * 60, 7 * 60);
+
+end
+
+function SetupPlayer()
+
+	Cmd_InstantUpgrade( player1, UPG.JAPAN.TECH.PHASE3 ); -- So the Kwantung Infantry can throw satchel charges which they'll need if they wish to destroy the enemy vehicles
+	
+	Player_SetResource( player1, RT_Manpower, Util_DifVar({ 800, 600, 400, 280 }) );
+	Player_SetResource( player1, RT_Munition, Util_DifVar({ 400, 340, 280, 240 }) );
+	Player_SetResource( player1, RT_Fuel, 0 );
+	
+	g_manpowerMod = Modify_PlayerResourceRate( player1, RT_Manpower, 0.05 );
+	g_munitionMod = Modify_PlayerResourceRate( player1, RT_Munition, 1.6 );
+	g_fuelMod = Modify_PlayerResourceRate( player1, RT_Fuel, 0 ); -- We don't need fuel in this mission	
+	
+	Modify_PlayerProductionRate( player1, 5 ); -- For when reinforcing
+	
+	Player_SetPopCapOverride( player1, 25 ); 
+	Player_SetConstructionMenuAvailability( player1, "type_construction/tp_construction_axis_infantry_basic", ITEM_REMOVED ); -- No need for constructing anything in this mission
+
+end
+
+function SetupObjectives()
+
+	OBJ_PLANT_EXPLOSIVES = {
+		
+		SetupUI = function()
+		end,
+		
+		OnStart = function()
+		end,
+		
+		OnComplete = function()
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+		end,
+		
+		Title = 11005511,
+		Description = 11005511,
+		Type = OT_Primary,
+		
+	}
+	
+	OBJ_CAPTURE_AMMO_DUMP = {
+		
+		SetupUI = function()
+		end,
+		
+		OnStart = function()
+		end,
+		
+		OnComplete = function()
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+		end,
+		
+		Title = 11005511,
+		Description = 11005511,
+		Type = OT_Primary,
+		
+	}
+	
+	OBJ_DESTROY_HQ = {
+		
+		SetupUI = function()
+		end,
+		
+		OnStart = function()
+		end,
+		
+		OnComplete = function()
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+		end,
+		
+		Title = 11005511,
+		Description = 11005511,
+		Type = OT_Primary,
+		
+	}
+		
+	OBJ_TRAINTIME = {
+		
+		SetupUI = function()
+		end,
+		
+		OnStart = function()
+			Objective_StartTimer( OBJ_TRAINTIME, COUNT_DOWN, t_difficulty.medal_time, t_difficulty.medal_time / 3 );
+			Rule_AddInterval(railway_railtime, 1);
+		end,
+		
+		OnComplete = function()
+			fe_setachivement("fe_mukden01");
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+		end,
+		
+		Title = 11005512,
+		Description = 11005512,
+		Type = OT_Medal,
+		MedalID = CONSTANTS.CAMPAIGN.MUKDEN.M01,
+		
+	}
+	
+	Objective_Register(OBJ_PLANT_EXPLOSIVES);
+	Objective_Register(OBJ_CAPTURE_AMMO_DUMP);
+	Objective_Register(OBJ_DESTROY_HQ);
+	Objective_Register(OBJ_TRAINTIME);
+
+end
+
+Scar_AddInit(OnGameInit);
+
+function railway_spawn()
+
+	g_kwantung = CONSTANTS.JAPAN.SBP.KWANTUNG_SP; -- shortcut definition;
+
+	sg_player_squads = SGroup_CreateIfNotFound("sg_player_squads");
+
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_player_start_squad1 );
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_player_start_squad2 );
+
+	sg_gengping = SGroup_CreateIfNotFound("sg_gengping");
+	Util_CreateSquads( player1, sg_gengping, CONSTANTS.KOREA.SBP.GENGPING_DEMOLITION, mkr_player_start_squad3 );
+	
+	SGroup_AddGroup( sg_player_squads, sg_gengping ); -- Add Gengping to the player squads so it's easier to keep track of the player squads.
+	
+	Ceasefire_AddSGroup( sg_player_squads, railway_onceasefire_broken);
+	
+	Rule_RemoveMe();
+	
+end
+
+function railway_spawnAI()
+
+	-- Global Constants
+	g_chinese_regulars = SBP.CHINA.INFANTRY.REGULARS;
+	g_japanese_regulars = SBP.JAPAN.INFANTRY.REGULARS;
+	
+	-- Spawn the Japanese support infantry
+	
+	t_japanese_defensive_line = {
+		id = "japanese_defensive_line",
+		conditions = {},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_j1"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_jap_pos01_s1,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos01_s2,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos01_s3,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j2"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_jap_pos02_s1,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j3"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_jap_pos03_s1,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos03_s2,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos03_s3,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j4"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_jap_pos04_s1,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos04_s2,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos04_s3,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_jap_pos04_s4,
+						blueprint = g_japanese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+
+	Mission_CreateDefenceSequence( player3, player2, t_japanese_defensive_line, true );
+	
+	for i = 1, #t_japanese_defensive_line.units do
+		Ceasefire_AddSGroup( t_japanese_defensive_line.units[i].group, railway_onceasefire_broken_japense);
+	end
+	
+	-- Spawn the Chinese guards
+	
+	t_chinese_defensive_line = {
+		id = "chinese_defensive_line",
+		conditions = {},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_c1"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pos01_s1,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_pos01_s2,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_pos01_s3,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_c2"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pos02_s1,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_pos02_s2,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_c3"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pos03_s1,
+						blueprint = g_chinese_regulars,
+						loadout = 5, -- Loadout = the amount of soldiers to spawn
+					},
+				},
+				-- TODO: Program feature to make these guys capture the AT-gun once attacked
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_c4"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pos04_s1,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_c5"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pos05_s1,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_c6"),
+				vulnerable_modifier = 1,-- Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pos06_s1,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_pos06_s2,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_pos06_s3,
+						blueprint = g_chinese_regulars,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+
+	Mission_CreateDefenceSequence( player1, player3, t_chinese_defensive_line, true );
+	
+	for i = 1, #t_chinese_defensive_line.units do
+		Ceasefire_AddSGroup( t_chinese_defensive_line.units[i].group, railway_onceasefire_broken_chinese);
+	end
+	
+end
+
+function railway_open()
+
+	if not Event_IsAnyRunning() then
+		
+		Objective_Start( OBJ_PLANT_EXPLOSIVES, true ); 
+		Objective_Start( OBJ_TRAINTIME, true );
+		
+		Camera_SetInputEnabled( true ); -- Re-allow the player to move camera 
+		
+		UI_BindingSetEnabled("company_commander", false); -- Disable company commander (don't need them for this mission)
+		
+		Rule_Add(railway_has_entered_chinese_territory);
+		
+		eg_demolitionCharge = EGroup_CreateIfNotFound("eg_demolitionCharge");
+		
+		Rule_AddInterval(railway_helpdemolition, 1);
+		Rule_Add(railway_demolitionPlaced);
+		
+		Rule_AddOneShot(railway_delayed_chinese_patrols, 15);
+		
+		Rule_RemoveMe();
+		
+	end
+
+end
+
+function railway_has_entered_chinese_territory()
+
+	if Prox_AreSquadsNearMarker(sg_player_squads, mkr_nogozone, ANY) then
+		for i = 1, #t_chinese_defensive_line.units do
+			Ceasefire_RemoveSGroup( t_chinese_defensive_line.units[i].group);
+		end
+	end
+
+end
+
+function railway_onceasefire_broken() -- Called when the player breaks the cease fire
+
+	-- What to do when the cease fire is broken?
+
+end
+
+function railway_onceasefire_broken_chinese() -- Called when the unit breaks the cease fire
+
+	if not Objective_IsComplete(OBJ_PLANT_EXPLOSIVES) then -- Failed the objective (Plant Explosives undetected)
+		
+		Objective_Fail(OBJ_PLANT_EXPLOSIVES);
+		Game_EndDelay( false, 7.5 );
+		
+	end
+
+	-- What to do when the cease fire is broken?
+
+end
+
+function railway_onceasefire_broken_japense() -- Called when the unit breaks the cease fire
+
+	-- What to do when the cease fire is broken?
+	
+	-- This might never be called
+
+end
+
+function railway_delayed_chinese_patrols()
+
+	t_patrol_china01 = {
+		
+		id = "china_patrol01",
+		path = "chinese_rail_patrol",
+		
+		patrol_player = player3,
+		group = SGroup_CreateIfNotFound("sg_china_patrol01");
+		blueprint = g_chinese_regulars,
+		loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+		respawn = true,
+		loop = true,
+		loop_reverse = false,
+		move_reversed = false,
+		attack_move = true,
+		patrol_await = 3.75,
+		
+		entrance_marker = mkr_china_patrol_spawner,
+		
+		max_active = Util_DifVar({2, 3, 3, 4}),
+		active_spawn_delay = 60,
+		
+		vulnerability_modifier = Util_DifVar({4, 2, 1.5, 1.25}),
+		
+		onspotted = railway_patrolspotted,
+		
+	};
+
+	Mission_CreatePatrolSequence( t_patrol_china01, true );
+	
+	Ceasefire_AddSGroup(t_patrol_china01.group, railway_onceasefire_broken_chinese);
+	
+end
+
+function railway_patrolspotted(spotted, spotter)
+	
+	-- This currently only fires when they spot a territory that's not owned by them.
+	
+end
+
+function railway_isnear()
+
+	if g_isnearrail then
+		if not railway_isinside(sg_gengping) then
+			Player_SetCommandAvailability( player1, SCMD_PlaceCharge, ITEM_LOCKED );
+			g_isnearrail = false;
+		end
+	else
+		if railway_isinside(sg_gengping) then
+			Player_SetCommandAvailability( player1, SCMD_PlaceCharge, ITEM_UNLOCKED );
+			g_isnearrail = true;
+		end
+	end
+
+end
+
+function railway_isinside(target) -- Check if the target is on the tracks
+	return Prox_AreSquadsNearMarker( target, mkr_railway_collision01, ANY ) 
+			or Prox_AreSquadsNearMarker( target, mkr_railway_collision02, ANY ) 
+			or Prox_AreSquadsNearMarker( target, mkr_railway_collision03, ANY ) 
+			or Prox_AreSquadsNearMarker( target, mkr_railway_collision04, ANY );
+end
+
+function railway_helpdemolition() -- Will add later
+
+	if Misc_IsSGroupSelected( sg_gengping, ANY ) and g_isnearrail then
+		ui_flashdemo = UI_FlashCommandButton(SCMD_PlaceCharge, true, BT_UI_Strong_AbilityBtn);
+		ui_flashdemotxt = HintPoint_AddToCommandButton(SCMD_PlaceCharge, 11005518, true);
+	else
+		if ui_flashdemo ~= nil and ui_flashdemotxt ~= nil then
+			UI_StopFlashing(ui_flashdemo);
+			UI_StopFlashing(ui_flashdemotxt);
+			Rule_RemoveMe();
+		end
+	end
+
+end
+
+function railway_demolitionPlaced()
+	
+	railway_isnear(); -- Is the player demolition squad close to the tracks?
+	
+	g_demolitionIsValid = railway_isinside(sg_gengping);
+	local t_democharges = Player_FindAllEntitiesOfType( CONSTANTS.KOREA.EBP.DEMOLITION );				-- So, because demolition charges were intended for entities, and they're actually owned by the players.
+	if #t_democharges > 0 then																			-- Make sure we've actually found a demolition charge
+		if g_demolitionIsValid and EGroup_Count(eg_demolitionCharge) == 0 then							-- Make sure it's valid placement and we haven't already added it to the EGroup
+			EGroup_Add( eg_demolitionCharge, t_democharges[1] );
+			g_demolitionLocation = Entity_GetPosition( t_democharges[1] );
+			local demo_check = function()
+				if EGroup_Count(eg_demolitionCharge) == 0 then
+					if not Objective_IsFailed( OBJ_TRAINTIME ) then
+						Objective_PauseTimer( OBJ_TRAINTIME );											-- Stop the timer, mission has been completed
+						--Rule_Remove(railway_railtime);												-- Don't check the timer anymore as well
+					end
+					if not Rule_Exists(railway_demolitionTriggered) then -- Makes sure there's not duplicate rules
+						Rule_AddOneShot(railway_demolitionTriggered, 5);
+					end
+					Rule_RemoveMe();
+				end
+			end
+			Rule_AddInterval(demo_check, 1);															-- Keep on checking the state of the demolition state
+		else
+			UIWarning_Show( 11005516 );																	-- [ENG] Must be near the railroad
+			Entity_Destroy( t_democharges[1] );															-- Destroy it before the player gets a chance to trigger it
+			Cmd_Stop(sg_gengping); 																		-- Tell Gengping to stop
+		end
+	end
+end
+
+function railway_demolitionTriggered()
+
+	if g_demolitionIsValid then
+		
+		Camera_ResetToDefault();
+		Camera_SetInputEnabled( false );
+		Camera_MoveToPosition( g_demolitionLocation, true, SLOW_CAMERA_PANNING );
+		
+		Objective_Complete(OBJ_PLANT_EXPLOSIVES, true);
+		
+		if not Objective_IsFailed(OBJ_TRAINTIME) then
+			Objective_Complete(OBJ_TRAINTIME, true);
+		end
+		
+		--Rule_Add(railway_oneventsOver);
+		
+	else
+		print("Demolition was invalid because they were not placed on the railroad, this should never happen"); -- Always plan for the unexpected
+	end
+	
+end

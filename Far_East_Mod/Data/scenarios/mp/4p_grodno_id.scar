@@ -1,0 +1,18 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+	AIPath1 = Marker_FromName("AIPath1","basic_marker")
+	AIPath2 = Marker_FromName("AIPath2","basic_marker")
+	AIPath3 = Marker_FromName("AIPath3","basic_marker")
+	all_in = Marker_FromName("all_in","basic_marker")
+	all_out = Marker_FromName("all_out","basic_marker")
+	born_mark1 = Marker_FromName("born_mark1","basic_marker")
+	born_mark2 = Marker_FromName("born_mark2","basic_marker")
+	born_mark3 = Marker_FromName("born_mark3","basic_marker")
+	moveout = Marker_FromName("moveout","basic_marker")
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+
+end

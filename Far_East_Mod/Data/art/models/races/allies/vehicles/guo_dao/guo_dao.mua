@@ -1,0 +1,23 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "metarig_rarm1palm",
+		subtype = "",
+		transform_m00 = 0.20610,
+		transform_m01 = -0.14378,
+		transform_m02 = -0.96791,
+		transform_m10 = 0.62576,
+		transform_m11 = 0.77982,
+		transform_m12 = 0.01740,
+		transform_m20 = 0.75230,
+		transform_m21 = -0.60926,
+		transform_m22 = 0.25069,
+		transform_m30 = 0.52575,
+		transform_m31 = 1.11774,
+		transform_m32 = 0.04476,
+		type = "",
+	},
+}

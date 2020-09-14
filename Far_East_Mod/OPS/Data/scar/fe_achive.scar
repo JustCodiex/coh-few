@@ -1,0 +1,213 @@
+fe_localplayer = nil;
+fe_race = "";
+fe_localteam = -1;
+fe_enemyteam = -1;
+fe_progress = {};
+fe_bpwatch = {};
+
+function fe_achivements_load()
+
+	g_allow_achievements = true;
+
+	assert(loadfile("lua-io.dll", "luaopen_io"))();
+	
+	fe_localplayer = Game_GetLocalPlayer();
+	fe_race = Player_GetRaceName(fe_localplayer);
+	fe_localteam = Player_GetTeam(fe_localplayer);
+	fe_enemyteam = Player_GetTeam(Player_FindFirstEnemyPlayer(fe_localplayer));
+	
+	local i_humans = 0;
+	
+	for i = 1, World_GetPlayerCount() do
+		local p = World_GetPlayerAt(i);
+		if Player_IsHuman(p) then
+			i_humans = i_humans + 1;
+		end
+	end
+	
+	if (i_humans == World_GetPlayerCount()) then
+		fe_setachivement("fe_mp_first");
+	end
+	
+	-- update players
+	Rule_AddInterval(fe_achievement_update_players, 2);
+
+end
+
+function fe_setachivement(aID)
+	local file = io.open("fewdump.dump", "a");
+	file:write("set " .. aID .."\n");
+	file:close();
+	print("FEW: Set Achivement " ..aID);
+end
+
+function fe_progressachievement(aID, amount)
+	if (amount == nil) then
+		amount = "1";
+	end
+	if (aID ~= nil) then
+		local file = io.open("fewdump.dump", "a");
+		file:write("increment " .. aID .. " " ..amount.."\n");
+		file:close();
+		print("FEW: Incremented Achivement " ..aID);
+	end
+end
+
+function fe_achievement_update_players()
+	if (fe_race=="axis") then
+		if (Player_HasUpgrade(fe_localplayer, BP_GetUpgradeBlueprint("upgrade/axis_soldier_unlock4.lua"))) then
+			fe_setachivement("fe_stonewall_tier_infantry_ija");
+		end
+		if (Player_HasUpgrade(fe_localplayer, BP_GetUpgradeBlueprint("upgrade/axis_vehicle_unlock5.lua"))) then
+			fe_setachivement("fe_stonewall_tier_vehicle_ija");
+		end
+	elseif (fe_race=="allies") then
+		if (Player_HasUpgrade(fe_localplayer, BP_GetUpgradeBlueprint("upgrade/allied_soldier_unlock4.lua"))) then
+			fe_setachivement("fe_stonewall_tier_infantry_nra");
+		end
+		if (Player_HasUpgrade(fe_localplayer, BP_GetUpgradeBlueprint("upgrade/allied_vehicle_unlock5.lua"))) then
+			fe_setachivement("fe_stonewall_tier_vehicle_nra");
+		end
+	end
+end
+
+function fe_gameover(winner, gamemode)
+	local b_wins = false;
+	if (Player_GetTeam(fe_localplayer) == winner) then
+		b_wins = true;
+	end
+	if (gamemode == "stonewall") then
+		if b_wins then
+			if (fe_race == "allies") then
+				fe_setachivement("fe_stonewall_nra");
+				fe_progressachievement("fe_sun_tzu", "1");
+			else
+				fe_setachivement("fe_stonewall_ija");
+				fe_progressachievement("fe_emperors_choice", "1");
+			end
+		end
+	end -- add more gamemodes here
+	fe_endstats(b_wins);
+end
+
+function fe_endstats(win) -- game stats
+	if (fe_race=="axis") then
+		fe_progressachievement("fe_occupation_legacy", tostring(Stats_SoldiersKilled( fe_localplayer )));
+	else
+		fe_progressachievement("fe_occupation_legacy", tostring(Stats_InfantryLost( fe_localplayer )));
+	end
+	local enemy_teamID = Player_GetTeam(Player_FindFirstEnemyPlayer(fe_localplayer));
+	local enemy_loses = 0;
+	local friendly_loses = 0;
+	for i=1, World_GetPlayerCount() do -- May need to rewrite this, in case it counts the entire team
+		local player = World_GetPlayerAt(i);
+		local team = Player_GetTeam(player);
+		if (team == enemy_teamID) then
+			enemy_loses = Stats_TotalSquadsLost(player);
+		else
+			friendly_loses = Stats_TotalSquadsLost(player);
+		end
+	end	
+	if win then
+		if (enemy_loses >= 400) then
+			fe_setachivement("fe_unstoppable_force");
+		end
+		if (friendly_loses >= 300) then
+			fe_setachivement("fe_human_wave");
+		end
+	end
+	if (enemy_loses == friendly_loses) then
+		fe_setachivement("fe_equal_terms");
+	end
+end
+
+function Table_ContainsElement(table, element)
+	for i=1, #table do
+		if table[i] == element then
+			return true;
+		end
+	end
+	return false;
+end
+
+-- Desc: Check if the blueprint can be found in the table
+-- Args: blueprint = blueprint of the squad; table_blueprints = the blueprints to check against
+function Squad_ContainsBlueprint(blueprint, table_blueprints)
+	for i = 1, #table_blueprints do 
+		if (table_blueprints[i] == blueprint) then
+			return true;
+		end
+	end
+	return false;
+end
+
+function Squad_HasAnyUpgrades(squad, upgradeS)
+	
+end
+
+-- Desc: Get the total count of kills the squad has dealth
+-- Args: squad = the squad to check
+function Squad_GetTotalKillCount(squad)
+	return Squad_GetKillCount(squad, VS_HeavyArmor) + Squad_GetKillCount(squad, VS_LightArmor) + Squad_GetKillCount(squad, VS_Infantry);
+end
+
+-- Desc: Get the type of squad ["vehicle", "team_weapon", "infantry"]
+-- Args: squad = the squad to check, tp = type to check for
+function Squad_IsOfType(squad, tp)
+	local f_e = Squad_EntityAt(squad, 0);
+	if (tp == "vehicle") then
+		return Entity_IsVehicle(f_e);
+	elseif (tp == "team_weapon") then
+		return Entity_IsSyncWeapon(f_e);
+	elseif (tp == "infantry") then
+		return (not Entity_IsVehicle(f_e) and not Entity_IsSyncWeapon(f_e));
+	end
+end
+
+-- Desc: Boolean flag telling whether or not the player has any doctrines
+-- Args: player = the player to check against
+function Player_HasAnyDoctrine(player)
+	local ca = Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.AIRBORNE);
+	local cb = Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.INFANTRY);
+	local cc = Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.ARMOR);
+	local ja = Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.DEFENSE);
+	local jb = Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.PROPAGANDA);
+	local jc = Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.BLITZKRIEG);
+	return (ca or cb or cc or ja or jb or jc);
+end
+
+function Player_GetDoctrineRoot(player)
+	if Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.AIRBORNE) then return UPG.COMMANDER_TREE.ALLIES.AIRBORNE
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.INFANTRY) then return UPG.COMMANDER_TREE.ALLIES.INFANTRY
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.ARMOR) then return UPG.COMMANDER_TREE.ALLIES.ARMOR
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.DEFENSE) then return UPG.COMMANDER_TREE.AXIS.DEFENSE
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.PROPAGANDA) then return UPG.COMMANDER_TREE.AXIS.PROPAGANDA
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.BLITZKRIEG) then return UPG.COMMANDER_TREE.AXIS.BLITZKRIEG
+	else return nil end
+end
+
+function Player_GetDoctrineTable(player)
+	if Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.AIRBORNE) then return UPG.COMMANDER_TREE.ALLIES
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.INFANTRY) then return UPG.COMMANDER_TREE.ALLIES
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.ARMOR) then return UPG.COMMANDER_TREE.ALLIES
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.DEFENSE) then return UPG.COMMANDER_TREE.AXIS
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.PROPAGANDA) then return UPG.COMMANDER_TREE.AXIS
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.BLITZKRIEG) then return UPG.COMMANDER_TREE.AXIS
+	else return nil end
+end
+
+function Player_HasCompleteDoctrine(player, doc, expected)
+
+	if expected == nil then expected = 6; end
+
+	local complete_count = 0
+
+	if doc == nil then return false else
+		for i = 1, # doc do
+			if Player_HasUpgrade(player, doc[i]) then complete_count = complete_count + 1; end
+		end
+	end
+	
+	return complete_count == 6;
+
+end

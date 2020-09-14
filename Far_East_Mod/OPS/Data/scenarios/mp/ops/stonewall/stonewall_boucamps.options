@@ -1,0 +1,42 @@
+atmospheres =
+{
+
+}
+
+fixed_starting_locations = true
+humans_locked_to_same_team = true
+treat_allies_as_humans = true
+ignore_army_enhancements = true
+show_description_on_load = true
+disallow_ai_partners = true
+operation_map_type = stonewall
+
+player_slots =
+{		
+	allies =
+        {
+			open,
+			open,
+			open,
+			open,
+        },
+	axis =
+        {
+			ai,
+			hidden,
+			hidden,
+			hidden,
+        },
+}
+
+hidden_score_tabs =
+{
+	territory,
+}
+
+hidden_score_columns = 
+{
+	total_territory,
+}
+
+can_switch_players_during_playback = false

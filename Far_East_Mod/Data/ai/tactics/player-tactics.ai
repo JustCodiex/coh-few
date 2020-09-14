@@ -1,0 +1,389 @@
+-- Player Tactics
+-- list of tactics that are specific to player abilities
+-- this includes the demand calculations for these abilities and 
+-- the calculations of where these should be used
+
+--------------------------------------------------------------------------------
+-- player ability tunables
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- strength of production tunables
+--------------------------------------------------------------------------------
+StrengthOfProduction = {}
+StrengthOfProduction.TankRequirement = 2
+StrengthOfProduction.TankDemandMultiplier = 5
+StrengthOfProduction.DemandBase = 10
+StrengthOfProduction.MinHealth = 0.2
+
+-- this list should be read in from the ability but the action is hidden deep inside
+StrengthOfProduction.Items = {
+	SBP.ALLIES.SHERMAN,
+	SBP.ALLIES.SHERMAN_CAL,
+	SBP.ALLIES.CROCODILE,
+	SBP.ALLIES.SHERMAN_M01,
+	SBP.ALLIES.GREYHOUND,
+	SBP.ALLIES.PERSHING
+	}
+
+--------------------------------------------------------------------------------
+-- Function to check how many of the players infantry are fighting
+--------------------------------------------------------------------------------
+
+function SGroup_AttackingCount(groupid, timeFrame)
+	
+	local count = 0
+	local _CountAttacked = function (gID, idx, sID)
+		if Squad_IsAttacking(sID, timeFrame) then
+			count = count+1
+		end
+	end
+	
+	SGroup_ForEach(groupid, _CountAttacked)
+	return count
+end
+
+--------------------------------------------------------------------------------
+-- Function to check how many of the players infantry are defending
+--------------------------------------------------------------------------------
+
+function SGroup_DefendingCount(groupid, timeFrame)
+	
+	local count = 0
+	local _CountDefending = function (gID, idx, sID)
+		if Squad_IsAttacking(sID, timeFrame) and World_IsPointInPlayerTerritory( s_self_modplayer, Squad_GetPosition( sID ) ) then
+			count = count+1
+		end
+	end
+	
+	SGroup_ForEach(groupid, _CountDefending)
+	return count
+end
+
+--------------------------------------------------------------------------------
+
+function AITacticDemand_StrengthOfProduction( abilityPBG )
+
+	local sg_Vehicle = AIPlayer_GetVehicleSquads( s_selfplayer )
+	local vehicleSoPCheck = SGroup_Count( sg_Vehicle )
+	
+	if (vehicleSoPCheck == 0) then
+		return -1
+	end
+		
+	filterGroup = function(groupid, itemindex, itemid)
+		
+		for k,v in pairs(StrengthOfProduction.Items) do
+			if (Squad_GetBlueprint( itemid ) == v ) then
+				if (Squad_IsUnderAttack( itemid, 5 )) then
+					local normalized_squad_health = Squad_GetHealth(itemid) / Squad_GetHealthMax(itemid)
+					if (normalized_squad_health < StrengthOfProduction.MinHealth) then
+						return true
+						
+					end
+					
+				end
+				
+			end
+		end
+		
+		return false
+	end
+	
+	if (SGroup_ForEachAllOrAny( sg_Vehicle, false, filterGroup )) then
+		return 100
+	end
+	
+	return -1
+end
+
+--------------------------------------------------------------------------------
+-- Vehicle Self Heal Tunables
+--------------------------------------------------------------------------------
+
+function AITacticDemand_SelfHeal( abilityPBG )
+
+	-- this depends on the vehicle count - we need to run through each aisquad and determine how many 
+	-- of them are vehicles
+
+	local vehicleCheck = 0
+	local sg_AIVehiclesforHeal = AIPlayer_GetVehicleSquads( s_selfplayer )
+	local vehicleCheck = SGroup_Count( sg_AIVehiclesforHeal )
+
+	--Find the number of vehicles AI player has
+
+	if vehicleCheck >= 2 then
+		--Find the avrage health of all the vehciles
+		local avgHealth = SGroup_GetAvgHealth( AIPlayer_GetVehicleSquads( s_selfplayer ) )
+		if (avgHealth < 0.5) then
+			return 100
+		end
+		
+		if (avgHealth > 0.9) then
+			return -1
+		end
+		
+		local normalized_health = (avgHealth - 0.5) / 0.5
+		return (1-normalized_health)*100
+		
+	end
+
+	--not needed
+	return -1
+
+end
+
+--------------------------------------------------------------------------------
+-- Inspired Assault tunables (for the fuhrer)
+--------------------------------------------------------------------------------
+
+function AITacticDemand_InspiredAssault( abilityPBG )
+
+	--counting up the infantry
+	local sg_AIinfantry = AIPlayer_GetSoldierSquads( s_selfplayer )
+	local infantryCount = SGroup_Count( sg_AIinfantry )
+
+	--make ability more desirable as the amount of infantry fighting increases
+	if infantryCount >= 3 then
+	
+		local infantryFighting = SGroup_AttackingCount( sg_AIinfantry, 4 )
+		
+		if infantryFighting >= 3 then
+			local inspirationPercent = ( infantryFighting / 10 )
+			local infantryMax = math.min( inspirationPercent, 1 )
+			local inspirationDesire = ( infantryMax ) * 100
+			
+			return inspirationDesire
+			
+		end
+	end
+	
+	return -1
+end
+
+--------------------------------------------------------------------------------
+-- For the Fatherland Tunables
+--------------------------------------------------------------------------------
+
+function AITacticDemand_ForTheFatherland( abilityPBG )
+
+--infantry in combat in own territory – need lots of extra checks for this
+
+	--counting the defending infantry
+	local sg_fatherlandInfantry = AIPlayer_GetSoldierSquads( s_selfplayer )
+	local infantryCount = SGroup_Count( sg_fatherlandInfantry )
+
+	--if enough infantry are under in their own territory make abbility more desirable
+	if infantryCount >= 1 then
+		
+		local infantryDefending = SGroup_DefendingCount( sg_fatherlandInfantry, 4 )
+		if infantryDefending >= 1 then
+			local defendingPercent = ( infantryDefending / 5 )
+			local defendingMax = math.min( defendingPercent, 1 )
+			local defendingDesire = ( defendingMax ) * 100
+			
+			return defendingDesire
+		end
+	end
+	
+	--not needed
+	return -1
+
+end
+
+--------------------------------------------------------------------------------
+-- ResourcePush Tunables
+--------------------------------------------------------------------------------
+
+function AITacticDemand_ResourcePush( abilityPBG )
+
+	--If team has a lot of manpower reduce the demand for this ability
+	--More specifically it's great when the AI owns a Sturm Bunker.
+		--It could use the Resource Push to pump out 3-4 consecutive Stugs or combination of Stugs and Pumas.
+	local curResources = AIResource_GetCurrentResources( s_selfplayer )
+	local mp = (curResources.manpower / 1500 )
+	local mpDesire = math.min( mp, 1 )
+
+	return (1.01-mpDesire)*100
+	
+end
+
+--------------------------------------------------------------------------------
+-- Blitzkrieg Assault Tunables
+--------------------------------------------------------------------------------
+
+function AITacticDemand_BlitzkriegAssault( abilityPBG )
+
+	--vehicles/tanks in combat, less so an infantry boost
+	local sg_AIvehicle = AIPlayer_GetVehicleSquads( s_selfplayer )
+	local vehicleCheck = SGroup_Count( sg_AIvehicle )
+	
+	local sg_AIinfantry = AIPlayer_GetSoldierSquads( s_selfplayer )
+	local infantryCheck = SGroup_Count( sg_AIinfantry )
+	
+	if (vehicleCheck + infantryCheck) >= 5 then
+		--Get the total value of desire produced by both infantry and vehicles
+		local vehicleValue = ( vehicleCheck ) / 6
+		local infantryValue = ( infantryCheck ) / 14
+		local blitzkriegDesire = math.min( vehicleValue, 1 ) + math.min( infantryValue, 1 )
+		blitzkriegDesireCheck = (blitzkriegDesire) * 100
+		return (blitzkriegDesire)*100
+		
+	end
+
+	--not needed
+	return -1
+
+end
+
+--------------------------------------------------------------------------------
+-- Tactic position target filters
+--   return a position, or a position with all coords set to COORD_INVALID
+
+function PositionTargetFilter_Paradrop(caster)
+	-- military target list is sorted by priority
+	local targetCount = Military_GetTargetCount( s_selfplayer, MTARGET_Defend )
+	print("Paradrop:"..targetCount)
+	for i=0, targetCount-1 do 
+		
+		local defTarget = Military_GetTargetAt( s_selfplayer, MTARGET_Defend, i )
+		
+		if (Military_IsMilitaryPointValid( defTarget )) then
+			print("ParadropValid:"..i)
+			local defPos = Military_GetMilitaryPointPosition( defTarget )
+			-- drop guys here
+			return AI_FindOpenNearPos( defPos )
+		end
+	end
+	
+	-- if we are here - we didn't find a position, drop at home base
+	
+	--TODO: make this better (should be close to a target on front line)
+	return AI_FindPosOnPathInControlArea(
+		s_selfplayer, 
+		30+AI_RandMax(10),
+		AIPlayer_GetHomePosition( s_self_modplayer ),
+		AI_FindClosestEnemyPos( s_selfplayer ) )
+end
+
+--------------------------------------------------------------------------------
+-- Cargo Drop
+--------------------------------------------------------------------------------
+
+sk_timeBetweenCargoDrops = 30 -- will deny X calls before accepting
+s_cargo_drop_time = 0
+
+function AITacticDemand_Cargo(squad)
+	
+	aitrace("Cargodrop time:"..s_cargo_drop_time.." Waittil:"..sk_timeBetweenCargoDrops)
+	-- use a timer to determine if we should drop another greyhound mine
+	if (s_cargo_drop_time < sk_timeBetweenCargoDrops ) then
+		s_cargo_drop_time = s_cargo_drop_time + 1
+		return -1
+	end
+	
+	s_cargo_drop_time = 0
+	
+	return 100
+end
+
+function PositionTargetFilter_CargoDrop(caster)
+	
+	-- find away from the base towards the enemy (but only a about 10m)
+	-- also shouldn't drop if there is threat nearby
+	
+	--TODO: make this better (should be close to a target on front line)
+	return AI_FindPosOnPathInControlArea( 
+		s_selfplayer, 
+		20+AI_RandMax(10), 
+		AIPlayer_GetHomePosition( s_self_modplayer ),
+		AI_FindClosestEnemyPos( s_selfplayer ) )
+end
+
+function PositionTargetFilter_EnemyClump(caster)
+	
+	local artilleryInfo = {
+		threat_weighting=1.0, 
+		importance_weighting=0.5,
+		must_be_seen=true,
+		min_threat = 5}
+	
+	local outPos = AIPlayer_GetBestArtilleryPosition( s_selfplayer, artilleryInfo )
+	if (outPos) then
+		return outPos
+	end
+	
+	aitrace("PositionTargetFilter_EnemyClump: Error! Shouldn't be called if there isn't a clump to hit!")
+	return World_Pos(COORD_INVALID,COORD_INVALID,COORD_INVALID)
+end
+
+function PositionTargetFilter_HowitzerEnemyClump( squad )
+	
+	local i = AIPlayer_GetFowBestClumpIdx(s_selfplayer, squad, s_NearClumpDistanceCap)
+	
+	if i < 0 then
+		return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+	end
+
+	return AIPlayer_GetClumpPosition(s_selfplayer,i)
+end
+
+function PositionTargetFilter_AirStrike(caster)
+	
+	local pos1 = PositionTargetFilter_EnemyClump(caster)
+	if (pos1.x ~= COORD_INVALID) then
+		
+		local pos_index = AIPlayer_GetNextBestPosClumpIdx( s_selfplayer, pos1, 20 )
+		
+		if (pos_index > 0) then
+			return pos1, AIPlayer_GetClumpPosition(s_selfplayer,pos_index)
+		end
+		
+		-- choose random angle
+		local rand_angle = AI_RandRange(0,2*3.14159)
+		local xdir = math.sin(rand_angle)*5
+		local zdir = math.cos(rand_angle)*5
+	
+		pos2 = World_Pos( pos1.x+xdir, pos1.y, pos1.z+zdir)
+		
+		return pos1, pos2
+	end
+
+	return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+	
+end
+
+------------------------------------------------------------------------------------
+-- Player Tactic Demand functions
+-- 
+
+-- no special demand function here
+function AITacticDemand_Default( abilityPBG )
+	return 1
+end
+
+-- this ability should be ignored for consideration
+function AITacticDemand_Ignore( abilityPBG )
+	return -1000
+end
+
+function AITacticDemand_Artillery( abilityPBG ) 
+
+	local artilleryInfo = {
+		threat_weighting=1.0, 
+		importance_weighting=0.5,
+		must_be_seen=true,
+		min_threat = 5}
+	
+	local outPos = AIPlayer_GetBestArtilleryPosition( s_selfplayer, artilleryInfo )
+
+	if (outPos) then
+		-- should be based on the explosiveness of this ability
+		-- would be nice to know the greatest clump of guys and its value 
+		return 10
+	end
+	
+	return -1
+end
+

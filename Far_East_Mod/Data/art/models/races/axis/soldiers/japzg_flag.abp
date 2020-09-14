@@ -1,0 +1,14 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+    -- Weapons in Use
+	"..\\..\\allies\\vehicles\\t38b\\t38b",
+	"..\\..\\allies\\vehicles\\type38_flag\\type38_flag",
+
+    -- Main Mesh
+    "..\\..\\allies\\vehicles\\japzg\\japzg",
+
+
+}

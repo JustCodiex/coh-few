@@ -1,0 +1,19 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Accessories
+	"Weapons\\Mk2 Pineapple Grenade",
+
+
+
+	"..\\..\\Commonwealth\\Soldiers\\Weapons\\Lee_Enfield_Mk1",
+	"..\\..\\Commonwealth\\Soldiers\\Weapons\\sten_sub_mg",
+
+	-- Main Mesh
+
+   "..\\vehicles\\yzj1\\yzj1",
+   
+}
+

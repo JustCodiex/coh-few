@@ -1,0 +1,96 @@
+
+-- Player Data for Tank Wars
+
+function TW_PlayerData()
+	
+	local playerData = { }
+	
+	for i=1, World_GetPlayerCount() do
+		
+		playerData[i] = {
+			
+			sgroup = SGroup_CreateIfNotFound(string.format("player%d_sgroup", i)),
+			attacker = SGroup_CreateIfNotFound(string.format("sg_Attacker%d", i)),
+			player = World_GetPlayerAt(i),
+			index = i,
+			race = Player_GetRaceName( World_GetPlayerAt(i) ),
+			timer = string.format("tmr_timer%d", i),
+			attackstring = nil, 
+			level = 1,
+			levelMarker = 0,
+			kills = 0, 
+			victoryDefenders = 0,
+			specialSquads = { },
+			victoryPointHistory = { },
+			tankselected = false,
+			alive = false,
+			lockout = false,
+			entrypoint = nil,
+			streak = 0,
+			tankblueprint = nil,
+			tanktype = false, -- to be replaced below
+			tankvalue = nil,
+			tankLevelMultiplier = 0.20,
+			lastposition = nil,
+			respawnsquad = SGroup_CreateIfNotFound(string.format("respawn%d", i)),
+		}
+		
+	end
+	
+	-- Racial data
+	for k, player in pairs(playerData) do
+		
+		if TW_IsAllies(player.player) then
+			
+			player.tanktype = t_AlliedTanks
+			player.repair = EGroup_CreateIfNotFound("eg_repair_allies")
+			player.soldier = BP_GetSquadBlueprint("sbps/races/allies/soldiers/ranger_team_tank_wars.lua")
+			player.team = "Allies"
+			player.commanders = {
+				{
+					uislot = 1,
+					tree = "commander_tree/chinese_soviet_t26_tree.lua",
+				},
+				{
+					uislot = 2,
+					tree = "commander_tree/chinese_sherman_tree.lua",
+				},
+				{
+					uislot = 3,
+					tree = "commander_tree/chinese_french_ft17_37mm_tree.lua",
+				}
+			}
+			
+			TankWars_Custom_Allied_Data(player)
+			
+		end
+		
+		if TW_IsAxis(player.player) then
+			
+			player.tanktype = t_AxisTanks
+			player.repair = EGroup_CreateIfNotFound("eg_repair_axis")
+			player.soldier = BP_GetSquadBlueprint("sbps/races/axis/soldiers/stormtrooper_squad_tank_wars.lua")
+			player.team = "Axis"
+			player.commanders = {
+				{
+					uislot = 1,
+					tree = "commander_tree/japanese_type92_tree.lua",
+				},
+				{
+					uislot = 2,
+					tree = "commander_tree/japanese_type95_tree.lua",
+				},
+				{
+					uislot = 3,
+					tree = "commander_tree/japanese_type97_tree.lua",
+				}
+			}
+			
+			TankWars_Custom_Axis_Data(player)
+			
+		end	
+	end
+	
+	t_TWplayerData = playerData
+	TankWars_Custom_Player_Data()
+end

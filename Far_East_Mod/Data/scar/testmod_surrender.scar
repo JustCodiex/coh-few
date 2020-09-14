@@ -1,0 +1,521 @@
+----------------------------------------------------------------------------------------------------------------
+-- Command helper functions
+-- (c) 2003 Relic Entertainment Inc.
+
+import("GroupCallers.scar")
+
+--? @group Command
+
+function Command_Init()
+
+	__t_SquadMarkerProxDeleter = {}		-- data table for the delete-when-near-marker system
+
+end
+
+g_pow_enabled = true;
+
+--------------------------------------------------
+-- Automatic Surrender Script Start -- by Wilko --
+--------------------------------------------------
+
+-- Check for valid units
+function Util_SurrenderSelection_Units_Check()
+
+    sg_temp = SGroup_CreateIfNotFound("sg_temp") -- Create the squads for the first time
+    sg_temppin = SGroup_CreateIfNotFound("sg_temppin")
+	sg_tempsup = SGroup_CreateIfNotFound("sg_tempsup")
+	sg_allsquads = SGroup_CreateIfNotFound("sg_allsquads")
+	sg_playersquads = SGroup_CreateIfNotFound("sg_playersquads")
+	sg_surrendered = SGroup_CreateIfNotFound("sg_surrendered")
+	
+	SGroup_Clear(sg_allsquads)
+	SGroup_Clear(sg_playersquads)
+	
+	-- Get all players units
+	local i
+	for i = 1, World_GetPlayerCount() do
+		local player = World_GetPlayerAt(i)
+		Player_GetAll(World_GetPlayerAt(i), sg_playersquads)
+		SGroup_AddGroup(sg_allsquads, sg_playersquads)
+	end
+	
+	SGroup_RemoveGroup(sg_allsquads, sg_surrendered) -- Should remove currently Surrendering Groups from the whole process
+
+	local _removeretreaters = function (gID, idx, sID)
+		if Squad_HasActiveCommand(sID) then
+			if Squad_GetActiveCommand(sID) ~= SQUADSTATEID_Retreat then
+				SGroup_Add(sg_temp, sID) -- Adds squad to potential surrender targets
+			end
+		end
+	end
+	SGroup_ForEach(sg_allsquads, _removeretreaters) -- Repeats for each squad in selection
+	
+	if SGroup_CountSpawned(sg_temp) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Units_Check_Condition(sg_temp)
+	end
+
+end
+
+-- Check chosen units conditions
+function Util_SurrenderSelection_Units_Check_Condition(sgroupid)
+
+-- Unit exceptions
+-- luaconsts.scar has a list of all the unit names
+
+ _exceptions = -- These units will still surrender, but only under PINNING, not suppression
+{
+	EBPS = {},
+	SBPS = 
+	{
+		-- allies
+		SBP.ALLIES.SNIPER,
+		SBP.ALLIES.OFFICER,
+		SBP.ALLIES.ENGINEER, -- Giving smallest squads break from the suppression
+		
+		-- commonwealth
+		SBP.CW.CAPTAIN,
+		SBP.CW.LIEUTENANT,
+		
+		-- axis
+		SBP.AXIS.SNIPER,
+		SBP.AXIS.OFFICER,
+		SBP.AXIS.PIONEER, -- Giving smallest squads break from the suppression
+		
+		-- panzer elite
+		SBP.ELITE.PANZERGRENADIER, -- Giving smallest squads break from the suppression
+		
+		-- elite units (If you want the advanced/offmap units to do the same, remove the -- from these below)
+--		SBP.ALLIES.RANGER,
+--		SBP.ALLIES.PARATROOPER,
+		SBP.AXIS.KNIGHTSCROSS,
+--		SBP.AXIS.STORMTROOPER,
+--		SBP.CW.COMMANDOS,
+		SBP.CW.COMMANDOS_MORTAR,
+		SBP.CW.COMMANDOS_PIAT,
+		SBP.CW.COMMANDOS_MG,
+--		SBP.ELITE.FALLSCHIRMJAGER,
+--		SBP.ELITE.LUFTWAFFE,
+
+		-- custom units -- If you have custom units that go in the exceptions, put the path in the BP_GetSquadBlueprint
+--		SBP.ALLIES.MYSQUAD,	= BP_GetSquadBlueprint("sbps/races/allies/soldiers/mysquad.lua"),
+	},
+}
+
+    sg_temp = SGroup_CreateIfNotFound("sg_temp") -- Create the squads for the first time
+    sg_temppin = SGroup_CreateIfNotFound("sg_temppin")
+	sg_tempsup = SGroup_CreateIfNotFound("sg_tempsup")
+	sg_allsquads = SGroup_CreateIfNotFound("sg_allsquads")
+	sg_surrendered = SGroup_CreateIfNotFound("sg_surrendered")
+
+	local _CheckSquadP = function (gid, idx, sID)
+		if Squad_IsPinned(sID) then 
+			--EXCEPTION UNIT CHECK -> If exception squads should NOT surrender at all
+--			local sidBP = Squad_GetBlueprint(sID)
+--			local noexception = false
+--				
+--			for k,v in pairs(_exceptions.SBPS) do
+--				if v == sidBP then
+--				noexception = true;
+--				break
+--				end
+--			end			
+--			
+--			if noexception == false then
+--				SGroup_Add(sg_temppin, sID) -- Move onto next Pinned Stage
+--				SGroup_Remove(sgroupid, sID) -- Removes squad from sg_allsquads
+--			end	
+			--EXCEPTION UNIT CHECK <-
+			SGroup_Add(sg_temppin, sID) -- Move onto next Pinned Stage
+			SGroup_Remove(sgroupid, sID) -- Removes squad from sg_allsquads
+		end
+	end
+	
+	local _CheckSquadS = function (gid, idx, sID)
+		
+		if Squad_IsSuppressed(sID) then
+			--EXCEPTION UNIT CHECK -> If exception squads should NOT surrender during supression
+			local sidBP2 = Squad_GetBlueprint(sID)
+			local noexception2 = false
+				
+			for l,b in pairs(_exceptions.SBPS) do
+				if b == sidBP2 then
+				noexception2 = true;
+				break
+				end
+			end			
+			
+			if noexception2 == false then
+				SGroup_Add(sg_tempsup, sID) -- Move onto next Pinned Stage
+				SGroup_Remove(sgroupid, sID) -- Removes squad from sg_allsquads
+			end	
+			--EXCEPTION UNIT CHECK <-
+		end
+	end
+	
+	SGroup_ForEach(sgroupid, _CheckSquadP) -- Repeats for each squad in selection
+	SGroup_ForEach(sgroupid, _CheckSquadS) -- Repeats for each squad in selection
+
+	if SGroup_CountSpawned(sg_temppin) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Pinned_Member_Check(sg_temppin)
+	end
+	if SGroup_CountSpawned(sg_tempsup) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Suppressed_Member_Check(sg_tempsup)
+	end
+end
+
+	Rule_AddInterval(Util_SurrenderSelection_Units_Check, 4) 
+
+-- Check for pinned units stage 2
+function Util_SurrenderSelection_Pinned_Member_Check(sgroupid)
+
+    sg_temppin1 = SGroup_CreateIfNotFound("sg_temppin1") -- Create the squads for the first time
+	sg_temppin2 = SGroup_CreateIfNotFound("sg_temppin2")
+	
+	SGroup_Clear(sg_temppin1)
+	SGroup_Clear(sg_temppin2)
+	
+	local _CountThisGroup = function (gID, idx, sID)		-- Counts number of soldiers in each squad
+	local membercount = Squad_Count(sID)
+		if membercount < 4 then
+			SGroup_Add(sg_temppin1, sID) -- High chance of surrender	
+		end
+		if membercount < 5 then
+			SGroup_Add(sg_temppin2, sID) -- Medium chance of surrender
+		end
+		
+	end
+	SGroup_ForEach(sgroupid, _CountThisGroup) -- Repeats for each squad in selection
+	if SGroup_CountSpawned(sg_temppin1) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Dice_Roll(sg_temppin1)
+	end
+	if SGroup_CountSpawned(sg_temppin2) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Dice_Roll(sg_temppin2)
+	end
+
+end	
+
+-- Check for suppressed units stage 2
+function Util_SurrenderSelection_Suppressed_Member_Check(sgroupid)
+
+    sg_tempsup1 = SGroup_CreateIfNotFound("sg_tempsup1") -- Create the squads for the first time
+	sg_tempsup2 = SGroup_CreateIfNotFound("sg_tempsup2")
+	
+	SGroup_Clear(sg_tempsup1)
+	SGroup_Clear(sg_tempsup2)
+	
+	local _CountThisGroup = function (gID, idx, sID)		-- Counts number of soldiers in each squad
+	local membercount = Squad_Count(sID)
+		if membercount < 2 then
+			SGroup_Add(sg_tempsup1, sID) -- Medium chance of surrender
+		end
+		if membercount < 3 then
+			SGroup_Add(sg_tempsup2, sID) -- Low chance of surrender	
+		end
+	end
+	SGroup_ForEach(sgroupid, _CountThisGroup) -- Repeats for each squad in selection
+	if SGroup_CountSpawned(sg_tempsup1) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Dice_Roll(sg_tempsup1)
+	end
+	if SGroup_CountSpawned(sg_tempsup2) > 0 then -- Check if any squads are ready to go onto next stage
+		Util_SurrenderSelection_Dice_Roll(sg_tempsup2)
+	end
+
+end
+
+-- Units Dice Roll
+function Util_SurrenderSelection_Dice_Roll(sgroupid)
+
+	sg_temppin1 = SGroup_CreateIfNotFound("sg_temppin1") -- Create the squads for the first time
+	sg_temppin2 = SGroup_CreateIfNotFound("sg_temppin2")
+	sg_tempsup1 = SGroup_CreateIfNotFound("sg_tempsup1")
+	sg_tempsup2 = SGroup_CreateIfNotFound("sg_tempsup2")
+	sg_surrend = SGroup_CreateIfNotFound("sg_surrend")
+	
+	SGroup_Clear(sg_surrend)
+	local _rand = function (gID, idx, sID)		-- Randomise Number
+	local rand = World_GetRand(1,100) -- Generate randon number
+		if (Squad_IsPinned(sID) == false) and (Squad_IsSuppressed(sID) == false) then
+			SGroup_Add(sg_allsquads, sID)
+			SGroup_Remove(sg_temppin, sID)
+			SGroup_Remove(sg_tempsup, sID)
+		elseif SGroup_CountSpawned(sg_temppin1) > 0 and rand <= 40 then -- V.High Chance of Surrender
+			SGroup_Add(sg_surrend, sID)
+		elseif SGroup_CountSpawned(sg_temppin2) > 0 and rand <= 30 then -- High
+			SGroup_Add(sg_surrend, sID)
+		elseif SGroup_CountSpawned(sg_tempsup1) > 0 and rand <= 10 then -- Low
+			SGroup_Add(sg_surrend, sID)
+		elseif SGroup_CountSpawned(sg_tempsup2) > 0 and rand <= 5 then -- V.Low
+			SGroup_Add(sg_surrend, sID)
+		end
+	end
+	SGroup_ForEach(sgroupid, _rand) -- Repeats for each squad in selection
+	if SGroup_CountSpawned(sg_surrend) > 0 then
+		Cmd_TestMod_Surrender(sg_surrend)
+	else
+		SGroup_Clear(sgroupid) -- Just in case a squad gets assigned by error
+	end
+end
+
+--? @shortdesc New Code - Orders a squad to surrender and awards the enemy player with an appropriate number of action points
+--? @extdesc Use the optional parameter to assign action points to override the default number.  The function automatically addresses squads that are in buildings or vehicles by ordering them out of the vehicle.
+--? @extdesc The command will also overwrite the exit position as well, if you do not want the squads to exit at the map entry point.
+--? @extdesc DestroySquad checks whether or not the squad disappears on reaching his destination.
+--? @args SGroup sgroupid [, Integer actionpoints, Position exitpos, Boolean destroySquad]
+--? @result Void
+function Cmd_TestMod_Surrender(sgroupid, action_points, exitpos, destroySquad)
+
+	sg_surrendered = SGroup_CreateIfNotFound("sg_surrendered") -- Create the squads for the first time
+	sg_temp = SGroup_CreateIfNotFound("sg_temp")
+	sg_temppin = SGroup_CreateIfNotFound("sg_temppin")
+		sg_temppin1 = SGroup_CreateIfNotFound("sg_temppin1")
+		sg_temppin2 = SGroup_CreateIfNotFound("sg_temppin2")
+	sg_tempsup = SGroup_CreateIfNotFound("sg_tempsup")
+		sg_tempsup1 = SGroup_CreateIfNotFound("sg_tempsup1")
+		sg_tempsup2 = SGroup_CreateIfNotFound("sg_tempsup2")
+	sg_surrend = SGroup_CreateIfNotFound("sg_surrend")
+	
+	local b = SGroup_GetRandomSpawnedSquad(sgroupid)
+	local playerowner = Squad_GetPlayerOwner(b)
+
+	if g_surrender_timer == nil then
+		g_surrender_timer = "__SURRENDER_TIMER"
+	end
+	
+	if SGroup_CountSpawned(sgroupid) < 1 then
+		return
+	end
+
+	-- prevent the speech and the event cue from spamming
+	if Timer_Exists(g_surrender_timer) == false or Timer_GetRemaining(g_surrender_timer) <= 0 then
+		
+		Timer_Start(g_surrender_timer, 5)
+		EventCue_Create(CUE.NORMAL, 42812, 42812, sgroupid)
+		
+	end
+		
+	if action_points == nil then
+		-- assign an arbitrary number of action points to the player (as if they had killed the squad)
+		action_points = 2*SGroup_TotalMembersCount(sgroupid)
+	end
+	
+	SGroup_CreateKickerMessage(sgroupid, Game_GetLocalPlayer(), 42812)
+
+	if _surrender == nil then
+		_surrender = {}
+	end
+		
+	_sg_temp = SGroup_CreateIfNotFound("_sg_temp")
+	_eg_all = EGroup_CreateIfNotFound("_eg_all")
+	
+	if exitpos == nil then
+	
+		-- finds the location of enemy player's entry point
+		local p
+		local enemyplayer
+		for p = 1, World_GetPlayerCount() do
+		
+			if Player_IsAllied(playerowner, World_GetPlayerAt(p)) == true then
+			
+				-- Player Is Allied To Owner
+				
+			else
+			
+				-- Player Is Enemy, Assign As Surrender Point
+				enemyplayer = p
+				break
+				
+			end
+			
+		end
+	
+	
+		-- finds the location of the local player's entry point
+		Player_GetAll(World_GetPlayerAt(enemyplayer), _sg_temp, _eg_all)
+		EGroup_Filter(_eg_all, EBP.STRAT_POINT.ENTRY, FILTER_KEEP)
+		exitpos = EGroup_GetPosition(_eg_all)
+		SGroup_SetPlayerOwner(sgroupid, World_GetPlayerAt(enemyplayer)) -- Sets squad to enemy player, removes FOV
+	end
+	
+	SGroup_Clear(_sg_temp)
+	EGroup_Clear(_eg_all)
+	
+	-- we need to loop through every squad in the sgroup to ensure that
+	-- each squad gets treated separately for when they exit the map.
+	local _AddSquad = function( gid, idx, sid )
+	
+		local temp = {
+			pos_exit 		= exitpos,
+			state			= false,
+			destroySquad 	= destroySquad,  -- store whether or not the squad should be removed from the map
+		}
+		
+		-- adds a new table, then gets the index of that table and creates
+		-- an sgroup off of the name based on the table.
+		table.insert(_surrender, temp)
+		local num = table.getn(_surrender)
+		
+		_surrender[num].sgroup = SGroup_CreateIfNotFound("_sg_surrender"..num)
+		
+		-- adding in a basic timer to make sure that the squads get removed,
+		-- if for some reason they never make it back to the surrendering location
+		_surrender[num].timer = "_SURRENDER_TIMER"..num
+		
+		if g_achievements_enabled == true then -- Make sure we can do achievements
+			fe_surrender_squad(sid) -- Let our achievement code know, that this squad is surrendering
+		end
+		
+		SGroup_Add(_surrender[num].sgroup, sid)
+		
+	end
+	
+	SGroup_ForEach(sgroupid, _AddSquad)
+	Cmd_Stop(sgroupid)
+	
+	-- order the squad to abandon their team weapon
+	-- usually kills them, unless it is a "special" team weapon that can abandon
+	if SGroup_HasTeamWeapon(sgroupid, ANY) then
+		Cmd_AbandonTeamWeapon(sgroupid, true) -- preserve crew after abandon
+	end
+	
+	
+	-- thell them not to shoot at anything and remove possible suppression effects.
+--	SGroup_SetSuppression(sgroupid, 0)
+	SGroup_SetAutoTargetting(sgroupid, "hardpoint_01", false)	
+--	SGroup_SetInvulnerable(sgroupid, true) -- can't be killed
+--	SGroup_SetCrushable(sgroupid, false)
+	SGroup_EnableAttention(sgroupid, false)
+	SGroup_SetSelectable(sgroupid, false)
+	-- A.I. Code
+	local c	
+	for c = 1, World_GetPlayerCount() do
+		if AI_IsAIPlayer(World_GetPlayerAt(c)) == true then
+			if(AI_IsEnabled(World_GetPlayerAt(c)) == true) then
+				-- Player Is AI, stop them from controlling the squad
+				AI_LockSGroup(World_GetPlayerAt(c), sgroupid)
+			end
+			
+		end
+	end
+
+	-- give experience points
+	-- grant the squad action points (need to change to attacker squad group
+	SGroup_GetLastAttacker(sgroupid, _sg_temp)
+	if not SGroup_IsEmpty(_sg_temp) then
+		Cmd_Stop(_sg_temp) -- prevent the squad from continuing to attack the current squad
+		Squad_RewardActionPoints( SGroup_GetSpawnedSquadAt(_sg_temp, 1), action_points )
+	else
+		local q
+		local enemyplayer2
+		for q = 1, World_GetPlayerCount() do
+		
+			if Player_IsAllied(playerowner, World_GetPlayerAt(q)) == true then
+			
+				-- Player Is Allied To Owner
+				
+			else
+			
+				-- Player Is Enemy
+				enemyplayer2 = q
+				break
+				
+			end
+			
+		end
+		Player_AddResource(World_GetPlayerAt(enemyplayer2), RT_Action, action_points)
+	end
+	
+	-- stop showing the UI selection parameters, prevent them from being selected,
+	SGroup_EnableUIDecorator(sgroupid, false )
+	SGroup_EnableMinimapIndicator(sgroupid, false)
+	SGroup_SetSelectable(sgroupid, false)
+    SGroup_DisableCombatPlans(sgroupid)
+	
+	
+	
+	SGroup_AddGroup(sg_surrendered, sgroupid)
+	SGroup_Clear(sg_temp)
+	SGroup_Clear(sg_temppin)
+		SGroup_Clear(sg_temppin1)
+		SGroup_Clear(sg_temppin2)
+	SGroup_Clear(sg_tempsup)
+		SGroup_Clear(sg_tempsup1)
+		SGroup_Clear(sg_tempsup2)
+	SGroup_Clear(sg_surrend)
+	
+	if Rule_Exists(_SurrenderInternal) == false then
+		Rule_AddInterval(_SurrenderInternal, 0.5)
+	end
+
+end
+
+
+function _SurrenderInternal()
+
+	_sg_surrender_internal = SGroup_CreateIfNotFound("_sg_surrender_internal")
+
+	for k, v in pairs(_surrender) do
+		
+		if SGroup_IsEmpty(v.sgroup) then
+			table.remove(_surrender, k)
+		else
+			-- A.I. Code
+			local c	
+			for c = 1, World_GetPlayerCount() do
+				if AI_IsAIPlayer(World_GetPlayerAt(c)) == true then
+					if(AI_IsEnabled(World_GetPlayerAt(c)) == true) then
+						-- Player Is AI, stop them from controlling the squad
+						AI_LockSGroup(World_GetPlayerAt(c), v.sgroup)
+					end
+				end
+			end
+			if not SGroup_IsMoving( v.sgroup, ALL ) 
+			and v.state == false then
+				
+				if SGroup_HasTeamWeapon(v.sgroup, ANY) then
+					Cmd_AbandonTeamWeapon(v.sgroup, true) -- preserve crew after abandon
+				elseif SGroup_IsInHoldEntity(v.sgroup, ANY) 
+				or SGroup_IsInHoldSquad(v.sgroup, ANY) then
+					-- if they are in a building, they need to get out first
+					Cmd_UngarrisonSquad(v.sgroup)
+				else
+					v.state = "surrender"
+					Timer_Start(v.timer, 3*60)
+					SGroup_SetMoodMode(v.sgroup, MM_ForceCalm)
+					SGroup_SetAnimatorState(v.sgroup, "surrender", "on")
+--~ 				SGroup_SetMoveType(v.sgroup, MOVETYPE.SURRENDER)
+					
+					-- drop their slot weapons (skip cost check and be queued command)
+					Cmd_Ability(v.sgroup, ABILITY.SP.DROP_WEAPONS, nil, nil, true, true )
+					Cmd_DoPlan(v.sgroup, "surrender", v.pos_exit, true)
+				end
+				
+			elseif v.state == "surrender" then		
+				if Prox_AreSquadMembersNearMarker(v.sgroup, v.pos_exit, ANY, 5)
+				or Timer_GetRemaining(v.timer) <= 0 then
+					
+					-- check the parameter set by the caller to determine whether or not the squad should
+					-- be removed from the map after reaching his destination.
+					if v.destroySquad ~= false then
+						SGroup_DestroyAllSquads(v.sgroup)
+					end
+				elseif not SGroup_IsMoving(v.sgroup, ANY) then
+					-- *** TODO: brw, sometimes the soldiers stop before getting to the exit point, need to fix this 
+					-- not sure if it is a code problem or a squad ai issue
+					Cmd_DoPlan(v.sgroup, "surrender", v.pos_exit, true)
+				end
+			end
+			
+		end
+		
+	end
+	
+	if table.getn(_surrender) == 0 then
+		SGroup_Destroy(_sg_surrender_internal)
+		Rule_RemoveMe()
+	end
+
+end
+
+------------------------------------
+-- Automatic Surrender Script End --
+------------------------------------

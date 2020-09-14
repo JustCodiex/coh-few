@@ -1,0 +1,3 @@
+Kingtiger =	75mmgun3a(b)
+
+Thermangun01m2	= Tiger

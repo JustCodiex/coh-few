@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$62143",
+	scenariodescription = "$62139",
+	maxplayers = 8,
+	date = "5/19/2009 5:15 PM",
+	scenarioabbrname = "",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		224,
+		384,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "RelicOps",
+}
+

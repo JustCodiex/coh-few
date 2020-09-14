@@ -1,0 +1,40 @@
+model =
+{
+	-- Allies Meshes for Slot Weapons
+	"..\\Allies\\Soldiers\\Weapons\\M18_57mm_Recoiless_Rifle",
+	"..\\Allies\\vehicles\\m1918\\m1918",
+	"..\\Allies\\Soldiers\\Weapons\\M9_Bazooka",
+	"..\\Allies\\Soldiers\\Weapons\\M1A1_Thompson",
+	"..\\Allies\\Soldiers\\Weapons\\60mmMortar_sync",
+	"..\\Allies\\vehicles\\maxinold\\maxinold_sync",
+	"..\\Allies\\Soldiers\\Weapons\\maxinold_sync",
+	"..\\commonwealth\\Soldiers\\Weapons\\Boys_AT_Rifle",
+	--"..\\Allies\\vehicles\\max\\max_Sync",
+	"..\\..\\Weapons\\American\\Small_Arms\\M2HB_HMG\\M2HB_HMG_Sync",
+
+	-- Axis Meshes for Slot Weapons
+	"..\\Axis\\Soldiers\\Weapons\\MP40",
+	--"..\\Axis\\Soldiers\\Weapons\\MP44",
+	--"..\\Axis\\Soldiers\\Weapons\\Panzerschreck",
+	"..\\Axis\\Soldiers\\Weapons\\Granatwerfer_34_sync",
+
+
+	-- Allied Commonwealth for Slot Weapons
+	"..\\commonwealth\\Soldiers\\Weapons\\Piat_AT_Launcher",
+	--"..\\commonwealth\\Soldiers\\Weapons\\light_MG",
+	"..\\allies\\vehicles\\jacker\\jacker",
+	"..\\Axis\\Soldiers\\Weapons\\mg-26_zbs26\\mg-26_zbs26",
+
+	--"..\\commonwealth\\Soldiers\\Weapons\\vickers_HMG_sync",
+	"..\\commonwealth\\Soldiers\\Weapons\\Boys_AT_Rifle",
+	--"..\\commonwealth\\Soldiers\\Weapons\\maxin_sync",
+
+	
+}
+
+
+-- Intermediate ABP
+simvis_attributes =
+{
+	Intermediate_Model = 1
+}

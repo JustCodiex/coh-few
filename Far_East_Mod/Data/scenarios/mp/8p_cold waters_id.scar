@@ -1,0 +1,11 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+	eg_invincible = EGroup_CreateIfNotFound("eg_invincible")
+	EGroup_SetInvulnerable(eg_invincible, true)
+
+end

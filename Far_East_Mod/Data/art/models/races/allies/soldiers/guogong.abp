@@ -1,0 +1,16 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons in Use
+   "..\\vehicles\\98ka\\98ka",
+   "..\\..\\Axis\\Soldiers\\Weapons\\Shovel",
+
+
+	-- Main Mesh
+    "..\\vehicles\\guoengeer\\guoengeer",
+	"..\\vehicles\\baobao\\baobao",
+	"..\\vehicles\\tou1\\tou1",
+}
+

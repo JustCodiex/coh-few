@@ -1,0 +1,7 @@
+model =
+{
+	"command_post",
+    "cafe_table_01"
+	--"..//..//allies//structures//CN_Flag.abp",
+	--"..//..//..//allies//structures//Supervision",
+}

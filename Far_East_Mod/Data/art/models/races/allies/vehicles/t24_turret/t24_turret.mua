@@ -1,0 +1,23 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "bone_classic",
+		subtype = "",
+		transform_m00 = 0.99999,
+		transform_m01 = 0.00304,
+		transform_m02 = 0.00396,
+		transform_m10 = 0.00392,
+		transform_m11 = 0.01338,
+		transform_m12 = -0.99990,
+		transform_m20 = -0.00310,
+		transform_m21 = 0.99991,
+		transform_m22 = 0.01337,
+		transform_m30 = -0.02734,
+		transform_m31 = 0.00610,
+		transform_m32 = 0.90208,
+		type = "",
+	},
+}

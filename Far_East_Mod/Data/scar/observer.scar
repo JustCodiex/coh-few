@@ -1,0 +1,91 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Name: 			Observer.scar
+-- Description:		Script setting up the observer mode for tournaments
+-- Programmers:		CoDiEx
+-- Script Version:	1.1
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+import("ScarUtil.scar")
+
+t_observers = {};
+
+function obs_create()
+
+	local team1 = Team_GetPlayers(0);
+	local team2 = Team_GetPlayers(1);
+	
+	if (#team1 > #team2) then
+		print("FEW: Observer mode creating 1 player from team 1");
+		obs_createplayer(team1[#team1]);
+	elseif (#team2 > #team1) then
+		print("FEW: Observer mode creating 1 player from team 2");
+		obs_createplayer(team2[#team2]);
+	else
+		print("FEW: Observer mode creating 2 players from both teams");
+		obs_createplayer(team1[#team1]);
+		obs_createplayer(team2[#team2]);
+	end
+
+	Rule_AddOneShot(obs_announceObservers, 1.75);
+	Rule_Add(obs_listen);
+
+end
+
+function obs_announceObservers()
+	
+	if (#t_observers == 2) then
+		Util_MissionTitle( Loc_FormatText(1005474, Player_GetDisplayName(t_observers[1].p), Player_GetDisplayName(t_observers[2].p)) );
+	else
+		Util_MissionTitle( Loc_FormatText(1005473, Player_GetDisplayName(t_observers[1].p)) );
+	end
+	
+end
+
+function obs_createplayer(player)
+
+	if (AI_IsAIPlayer(player) == false) then
+		
+		local entity_remove_list = Player_GetEntities( player );
+		local squad_remove_ist = Player_GetSquads( player );
+		
+		EGroup_DestroyAllEntities(entity_remove_list);
+		SGroup_DestroyAllSquads(squad_remove_ist);
+		
+		Player_SetResource( player, RT_Manpower, 0 );
+		Player_SetResource( player, RT_Munition, 0 );
+		Player_SetResource( player, RT_Fuel, 0 );
+		
+		Modify_PlayerResourceRate( player, RT_Manpower, 0 );
+		Modify_PlayerResourceRate( player, RT_Munition, 0 );
+		Modify_PlayerResourceRate( player, RT_Fuel, 0 );
+		
+		if (player == Game_GetLocalPlayer()) then
+			FOW_Enable( false );
+			UI_AlwaysFlashCompanyCommanderButton( false, true ); 
+			UI_BindingSetEnabled( "company_commander", false ); 
+		end
+		
+		table.insert(t_observers, {p = player, t = nil});
+		
+		print("Player " ..Player_GetDisplayName(player)[1] .." set up as observer!");
+		
+	else
+		
+		print("Player " ..Player_GetDisplayName(player)[1] .." was selected as observer, however AI players are not allowed to be an observer!");
+		
+	end
+	
+end
+
+function obs_listen()
+	for i=1, #t_observers do
+		if (t_observers[i].p == Game_GetLocalPlayer()) then -- CANT DO MUCH BECAUSE OF THIS
+			local sg_temp = SGroup_CreateIfNotFound("sg_temp");
+			Misc_GetSelectedSquads( sg_temp, false );
+			local selected_player = Util_GetPlayerOwner(sg_temp);
+			t_observers[i].t = selected_player;
+			SGroup_Clear(sg_temp);
+		end
+	end
+end

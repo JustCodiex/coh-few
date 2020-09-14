@@ -1,0 +1,7 @@
+model =
+{
+
+    "..\\..\\Common\\CompleteMotionTree3.abp",
+    "..\\..\\allies\\vehicles\\japsnipergun\\japsnipergun",
+    "..\\..\\allies\\vehicles\\Jap_soldier2\\Jap_soldier2",
+}

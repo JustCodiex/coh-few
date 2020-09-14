@@ -1,0 +1,140 @@
+
+_mpatrol = {};
+
+function Mission_CreatePatrolSequence( data_table, instant )
+
+	if instant == nil then instant = true end
+	
+	if (data_table.max_active == nil) then
+		data_table.max_active = 1;
+	end
+	
+	if (data_table.spawned == nil) then
+		data_table.spawned = 0;
+	end
+	
+	_mpatrol[data_table.id] = data_table;
+	_mpatrol[data_table.id].isActive = instant;
+	_mpatrol[data_table.id].timer = "_patrol_spawn_timeID" ..data_table.id;
+	
+	if instant then
+		_spawnPatrolUnit( data_table );
+		if not Rule_Exists(_updatePatrols) then
+			Rule_AddInterval(_updatePatrols, 10);
+		end
+	end
+
+end
+
+function Mission_StopPatrol(k, retreatpoint, kill_mkr)
+	
+	_mpatrol[k].isActive = false;
+	
+	if retreatpoint ~= nil then
+		Cmd_Retreat( _mpatrol[k].group, retreatpoint, kill_mkr );
+	end
+
+end
+
+function Mission_JoinPatrol(patrolID, group)
+	SGroup_AddGroup(_mpatrol[patrolID].group, group);
+end
+
+_updateIndividualPatrolMembers = function(sgroupid, itemindex, squadID)
+	
+	if g_allresourcepoints == nil then
+		return;
+	end
+	
+	local scmd = SQUADSTATEID_Idle;
+	
+	if Squad_HasActiveCommand( squadID) then
+		scmd = Squad_GetActiveCommand( squadID );
+	end
+	
+	if scmd ~= SQUADSTATEID_Idle then
+		for i = 1, #g_allresourcepoints do
+			if not World_OwnsEntity(g_allresourcepoints[i]) then
+				if Entity_GetPlayerOwner(g_allresourcepoints[i]) ~= Squad_GetPlayerOwner(squadID) then
+					if Squad_CanSeeEntity( squadID, g_allresourcepoints[i] ) then
+						if _mpatrol[_current_patrol].onspotted ~= nil then
+							_mpatrol[_current_patrol].onspotted(g_allresourcepoints[i], squadID);
+						end
+					end
+				end
+			end
+		end
+	else
+		local data = _mpatrol[_current_patrol];
+		Cmd_SquadPath( SGroup_FromSquad(squadID), data.path, false, _getLoopInt( data ), data.attack_move, data.patrol_await, data.exit_marker, false, data.move_reversed );
+		print("A patrol member was idle and is now patrolling again (ID: " ..itemindex ..")");
+	end
+	
+end
+
+_updatePatrols = function()
+
+	for k, v in pairs(_mpatrol) do
+		_current_patrol = k;
+		if (v.isActive) then
+			if v.respawn and SGroup_Count(v.group) < v.max_active then
+				if Timer_GetRemaining( v.timer ) <= 0 then
+					_spawnPatrolUnit(v);
+					Timer_Start( v.timer, v.active_spawn_delay );
+				end
+			else
+				if (SGroup_Count(v.group) < v.max_active and v.spawned < v.max_active) then
+					if Timer_GetRemaining( v.timer ) <= 0 then
+						_spawnPatrolUnit(v);
+						Timer_Start( v.timer, v.active_spawn_delay );
+					end
+				end
+			end
+			if (SGroup_Count(v.group) > 0) then
+				SGroup_ForEachEx( v.group, _updateIndividualPatrolMembers, true, false );
+			end
+		end
+	end
+
+end
+
+_spawnPatrolUnit = function( data )
+
+	if data.loadout == nil then
+		data.loadout = 0;
+	end
+
+	if data.speed_modifier == nil then
+		data.speed_modifier = 1;
+	end
+	
+	if data.vulnerability_modifier == nil then
+		data.vulnerability_modifier = 1;
+	end
+	
+	local squad = Squad_CreateAndSpawnToward( data.blueprint, data.patrol_player, data.loadout, Marker_GetPosition(data.entrance_marker), Marker_GetDirection( data.entrance_marker ));
+	local sg_temp = SGroup_FromSquad(squad);
+	
+	Modify_UnitSpeed( sg_temp, data.speed_modifier );
+	Modify_Vulnerability( sg_temp, data.vulnerability_modifier );
+	
+	Cmd_SquadPath( sg_temp, data.path, false, _getLoopInt( data ), data.attack_move, data.patrol_await, data.exit_marker, false, data.move_reversed ); 
+	
+	SGroup_AddGroup( data.group, sg_temp );
+	SGroup_Clear(sg_temp);
+	
+	data.spawned = data.spawned + 1;
+	
+	Timer_Start( _mpatrol[data.id].timer, data.active_spawn_delay );
+	
+end
+
+_getLoopInt = function( data )
+	if data.loop and data.loop_reverse then
+		return LOOP_TOGGLE_DIRECTION;
+	elseif data.loop and not data.loop_reverse then
+		return LOOP_NORMAL;
+	else
+		return LOOP_NONE;
+	end
+end

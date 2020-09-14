@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$19210566",
+	scenariodescription = "Battle of Oktwin March 20–23,'42",
+	maxplayers = 2,
+	date = "12/12/2016 3:31 PM",
+	scenarioabbrname = "Oktwin (2)",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		256,
+		288,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

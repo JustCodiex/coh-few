@@ -1,0 +1,278 @@
+soundDataDefaults = {
+
+}
+
+
+soundData = {
+	
+	speech_alliespath = "Speech/MP/Allies/INT/Operations/push/",
+	speech_axispath = "Speech/MP/Axis/GAN/Operations/push/",
+	
+	
+	hero = {
+		
+		enemyherokilled = {
+			
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/push/lb_int_end_hrogen_sc_s",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_end_hrogen_sc_s",
+			},
+		},
+		
+		playerherokilled = {
+		
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/push/lb_int_fnd_hrogen_sc_s",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_fnd_hrogen_sc_s",
+			},
+		},
+	},
+	
+	
+	building = {
+		
+		mortar = {
+		
+			enemy_mortar_destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_end_mtrgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_end_mtrgen_sc_s",
+				},
+			},
+			
+			player_mortar_destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_fnd_mtrgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_fnd_mtrgen_sc_s",
+				},
+			},
+			
+		},
+		
+		mgnest = {
+		
+			enemy_mgnest_destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_end_m42gen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_end_m42gen_sc_s",
+				},
+			},
+			
+			player_mgnest_destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_fnd_m42gen_sc_s",
+						
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_fnd_m42gen_sc_s",
+						
+				},
+			},
+		},
+		
+		hq = {
+		
+			underattack = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_gehq00_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_gehq00_sc_s",
+				},
+			
+			
+			},
+			
+			
+			
+			
+			destroyed = {
+			
+		
+				enemy_hq_destroyed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/push/lb_int_end_hqugen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_end_hqugen_sc_s",
+					},
+				},
+				
+				player_hq_destroyed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/push/lb_int_fnd_hqugen_sc_s",
+							
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_fnd_hqugen_sc_s",
+							
+					},
+				},
+			},
+		},
+		
+		fuelTank = {
+			
+			underAttack = {
+				
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/Push/lb_int_ufw_gehq00_sc_s",
+				},
+				
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/Push/xb_gan_ufw_gehq00_sc_s",
+				},
+				
+			},
+		},
+		
+	},
+	
+	enemyapproach = {
+	
+		firstline = {
+			
+			enemyhasbreached = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_fdl100_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_fdl100_sc_s",
+				},
+			},
+			
+			playerhasbreached = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_enl100_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_enl100_sc_s",
+				},
+			},
+			
+		},
+		
+		secondline = {
+		
+			enemyhasbreached = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_fdl200_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_fdl200_sc_s",
+				},
+			},
+			
+			playerhasbreached = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_enl200_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_enl200_sc_s",
+				},
+			},
+		},
+		
+				
+		thirdline = {
+		
+			enemyhasbreached = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_fdl300_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_fdl300_sc_s",
+				},
+			},
+			
+			playerhasbreached = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ufw_enl300_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ufw_enl300_sc_s",
+				},
+			},
+		},
+		
+		
+		vehiclespawn = {
+		
+			cycle_jeep = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ems_bmwgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ems_bmwgen_sc_s",
+				},
+			
+			},
+			
+			lightvehicle = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ems_vehgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ems_vehgen_sc_s",
+				},
+			
+			},
+			
+			tank = {
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/push/lb_int_ems_armgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_ems_armgen_sc_s",
+				},
+			
+			
+			},
+			
+		}
+		
+		
+	},
+	
+	misc = {
+	
+		
+		compliment = {
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/push/lb_int_wrn_mtrgen_sc_s",
+					
+				
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/push/xb_gan_wrn_mtrgen_sc_s",
+					
+				
+			},
+		},
+		
+		weaponUpgrade	= "UI/Operations/Assault/Weapon_Upgrade",
+		armorUpgrade	= "UI/Operations/Assault/Armor_Upgrade",
+		grenadeUpgrade	= "UI/Operations/Assault/Grenade_Upgrade",
+		
+	},
+}

@@ -1,0 +1,10 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+
+	-- Main Mesh
+    "..\\vehicles\\hushi\\hushi",
+}
+

@@ -1,0 +1,1354 @@
+import("ScarUtil.scar");
+import("CampaignUtil.scar");
+
+sp_achievement_ignore = true; -- So we dont load non-essential stuff (some achievements are still tracked)
+
+function OnGameSetup()
+	
+	player1 = Setup_Player(1, 11005508, TRACE_JAPAN, 1); -- Unsure about the name
+	player2 = Setup_Player(2, 11005508, TRACE_JAPAN, 1);
+	player3 = Setup_Player(3, 11005509, TRACE_CHINA, 2); -- Possibly find a better name
+	
+end
+
+function OnGameRestore()
+	
+	player1 = World_GetPlayerAt(1);
+	player2 = World_GetPlayerAt(2);
+	player3 = World_GetPlayerAt(3);
+	
+	Game_DefaultGameRestore();
+	
+end
+
+function OnGameInit()
+	
+	-- [[ Setup Difficulty ]]
+	SetupDifficulty();
+	
+	-- [[ Create Objectives ]]
+	Hook_Objectives();
+	
+	-- [[ Setup Player ]]
+	SetupPlayer();
+	
+	Util_SetPlayArea( mkr_section_limit01 ); -- Set the area of which the player can play
+	
+	Game_FadeToBlack(FADE_OUT, 0); -- Set screen to black
+	Camera_SetInputEnabled( false ); -- Just so the player doesnt do something stupid
+	
+	EGroup_Hide( eg_border_territories, true ); -- Hide the border territories so we dont frustrate the player
+	
+	sg_player_squads = SGroup_CreateIfNotFound("sg_player_squads");
+	
+	g_kwantung = CONSTANTS.JAPAN.SBP.KWANTUNG_SP; -- shortcut definition;
+	
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_jap_spawn01);
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_jap_spawn02);
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_jap_spawn03);
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_jap_spawn04);
+	
+	Modify_Vulnerability(sg_player_squads, 2 - t_difficulty.playertoughness);
+	
+	GE_MunitionRespond = EGroup_GetSpawnedEntityAt( eg_rail_munition, 1 );
+	GE_FuelRespond = EGroup_GetSpawnedEntityAt( eg_rail_fuel, 1 );
+	
+	Modify_CaptureTime( eg_rail_munition, 0.4 );
+	Modify_CaptureTime( eg_rail_fuel, 0.4 );
+	Modify_CaptureTime( eg_rail_station01, 0.4 );
+	Modify_CaptureTime( eg_rail_station01, 0.4 );
+	
+	Mission_EnableBounties(player3);
+	
+	railway_spawn_rail_defence01();
+	railway_spawn_rail_defence02();
+	railway_spawn_rail_defence03();
+	railway_spawn_rail_defence04();
+	
+	Util_StartIntel(EVENTS.intro);
+	
+	Rule_Add(railway_kickoff);
+	
+end
+
+function SetupDifficulty()
+
+	g_difficulty = Game_GetSPDifficulty();
+	t_difficulty = {};
+	
+	if (g_difficulty == GD_EXPERT) then
+		EGroup_DestroyAllEntities( eg_reinforcement_object );
+		t_difficulty.ft17_threshold = 0.4;
+		t_difficulty.recap_time = 120;
+		t_difficulty.playertoughness = 1.1;
+	elseif (g_difficulty == GD_HARD) then
+		t_difficulty.ft17_threshold = 0.55;
+		t_difficulty.recap_time = 140;
+		t_difficulty.playertoughness = 1.25;
+	elseif (g_difficulty == GD_NORMAL) then
+		t_difficulty.ft17_threshold = 0.7;
+		t_difficulty.recap_time = 180;
+		t_difficulty.playertoughness = 1.4;
+	elseif (g_difficulty == GD_EASY) then
+		t_difficulty.ft17_threshold = 0.8;
+		t_difficulty.recap_time = 320;
+		t_difficulty.playertoughness = 1.6;
+	end
+	
+end
+
+function SetupPlayer()
+
+	Cmd_InstantUpgrade( player1, UPG.JAPAN.TECH.PHASE3 ); -- So the Kwantung Infantry can throw satchel charges which they'll need if they wish to destroy the enemy vehicles
+	
+	Player_SetResource( player1, RT_Manpower, Util_DifVar({ 800, 600, 400, 280 }) );
+	Player_SetResource( player1, RT_Munition, Util_DifVar({ 400, 340, 280, 240 }) );
+	Player_SetResource( player1, RT_Fuel, 0 );
+	
+	g_manpowerMod = Modify_PlayerResourceRate( player1, RT_Manpower, 0.05 );
+	g_munitionMod = Modify_PlayerResourceRate( player1, RT_Munition, 1.6 );
+	g_fuelMod = Modify_PlayerResourceRate( player1, RT_Fuel, 0 ); -- We don't need fuel in this mission	
+	
+	Modify_PlayerProductionRate( player1, 5 ); -- For when reinforcing
+	
+	Player_SetPopCapOverride( player1, 25 ); 
+	Player_SetConstructionMenuAvailability( player1, "type_construction/tp_construction_axis_infantry_basic", ITEM_REMOVED ); -- No need for constructing anything in this mission
+
+end
+
+function Hook_Objectives()
+	
+	OBJ_CAPRAIL = {
+		
+		SetupUI = function()
+			t_railroadsections = {
+				{
+					ui_part = Objective_AddUIElements(OBJ_CAPRAIL, EGroup_GetPosition(eg_rail_station01), true, 11005513),
+					is_captured = false,
+					allow_recapture = Util_DifVar( { false, false, true, true } ),
+					eg_target = eg_rail_station01,
+					recap_timer = "_recaprailtimer01",
+					sg_recap = SGroup_CreateIfNotFound("sg_recapr1"),
+				},
+				{
+					ui_part = Objective_AddUIElements(OBJ_CAPRAIL, EGroup_GetPosition(eg_rail_station02), true, 11005513),
+					is_captured = false,
+					allow_recapture = Util_DifVar( { false, false, true, true } ),
+					eg_target = eg_rail_station02,
+					recap_timer = "_recaprailtimer02",
+					sg_recap = SGroup_CreateIfNotFound("sg_recapr2"),
+				},
+				{
+					ui_part = Objective_AddUIElements(OBJ_CAPRAIL, EGroup_GetPosition(eg_rail_fuel), true, 11005513),
+					is_captured = false,
+					allow_recapture = Util_DifVar( { false, true, true, true } ),
+					eg_target = eg_rail_fuel,
+					recap_timer = "_recapfueltimer",
+					sg_recap = SGroup_CreateIfNotFound("sg_recapr3"),
+				},
+				{
+					ui_part = Objective_AddUIElements(OBJ_CAPRAIL, EGroup_GetPosition(eg_rail_munition), true, 11005513),
+					is_captured = false,
+					allow_recapture = Util_DifVar( { false, true, true, true } ),
+					eg_target = eg_rail_munition,
+					recap_timer = "_recapmunitiontimer",
+					sg_recap = SGroup_CreateIfNotFound("sg_recapr4"),
+				},
+			};
+		end,
+		
+		OnStart = function()
+		end,
+		
+		OnComplete = function()
+			Rule_AddOneShot(railway_plant_demolitions, 7.5);
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+		end,
+		
+		Title = 11005510,
+		Description = 11005510,
+		Type = OT_Primary,
+		
+	}
+	
+	OBJ_DESRAIL = {
+		
+		SetupUI = function()
+		end,
+		
+		OnStart = function()
+		end,
+		
+		OnComplete = function()
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+		end,
+		
+		Title = 11005511,
+		Description = 11005511,
+		Type = OT_Primary,
+		
+	}
+	
+	OBJ_TRAINTIME = {
+		
+		SetupUI = function()
+		end,
+		
+		OnStart = function()
+			Objective_StartTimer( OBJ_TRAINTIME, COUNT_DOWN, 1200, 300 ); -- 20 minutes to complete mission, 5 minutes before the timer will begin flashing
+			Rule_AddInterval(railway_railtime, 1);
+		end,
+		
+		OnComplete = function()
+			fe_setachivement("fe_mukden01"); -- Unlock the achievement
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			Util_StartNIS(EVENTS.traindo);
+		end,
+		
+		Title = 11005512,
+		Description = 11005512,
+		Type = OT_Medal,
+		MedalID = CONSTANTS.CAMPAIGN.MUKDEN.M01,
+		
+	}
+	
+	Objective_Register(OBJ_CAPRAIL);
+	Objective_Register(OBJ_DESRAIL);
+	Objective_Register(OBJ_TRAINTIME);
+	
+end
+
+Scar_AddInit(OnGameInit);
+
+function railway_kickoff()
+
+	if not Event_IsAnyRunning() then
+		
+		Objective_Start( OBJ_CAPRAIL, true ); 
+		Objective_Start( OBJ_TRAINTIME, true );
+		
+		Camera_SetInputEnabled( true ); -- Re-allow the player to move camera 
+		
+		UI_BindingSetEnabled("company_commander", false); -- Disable company commander (dont need them for this)
+		
+		Rule_AddInterval(railway_playerisdead, 2.5);
+		Rule_AddInterval(railway_check, 5);
+		
+		g_vickersSptted = false;
+		
+		Rule_AddInterval(railway_vickersSpotted, 1.5);
+		Rule_AddInterval(railway_stopVickers, 2);
+		
+		Rule_RemoveMe();
+		
+	end
+
+end
+
+function railway_spawn_rail_defence01()
+
+	t_hmgmarkers = {
+		mkr_china_hmg01, mkr_china_hmg02, mkr_china_hmg03, mkr_china_hmg04,
+		mkr_china_hmg05, mkr_china_hmg06, mkr_china_hmg07, mkr_china_hmg08,
+		mkr_china_hmg09,
+	};
+	
+	t_mortarmarkers = {
+		mkr_china_mortar01, mkr_china_mortar02, mkr_china_mortar03,
+	};
+	
+	t_snipermarkers = {
+		mkr_china_sniper01, mkr_china_sniper02, mkr_china_sniper03, mkr_china_sniper04
+	};
+	
+	sg_china_machine_guns = SGroup_CreateIfNotFound("sg_china_machine_guns");	-- HMG Team
+	sg_china_mortar = SGroup_CreateIfNotFound("sg_china_mortar");				-- Mortar Team
+	sg_china_ft17 = SGroup_CreateIfNotFound("sg_china_ft17");					-- FT-17
+	sg_china_entrenched = SGroup_CreateIfNotFound("sg_china_entrenched");		-- Entrenched HMGs
+	sg_china_sniper = SGroup_CreateIfNotFound("sg_china_sniper");				-- Snipers
+	
+	for i = 1, #t_hmgmarkers do
+		Util_CreateSquads( player3, sg_china_machine_guns, SBP.CHINA.TEAM_WEAPONS.HMG_TEAM, t_hmgmarkers[i]);
+	end
+	
+	for i = 1, #t_mortarmarkers do
+		Util_CreateSquads( player3, sg_china_mortar, SBP.CHINA.TEAM_WEAPONS.MORTAR_TEAM, t_mortarmarkers[i]);
+	end
+	
+	if g_difficulty == GD_EXPERT then
+		for i = 1, #t_snipermarkers do
+			Util_CreateSquads( player3, sg_china_sniper, SBP.CHINA.INFANTRY.SNIPER, t_snipermarkers[i]);
+		end
+	elseif g_difficulty == GD_HARD then
+		for i = 1, #t_snipermarkers do
+			if World_GetRand(1, 100) > 75 then
+				Util_CreateSquads( player3, sg_china_sniper, SBP.CHINA.INFANTRY.SNIPER, t_snipermarkers[i]);
+			end
+		end
+	end
+
+	Cmd_InstantSetupTeamWeapon( sg_china_machine_guns );
+	Cmd_InstantSetupTeamWeapon( sg_china_mortar );
+
+	SGroup_SetTeamWeaponCapturable( sg_china_machine_guns, false );
+	SGroup_SetTeamWeaponCapturable( sg_china_mortar, false );
+	
+	Modify_Vulnerability( sg_china_machine_guns, Util_DifVar({ 3, 2, 1.75, 1.25 }) );
+	Modify_Vulnerability( sg_china_mortar, Util_DifVar({ 3, 2, 1.75, 1.25 }) );
+	Modify_Vulnerability( sg_china_sniper, Util_DifVar({ 4, 3, 2, 2 }) );
+	
+	Util_CreateSquads( player3, sg_china_ft17, SBP.CHINA.VEHICLES.FT17_LMG, mkr_china_ft17_lmg);
+	
+	COHEvent_OnPlayerCanSee(railway_ft17spotted, nil, sg_china_ft17, player1, 1.25);
+	COHEvent_OnHealth(railway_ft17damaged, nil, sg_china_ft17, 1);
+	Modify_Vulnerability( sg_china_ft17, 1.15 );
+	
+	Util_SpawnInStructures(eg_wooden_start_bunkers, player3, sg_china_entrenched, SBP.CHINA.TEAM_WEAPONS.HMG_TEAM, 1, 3, nil);
+	
+	Modify_Vulnerability( sg_china_entrenched, Util_DifVar({ 3.5, 2.5, 2.15, 1.35 }) );
+	
+end
+
+function railway_spawn_rail_defence02()
+
+	t_large_trench = {
+		id = "large_trench",
+		conditions = {
+			retreat_when_captured = {
+				points = {
+					eg_trench_left,
+					eg_trench_left,
+				},
+				retreat_to = {
+					target_marker = mkr_retreat_marker01,
+					delete_marker = mkr_retreat_marker01,
+				},
+			},
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_right_trench_regulars"),
+				response_marker = mkr_trench_entrance_trigger,
+				response_delay = 4,
+				respond_individually = true,
+				targetted_ability = {
+					abp = ABILITY.ALLIES.GRENADE, -- Let them throw grenades
+					range = 11.5,
+				},
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars36,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars37,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars38,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars39,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars40,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_left_trench_regulars"),
+				response_marker = mkr_trench_entrance_trigger,
+				response_delay = 4,
+				respond_individually = true,
+				targetted_ability = {
+					abp = ABILITY.ALLIES.GRENADE, -- Let them throw grenades
+					range = 11.5,
+				},
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pistol03,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = nil,
+					},
+					{
+						mkr = mkr_china_regulars41,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars42,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars43,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	Mission_CreateDefenceSequence( player1, player3, t_large_trench, true );
+
+	t_train_station = {
+		id = "train_station",
+		conditions = {
+			retreat_when_captured = {
+				points = {
+					eg_rail_station01,
+					eg_rail_station02,
+				},
+				retreat_to = {
+					target_marker = mkr_retreat_marker01,
+					delete_marker = mkr_retreat_marker01,
+				},
+			},
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_fuel_side"),
+				targetted_ability = {
+					abp = ABILITY.ALLIES.GRENADE, -- Let them throw grenades
+					range = 11.5,
+				},
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars22,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars23,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars46,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars34,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars35,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars48,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars49,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars20,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars21,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_munition_side"),
+				targetted_ability = {
+					abp = ABILITY.ALLIES.GRENADE, -- Let them throw grenades
+					range = 11.5,
+				},
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pistol04,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = nil,
+					},
+					{
+						mkr = mkr_china_pistol05,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = nil,
+					},
+					{
+						mkr = mkr_china_pistol06,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = nil,
+					},
+					{
+						mkr = mkr_china_regulars26,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars32,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars33,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars24,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars25,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars47,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars27,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars28,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars29,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars30,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars31,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	Mission_CreateDefenceSequence( player1, player3, t_train_station, true );
+	
+end
+
+function railway_spawn_rail_defence03()
+
+	t_patrol_vickers = {
+		
+		id = "vickers_patrol",
+		path = "vickers_patrol01",
+		
+		patrol_player = player3,
+		group = SGroup_CreateIfNotFound("sg_vickers_patrol");
+		blueprint = SBP.CHINA.VEHICLES.VICKERS,
+		respawn = false,
+		loop = true,
+		loop_reverse = false,
+		move_reversed = false,
+		attack_move = true,
+		patrol_await = 0.0,
+		
+		entrance_marker = mkr_china_vickers01,
+		
+		speed_modifier = 0.55,
+		vulnerability_modifier = Util_DifVar({6, 3, 2, 1.5}),
+		
+	};
+	
+	Mission_CreatePatrolSequence( t_patrol_vickers, true );
+
+	t_patrol_china01 = {
+		
+		id = "china_patrol01",
+		path = "china_patrol01",
+		
+		patrol_player = player3,
+		group = SGroup_CreateIfNotFound("sg_china_patrol01");
+		blueprint = SBP.CHINA.INFANTRY.REGULARS,
+		loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+		respawn = true,
+		loop = true,
+		loop_reverse = false,
+		move_reversed = false,
+		attack_move = true,
+		patrol_await = 0.0,
+		
+		entrance_marker = mkr_china_patrol_spawner,
+		
+		max_active = 5,
+		active_spawn_delay = 60,
+		
+		vulnerability_modifier = Util_DifVar({4, 2, 1.5, 1.25}),
+		
+		onspotted = railway_patrolspotted,
+		
+	};
+	
+	t_patrol_china02 = {
+		
+		id = "china_patrol02",
+		path = "china_patrol02",
+		
+		patrol_player = player3,
+		group = SGroup_CreateIfNotFound("sg_china_patrol02");
+		blueprint = SBP.CHINA.INFANTRY.REGULARS,
+		loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+		respawn = true,
+		loop = true,
+		loop_reverse = false,
+		move_reversed = false,
+		attack_move = true,
+		patrol_await = 0.0,
+		
+		entrance_marker = mkr_china_patrol_spawner,
+		
+		max_active = 5,
+		active_spawn_delay = 60,
+		
+		vulnerability_modifier = Util_DifVar({4, 2, 1.5, 1.25}),
+		
+		onspotted = railway_patrolspotted,
+		
+	};
+	
+	t_patrol_china03 = {
+		
+		id = "china_patrol03",
+		path = "china_patrol03",
+		
+		patrol_player = player3,
+		group = SGroup_CreateIfNotFound("sg_china_patrol03");
+		blueprint = SBP.CHINA.INFANTRY.REGULARS,
+		loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+		respawn = true,
+		loop = true,
+		loop_reverse = false,
+		move_reversed = false,
+		attack_move = true,
+		patrol_await = 0.0,
+		
+		entrance_marker = mkr_china_patrol_spawner,
+		
+		max_active = 3,
+		active_spawn_delay = 60,
+		
+		vulnerability_modifier = Util_DifVar({4, 2, 1.5, 1.25}),
+		
+		onspotted = railway_patrolspotted,
+		
+	};
+	
+	Mission_CreatePatrolSequence( t_patrol_china01, true );
+	Mission_CreatePatrolSequence( t_patrol_china02, true );
+	Mission_CreatePatrolSequence( t_patrol_china03, true );
+	
+end
+
+function railway_spawn_rail_defence04()
+
+	t_left_jungle = {
+		id = "jungle_left",
+		conditions = {
+			
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_j1"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars44,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars45,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j2"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pistol02,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = nil,
+					},
+					{
+						mkr = mkr_china_regulars02,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j3"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars01,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j4"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pistol01,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = 2,
+					},
+				},
+			},
+		},
+	};
+
+	Mission_CreateDefenceSequence( player1, player3, t_left_jungle, true );
+	
+	t_fuel_point = {
+		id = "fuel_point_assemble",
+		conditions = {
+			under_attack = {
+				plan = "assemble",
+				assmble_plan = {
+					mkr_to_assemble_at = mkr_fuel_response_circle,
+					try_find_cover = true,
+					radius = Marker_GetProximityRadius(mkr_fuel_response_circle),
+				},
+			},
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_jfp"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars10,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars11,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars11,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars12,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars13,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars14,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars50,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	Mission_CreateDefenceSequence( player1, player3, t_fuel_point, true );
+	
+	t_right_jungle = {
+		id = "jungle_right",
+		conditions = {
+			
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_j5"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars03,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars04,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+			{
+				group = SGroup_CreateIfNotFound("sg_j6"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars15,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars16,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars17,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	Mission_CreateDefenceSequence( player1, player3, t_right_jungle, true );
+	
+	t_central_rail = {
+		id = "rail_HMG_block",
+		conditions = {
+			retreat_when_captured = {
+				points = {
+					eg_rail_central,
+				},
+				retreat_to = {
+					target_marker = mkr_retreat_marker01,
+					delete_marker = mkr_retreat_marker01,
+				},
+			},
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_j7"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_pistol07,
+						blueprint = SBP.CHINA.INFANTRY.HANDGUN_TEAM,
+						loadout = 2,
+					},
+					{
+						mkr = mkr_china_regulars18,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars19,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	Mission_CreateDefenceSequence( player1, player3, t_central_rail, true );
+	
+	t_aicap01 = {
+		id = "ai1",
+		conditions = {
+			retreat_when_captured = {
+				points = {
+					eg_ai1,
+				},
+				retreat_to = {
+					target_marker = mkr_retreat_marker01,
+					delete_marker = mkr_retreat_marker01,
+				},
+			},
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_j8"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars05,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars06,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars07,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	t_aicap02 = {
+		id = "ai2",
+		conditions = {
+			retreat_when_captured = {
+				points = {
+					eg_ai2,
+				},
+				retreat_to = {
+					target_marker = mkr_retreat_marker01,
+					delete_marker = mkr_retreat_marker01,
+				},
+			},
+		},
+		units = {
+			{
+				group = SGroup_CreateIfNotFound("sg_j9"),
+				vulnerable_modifier = Util_DifVar({ 3, 2, 1.75, 1.25 }),
+				spawn = {
+					{
+						mkr = mkr_china_regulars08,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+					{
+						mkr = mkr_china_regulars09,
+						blueprint = SBP.CHINA.INFANTRY.REGULARS,
+						loadout = Util_DifVar({ 1, World_GetRand(1, 2), 2, World_GetRand(2, 3) }),
+					},
+				},
+			},
+		},
+	};
+	
+	Mission_CreateDefenceSequence( player1, player3, t_aicap01, true );
+	Mission_CreateDefenceSequence( player1, player3, t_aicap02, true );
+	
+end
+
+function railway_patrolspotted(spotted, spotter)
+	
+	local r = World_GetRand(0, 100);
+	
+	if spotted == GE_MunitionRespond then
+		
+		if r > 50 then
+		
+			if t_railroadsections[4].allow_recapture then			
+				local sg_temp = SGroup_FromSquad(spotter);
+				Cmd_AttackMoveThenCapture( sg_temp, t_railroadsections[4].eg_target);			
+			end
+			
+		end
+		
+	elseif spotted == GE_FuelRespond then
+
+		if r > 50 then
+	
+			if t_railroadsections[3].allow_recapture then			
+				local sg_temp = SGroup_FromSquad(spotter);
+				Cmd_AttackMoveThenCapture( sg_temp, t_railroadsections[3].eg_target);
+			end
+			
+		end
+		
+	else
+		
+		if r > 75 then
+			local sg_temp = SGroup_FromSquad(spotter);
+			Cmd_AttackMoveThenCapture( sg_temp, EGroup_FromEntity(spotted) );
+		end
+		
+	end
+	
+end
+
+function railway_ft17damaged()
+
+	if (SGroup_GetAvgHealth(sg_china_ft17) <= t_difficulty.ft17_threshold) then									-- Should we make it retreat?
+		Cmd_SquadPath( sg_china_ft17, "ft17_retreat_path", true, LOOP_NONE, false, 0.0, nil, false, true ); 	-- Make it "retreat" to a position to be used in next mission
+	else																										-- Not below our threshold
+		COHEvent_OnHealth(railway_ft17damaged, nil, sg_china_ft17, 1);											-- Keep checking
+	end
+
+end
+
+function railway_ft17spotted()
+
+	Util_StartIntel(EVENTS.ft17spotted);																	-- Play a small speech event
+	HintPoint_AddToAbilityButton( ABILITY.JAPAN.THROW_SATCHEL_CHARGE_KWANTUNG, 11005519, true );			-- Tell the player can scar away the FT-17 by throwing a satchel charge at it
+
+end
+
+function railway_playerisdead()
+	if SGroup_Count(sg_player_squads) == 0 and Player_GetSquadCount( player1 ) == 0 then
+		if g_difficulty == GD_EASY and g_second_chance == nil then
+			railway_secondchance();
+		else
+			if not Objective_IsComplete(OBJ_CAPRAIL) and Objective_IsStarted( OBJ_CAPRAIL )  then
+				Objective_Fail(OBJ_CAPRAIL, true);
+			elseif not Objective_IsComplete(OBJ_DESRAIL) and Objective_IsStarted( OBJ_DESRAIL ) then
+				Objective_Fail(OBJ_DESRAIL, true);
+			end
+			Objective_Fail(OBJ_TRAINTIME, true);
+			Game_EndDelay(false, 10);
+		end
+	end
+end
+
+function railway_secondchance()
+	
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_player_map_entry, mkr_jap_spawn01);
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_player_map_entry, mkr_jap_spawn02);
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_player_map_entry, mkr_jap_spawn03);
+	Util_CreateSquads( player1, sg_player_squads, g_kwantung, mkr_player_map_entry, mkr_jap_spawn04);
+	
+	Modify_Vulnerability(sg_player_squads, 2 - t_difficulty.playertoughness);
+	
+	Camera_MoveToPosition( mkr_second_chance_cam, true, SLOW_CAMERA_PANNING );
+	
+end
+
+function railway_vickersSpotted()
+	
+	if Player_CanSeeSGroup( player1, t_patrol_vickers.group, ANY ) then
+		
+		g_vickersBlip = UI_CreateMinimapBlip( t_patrol_vickers.group, 10, BT_AttackHerePing );
+		
+		Util_StartIntel(EVENTS.vickersspotted);
+		g_vickersSptted = true;
+		
+		Rule_RemoveMe();
+		
+	end
+	
+end
+
+function railway_stopVickers()
+	
+	if g_vickersSptted and EGroup_IsCapturedByPlayer( t_railroadsections[4].eg_target, player1, ANY ) then
+		
+		Cmd_Move( t_patrol_vickers.group, mkr_to_mukden ); -- Tell the vickers to begin moving towards the mukden exit point
+		Modify_UnitSpeed( t_patrol_vickers.group, 0.8 ); -- Modifiers stack (so 80% of 55% of the original speed) 
+		
+		Rule_AddInterval(railway_vickersEscaped, 1);
+		Rule_RemoveMe();
+		
+	end
+	
+end
+
+function railway_vickersEscaped()
+
+	if Prox_AreSquadsNearMarker( t_patrol_vickers.group, mkr_to_mukden, ANY, 5 ) then
+		
+		g_vickersSurvived = true;
+		
+		PlayerProfile_SetVar( "vickers_in_mukden", "true" ); -- Save it for the mukden mission
+		SGroup_DestroyAllSquads( t_patrol_vickers.group );
+		Rule_RemoveMe();
+		
+	elseif SGroup_Count(t_patrol_vickers.group) == 0 then
+	
+		g_vickersSurvived = false;
+	
+		PlayerProfile_SetVar( "vickers_in_mukden", "false" ); -- We've managed to kill it off
+		Rule_RemoveMe();
+	
+	end
+
+end
+
+function railway_check()
+
+	local capped = 0;																	-- Variable to store the amount of captured points
+
+	for i = 1, #t_railroadsections do
+		local v = t_railroadsections[i];
+		if v.is_captured then															-- Does the JAPANESE have this point captured?
+			if v.allow_recapture then													-- Allow the recapturing of the point?
+				if not v.is_counterattacking then										-- Are we already counterattacking?
+					if not Timer_Exists(v.recap_timer) then
+						Timer_Start(v.recap_timer, t_difficulty.recap_time);
+					else
+						if Timer_GetRemaining(v.recap_timer) <= 0 then
+							local r = World_GetRand(1, 100);
+							if r < 66 then 												-- 66% chance of it happening
+								railway_sendrecapture(v.eg_target, v.sg_recap);			-- Send someone to capture it
+								Timer_Start(v.recap_timer, t_difficulty.recap_time);	-- Start a timer so we dont do this every time the capture squad is dead
+								v.is_counterattacking = true;							-- Set the is_counterattacking flag to true
+							end
+						end
+					end
+				else
+					v.is_counterattacking = (SGroup_Count(v.sg_recap) == 0);
+				end
+			end
+			if EGroup_IsCapturedByPlayer( v.eg_target, player3, ANY ) then														-- Check if the target has been captured by the Chinese
+				Util_StartIntel(EVENTS.lostpoint);																				-- Let the player know we've lost one of the points
+				v.is_captured = false;																							-- Set is captured to false => we've lost it
+				v.ui_part = Objective_AddUIElements(OBJ_CAPRAIL, EGroup_GetPosition(v.eg_target), true, 11005513); 				-- Re-add the UI
+			else
+				capped = capped + 1;
+			end
+		else
+			if EGroup_IsCapturedByPlayer( v.eg_target, player1, ANY ) then		-- Check if the target has been captured by the player
+				v.is_counterattacking = false;									-- Tell the game we're currently not counterattacking
+				v.is_captured = true;											-- Set to is captured
+				Objective_RemoveUIElements( OBJ_CAPRAIL, v.ui_part );			-- Remove the UI
+			end
+		end
+	end
+
+	if capped == #t_railroadsections then							-- Make sure the capped amount is the same as the railroad section amount
+		Objective_Complete( OBJ_CAPRAIL, true ); 					-- Let the player know the objective has been completed (This will then call the railway_plant_demolitions
+		Rule_RemoveMe(); 											-- Remove the repeated calls to this function?
+	end
+	
+end
+
+function railway_sendrecapture(target, group)
+	
+	for i = 1, World_GetRand(2, 4) do
+		Util_CreateSquads( player3, group, SBP.CHINA.INFANTRY.REGULARS, mkr_china_patrol_spawner, nil, 1, World_GetRand(1, 3));		-- Spawn the squad to go capture
+	end
+	
+	Cmd_AttackMoveThenCapture( group, target );																					-- Capture the point
+	
+	if not Rule_Exists(railway_captureresIdle) then
+		Rule_AddInterval(railway_captureresIdle, 15);
+	end
+	
+end
+
+function railway_captureresIdle()
+	
+	local aiowned = 0;
+	
+	for k, section in pairs(t_railroadsections) do
+		
+		if SGroup_Count(section.sg_recap) > 0 then
+			if SGroup_IsIdle( section.sg_recap, ALL ) then
+				Mission_JoinPatrol("china_patrol01", section.sg_recap);
+				SGroup_Clear(section.sg_recap);
+			end
+		else
+			aiowned = aiowned + 1;
+		end
+		
+	end
+	
+	if aiowned == #t_railroadsections then
+		Rule_RemoveMe();
+	end
+	
+end
+
+function railway_railtime()
+
+	local t = Objective_GetTimerSeconds( OBJ_TRAINTIME );
+
+	if t <= 0 then
+		Util_StartIntel( EVENTS.traindo );
+		Objective_Fail( OBJ_TRAINTIME, true );
+		Rule_RemoveMe();
+	else
+		if t <= 300 and g_trainWarning == nil then
+			Util_StartIntel(EVENTS.trainwarning01);
+			g_trainWarning = true;
+		end
+	end	
+
+end
+
+function railway_plant_demolitions()
+
+	Objective_Start(OBJ_DESRAIL, true);
+	
+	sg_gengping = SGroup_CreateIfNotFound("sg_gengping");
+	
+	local gengping = Util_SplitSquads(sg_player_squads, 1, CONSTANTS.KOREA.SBP.GENGPING_DEMOLITION, true);
+	
+	if gengping == nil then
+		Util_CreateSquads( player1, sg_gengping, CONSTANTS.KOREA.SBP.GENGPING_DEMOLITION, mkr_assemble_warp, nil );
+	else
+		SGroup_Add(sg_player_squads, gengping);
+		SGroup_Add(sg_gengping, gengping);
+	end
+	
+	Cmd_InstantUpgrade( sg_gengping, CONSTANTS.KOREA.UPGRADE.NEAR_RAILWAY );
+	
+	t_demolition_ui = {
+		HintPoint_Add( mkr_railroad01, true, 11005517 ),
+		HintPoint_Add( mkr_railroad02, true, 11005517 ),
+		HintPoint_Add( mkr_railroad03, true, 11005517 ),
+	}
+	
+	g_isnearrail = false;
+	Player_SetCommandAvailability( player1, SCMD_PlaceCharge, ITEM_LOCKED );
+	
+	Camera_MoveToPosition( mkr_assemble_cam, true, SLOW_CAMERA_PANNING );
+	SGroup_WarpToMarker( sg_player_squads, mkr_assemble_warp );
+	
+	Mission_StopPatrol("china_patrol01", mkr_china_patrol_spawner, mkr_china_patrol_spawner);
+	Mission_StopPatrol("china_patrol02", mkr_china_patrol_spawner, mkr_china_patrol_spawner);
+	
+	Rule_AddInterval(railway_helpdemolition, 1);
+	Rule_AddInterval(railway_isnear, 0.25);
+	
+	Util_StartIntel(EVENTS.plantexplosives);
+	HintMouseover_Add( 11005514, sg_gengping, 5, true );
+	
+end
+
+function railway_isnear()
+
+	if g_isnearrail then
+		if not railway_isinside(sg_gengping) then
+			Player_SetCommandAvailability( player1, SCMD_PlaceCharge, ITEM_LOCKED );
+			g_isnearrail = false;
+		end
+	else
+		if railway_isinside(sg_gengping) then
+			Player_SetCommandAvailability( player1, SCMD_PlaceCharge, ITEM_UNLOCKED );
+			g_isnearrail = true;
+		end
+	end
+
+end
+
+function railway_isinside(target)
+	return Prox_AreSquadsNearMarker( target, mkr_railroad01, ANY ) or Prox_AreSquadsNearMarker( target, mkr_railroad02, ANY ) or Prox_AreSquadsNearMarker( target, mkr_railroad03, ANY );
+end
+
+function railway_helpdemolition(target)
+
+	if Misc_IsSGroupSelected( sg_gengping, ANY ) and g_isnearrail then
+		ui_flashdemo = UI_FlashCommandButton(SCMD_PlaceCharge, true, BT_UI_Strong_AbilityBtn);
+		ui_flashdemotxt = HintPoint_AddToCommandButton(SCMD_PlaceCharge, 11005518, true);
+	else
+		if ui_flashdemo ~= nil and ui_flashdemotxt ~= nil then
+			UI_StopFlashing(ui_flashdemo);
+			UI_StopFlashing(ui_flashdemotxt);
+		end
+	end
+
+end
+
+function railway_demolitionPlaced()
+	g_demolitionIsValid = railway_isinside(sg_gengping);												-- Is Gengping inside the railway zone?
+	eg_demolitionCharge = EGroup_CreateIfNotFound("eg_demolitionCharge");								-- Create an EGroup we can use for checking for the demolition
+	local t_democharges = Player_FindAllEntitiesOfType( CONSTANTS.KOREA.EBP.DEMOLITION );				-- So, because demolition charges were intended for entities, and they're actually owned by the players.
+	if #t_democharges > 0 then																			-- Make sure we've actually found a demolition charge
+		if g_demolitionIsValid then																		-- Make sure it's valid placement
+			EGroup_Add( eg_demolitionCharge, t_democharges[1] );
+			g_demolitionLocation = Entity_GetPosition( t_democharges[1] );
+			local demo_check = function()
+				if EGroup_Count(eg_demolitionCharge) == 0 then
+					if not Objective_IsFailed( OBJ_TRAINTIME ) then
+						Objective_PauseTimer( OBJ_TRAINTIME );											-- Stop the timer, mission has been completed
+						Rule_Remove(railway_railtime);													-- Dont check the timer anymore aswell
+					end
+					Rule_AddOneShot(railway_demolitionTriggered, 5);
+					Rule_RemoveMe();
+				end
+			end
+			Rule_AddInterval(demo_check, 1);															-- Keep on checking the state of the demolition state
+		else
+			UIWarning_Show( 11005516 );																	-- [ENG] Must be near the railroad
+			Entity_Destroy( t_democharges[1] );															-- Destroy it before the player gets a chance to trigger it
+			Cmd_Stop(sg_gengping); 																		-- Tell gengping to stop
+		end
+	end
+end
+
+function railway_demolitionTriggered()
+	if g_demolitionIsValid then
+		Camera_ResetToDefault();
+		Camera_SetInputEnabled( false );
+		Camera_MoveToPosition( g_demolitionLocation, true, SLOW_CAMERA_PANNING );
+		Objective_Complete(OBJ_DESRAIL, true);
+		if not Objective_IsFailed(OBJ_TRAINTIME) then
+			Objective_Complete(OBJ_TRAINTIME, true);
+			g_mayshowbypass = true;
+		end
+		if g_mayshowbypass then
+			Util_StartNIS(EVENTS.outro_w_train);
+		else
+			Util_StartNIS(EVENTS.outro_wo_train);
+		end
+		Rule_Add(railway_oneventsOver);
+	else
+		print("Demolition was invalid because they were not placed on the railroad, this should never happen");
+	end
+end
+
+function railway_oneventsOver()
+
+	if not Event_IsAnyRunning() then
+	
+		if g_vickersSurvived == nil then
+			PlayerProfile_SetVar( "vickers_in_mukden", "true" );
+		end
+	
+		Camera_AutoRotate( g_demolitionLocation, Camera_GetZoomDist(), Camera_GetDeclination(), SLOW_CAMERA_PANNING );
+		Game_EndDelay(true, 0.1);
+		Rule_RemoveMe();
+		
+	end
+
+end

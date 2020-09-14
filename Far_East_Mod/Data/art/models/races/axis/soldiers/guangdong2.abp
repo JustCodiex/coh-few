@@ -1,0 +1,13 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree6.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+    "..\\..\\allies\\vehicles\\t38b\\t38b",
+    "..\\..\\allies\\vehicles\\zhidantong\\zhidantong",
+    "..\\..\\allies\\vehicles\\guangdong2\\guangdong",
+	"..\\..\\allies\\vehicles\\beibao3\\beibao3",
+	
+	
+
+}

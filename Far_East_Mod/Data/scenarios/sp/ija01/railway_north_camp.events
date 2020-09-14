@@ -1,0 +1,144 @@
+function NIS_Init()
+
+	NISTrain = "sp/IJA01/NIS/NIS_Train00";
+	nis_load(NISTrain);
+	
+	nis_setintransitiontime(0);
+	nis_setouttransitiontime(0);
+
+end
+
+Scar_AddInit(NIS_Init)
+
+EVENTS = {}
+
+EVENTS.intro = function()
+	
+	Game_SetMode(UI_Cinematic);
+	
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005520)		-- It is time to occupy the whole of Northeast China, I have just received the order from Headquaters.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005521)		-- We have to destroy the liutiaohu railway so we'll have an excuse to declare war.
+	CTRL.WAIT()
+	
+	Game_FadeToBlack(FADE_IN, 5);
+	
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005522)		-- The Chinese are patrolling the area, so be prepared
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005523)		-- Intelligence also reports of Chinese armour, so be cautious.
+	CTRL.WAIT()
+	
+	Game_SetMode(UI_Normal);
+	
+end
+
+EVENTS.plantexplosives = function()
+
+	Camera_SetInputEnabled( false );
+
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005524)		-- It's time to plant the explosives.
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005525)		-- Gengping, go place your demolition charges near the railway
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005526)		-- Yes Sir!
+	CTRL.WAIT()
+	
+	Camera_SetInputEnabled( true );
+
+end
+
+EVENTS.outro_wo_train = function()
+	
+	Game_SetMode(UI_Cinematic);
+	Game_Letterbox(true, 0);
+	FOW_Enable(false);
+	
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005527)		-- The mission has been a success!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005528)		-- Unfortunately we didn't manage to blow up the railway before the evening train
+	CTRL.WAIT()
+	
+	-- Play Inspection NIS?
+	
+end
+
+EVENTS.outro_w_train = function()
+	
+	Game_SetMode(UI_Cinematic);
+	Game_Letterbox(true, 0);
+	FOW_Enable(false);
+	
+	Util_HidePlayerForNIS( ALL, true ) 
+	
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.SOLDIER, 11005527)		-- The mission has been a success!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005529)		-- Incoming train!
+	CTRL.WAIT()
+	
+	CTRL.Scar_PlayNIS(NISTrain);
+	CTRL.WAIT();
+	
+	nis_stop();
+	
+	-- Play Inspection NIS?
+	
+end
+
+EVENTS.ft17spotted = function()
+
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005530)		-- Enemy Vehicle Spotted!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005531)		-- Quick, use satchel charges to scare it!
+	CTRL.WAIT()
+	
+end
+
+EVENTS.trainwarning01 = function()
+
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005532)		-- The evening train will be here in 5 minutes!
+	CTRL.WAIT()
+
+end
+
+EVENTS.traindo = function()
+
+	--nis_usegamecamera( true )
+	
+	Ceasefire_AddSGroup(Player_GetSquads(player1));
+	Ceasefire_AddSGroup(Player_GetSquads(player3));
+	
+	Util_HidePlayerForNIS( ALL, true ) 
+	
+	Game_Letterbox(true, 0);
+	FOW_Enable(false);
+	
+	CTRL.Scar_PlayNIS(NISTrain);
+	CTRL.WAIT();
+	
+	nis_stop();
+	
+	Game_Letterbox(false, 0);
+	FOW_Enable(true);
+	
+	Ceasefire_RemoveSGroup(Player_GetSquads(player1));
+	Ceasefire_RemoveSGroup(Player_GetSquads(player3));
+	
+	--nis_usegamecamera( false )
+
+end
+
+EVENTS.lostpoint = function()
+	
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005533)		-- We've lost control over one of the railroad sections!
+	CTRL.WAIT()
+	
+end
+
+EVENTS.vickersspotted = function()
+
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005534)		-- Chinese Armour spotted!
+	CTRL.WAIT()
+	CTRL.Actor_PlaySpeech(CONSTANTS.KOREA.ACTOR.GENGPING, 11005535)		-- Qucik! Destroy it before it escapes!
+	CTRL.WAIT()
+
+end

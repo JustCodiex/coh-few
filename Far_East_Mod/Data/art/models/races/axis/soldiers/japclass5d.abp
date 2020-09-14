@@ -1,0 +1,10 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+   "..\\..\\allies\\vehicles\\lugerjap\\lugerjap",
+
+    "..\\..\\allies\\vehicles\\japzg\\japzg",
+
+
+}

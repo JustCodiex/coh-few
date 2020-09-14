@@ -1,0 +1,647 @@
+-- Targets
+
+-- 0.2/second / 8 ticks/second (0.2/second is a high resource choice)
+local k_maxResource = 0.2/8.0
+
+--
+local k_maxDist = math.sqrt(World_GetWidth()*World_GetWidth() + World_GetLength()*World_GetLength())
+
+
+--------------------------------------------------------------------------------
+-- target player
+
+-- should we consider targets owned by this mod player? 
+-- return true or false
+function Target_ShouldDefendPlayer(player)
+
+	local playerID = Player_GetID(player)
+
+	-- for now, defend only the local player
+	if playerID == s_selfplayerid then
+		return true
+	end
+	
+	return false
+end
+
+-- should we consider targets owned by this mod player? 
+-- return true or false
+function Target_ShouldAttackPlayer(player)
+
+	modplayer = Player_FromId(s_selfplayerid)
+
+	local playerID Player_GetID(player)
+	
+	-- if there is a target player, only target that player 
+	if military_targetPlayerID ~= PLAYER_INVALIDID then
+		if playerID == military_targetPlayerID then
+			return true
+		else
+			return false
+		end
+	end
+	
+	-- else target all enemies
+	if Player_GetRelationship(modplayer, player) == R_ENEMY then
+		return true
+	end
+
+	return false
+end
+
+--------------------------------------------------------------------------------
+-- target priority
+--   return a priority number
+
+function Target_CalcDefendPriority(militaryPoint, is_neutral )
+	
+	-- ignore invalid points
+	if not Military_IsMilitaryPointValid(militaryPoint) then
+		return 0.0
+	end
+	
+	-- don't defend neutral points unless we are about to capture them and they are adjacent
+	if is_neutral then
+		if not Military_IsMilitaryPointBeingCapturedByUs(s_selfplayer, militaryPoint) then
+			return 0.0
+		end
+		
+		if not Military_IsNextToSupply(s_selfplayer, militaryPoint) then
+			return 0.0
+		end
+	end
+	
+	-- 
+	local importance = Military_GetCombinedImportanceAtMilitaryPoint(s_selfplayer, militaryPoint)	-- importance on a scale of 0 to 10ish
+	
+	-- don't defend points with no important
+	if importance <= 0.0 then
+		return 0.0
+	end
+	
+	local maxImportance = Military_GetMaxCombinedImportanceAtMilitaryPoint(s_selfplayer)
+	if maxImportance > 0.0 then
+		importance = importance/maxImportance
+		importance = importance*10.0
+	end
+	
+	if Military_IsMilitaryPointBeingCapturedByEnemy(s_selfplayer, militaryPoint) then
+		importance = importance*1.5
+	end
+	
+	-- secured points are less important
+	if Military_MilitaryPointIsSecuredPoint(militaryPoint) then
+		importance = importance/2.0
+	end
+	
+	-- want farther from our base`
+	local dist = Military_GetMilitaryPointDistanceToBase(s_selfplayer, militaryPoint)
+	local distScore = dist/k_maxDist
+	distScore = distScore * 10.0	-- make distance on a scale of 0 to 10
+	
+	-- consider threat
+	-- pass in true to get history anti-class added to this threat
+	local threat = Military_GetCombinedThreatAtMilitaryPoint(s_selfplayer, militaryPoint, true)
+		
+	local threatScore = 1.0	-- count 1 for zero threat
+	if threat < 0.0 then
+		local minThreat = Military_GetMinCombinedThreatAtMilitaryPoint(s_selfplayer)
+		if minThreat < 0.0 then
+			threatScore = 1.0 - threat/minThreat	-- negative threat on a scale of 0 to 1
+		end
+	elseif threat > 0.0 then
+		local maxThreat = Military_GetMaxCombinedThreatAtMilitaryPoint(s_selfplayer)
+		if maxThreat > 0.0 then
+			if s_personality.defend_prefer_threat then
+				-- want more threat
+				threatScore = threat/maxThreat
+			else
+				-- want small threat
+				threatScore = 1.0 - threat/maxThreat
+			end
+			
+			-- closer threat is more important
+			threatScore = 0.2 + threatScore * (1 - dist/k_maxDist) * 0.8
+			
+			threatScore = 2.0 + threatScore*8.0		-- positive threat on a scale of 2 to 10
+		end
+	end
+	
+	-- add randomness
+	local rand = 2.0*Military_GetMilitaryPointDiceRoll(s_selfplayer, militaryPoint)
+	
+	local priority = importance*(1.0 + 2.0*threatScore/10.0) + distScore + rand
+	
+	outDetails = {}
+	outDetails.importance = importance
+	outDetails.threatScore = threatScore
+	outDetails.distScore = distScore
+	
+--~ 	local text = string.format("Prio:%.1f = Imp:%.1f MaxImp:%.1f + Threat:%.1f + Dist:%.1f", priority, importance, maxImportance, threatScore, distScore)
+--~ 	local name = Military_GetMilitaryPointName(militaryPoint)
+--~ 	print(name..text)	
+	
+	return priority, outDetails
+end
+
+function Target_CalcAttackPriority(militaryPoint, outDetails)
+	
+	-- ignore invalid points
+	if not Military_IsMilitaryPointValid(militaryPoint) then
+		return 0.0
+	end
+	
+	-- 
+	local importance = Military_GetCombinedImportanceAtMilitaryPoint(s_selfplayer, militaryPoint)	-- importance on a scale of 0 to 10ish
+		
+	-- don't attack points with no important
+	if importance <= 0.0 then
+		return 0.0
+	end
+	
+	local maxImportance = Military_GetMaxCombinedImportanceAtMilitaryPoint(s_selfplayer)
+	if maxImportance > 0.0 then
+		importance = importance/maxImportance
+		importance = importance * 10.0
+	end
+	
+	if (Military_IsMilitaryPointBeingCapturedByEnemy( s_selfplayer, militaryPoint )) then
+		importance = importance*1.5
+	end
+	
+	-- consider threat
+	-- pass in true to get history anti-class added to this threat
+	local threat = Military_GetCombinedThreatAtMilitaryPoint(s_selfplayer, militaryPoint,true)
+		
+	local threatScore = 1.0	-- count 1 for zero threat
+	if threat < 0.0 then
+		local minThreat = Military_GetMinCombinedThreatAtMilitaryPoint(s_selfplayer)
+		if minThreat < 0.0 then
+			threatScore = 1.0 - threat/minThreat	-- negative threat on a scale of 0 to 1
+		end
+	elseif threat > 0.0 then
+		local maxThreat = Military_GetMaxCombinedThreatAtMilitaryPoint(s_selfplayer)
+		if maxThreat > 0.0 then
+			if s_personality.attack_prefer_threat then
+				-- want more threat
+				threatScore = threat/maxThreat
+			else
+				-- want small threat
+				threatScore = 1.0 - threat/maxThreat
+			end
+			threatScore = 2 + threatScore * 8.0		-- positive threat on a scale of 2 to 10
+		end
+	end
+	
+	-- want closer to our base
+	local dist = Military_GetMilitaryPointDistanceToBase(s_selfplayer, militaryPoint)
+	local distScore = 1.0 - dist/k_maxDist
+	distScore = distScore * 2.0	-- make distance on a scale of 0 to 2
+	
+	-- if we want to capture this point, but it's secured by the enemy or it's under threat, 
+	-- increase its priority by the capture priority
+	local captureScore = 0.0
+	if threat > 0.0 or Military_MilitaryPointIsSecuredPoint(militaryPoint) then
+		captureScore = Military_GetMilitaryPointCapturePriority(s_selfplayer, militaryPoint)
+		if captureScore > 0.0 then
+			local maxcapture = AIResource_GetMaxCapturePointPriority(s_selfplayer)
+			--print("MAXCAPTURE:"..maxcapture)
+			captureScore = 5.0 * captureScore/maxcapture
+		end
+	end
+	
+	-- add randomness
+	local rand = 2.0*Military_GetMilitaryPointDiceRoll(s_selfplayer, militaryPoint)
+	
+	local priority = importance*(1.0 + threatScore/10.0) + distScore + captureScore + rand
+	
+	outDetails = {}
+	outDetails.importance = importance
+	outDetails.threatScore = threatScore
+	outDetails.distScore = distScore
+	outDetails.captureScores = captureScores
+	
+	return priority
+end
+
+function Target_CalcCapturePriority(capturePoint, vp_mult, fuel_mult, mt_mult)
+
+	-- ignore invalid points
+	if not Capture_IsCapturePointValid(capturePoint) then
+		return 0.0, 0.0
+	end
+	
+	-- early out
+	-- don't consider points already belong to our team
+	if Capture_AlreadyCapturedByUs(s_selfplayer, capturePoint) then
+		return 0.0, 0.0
+	end
+	-- don't consider points our teammates are capturing 
+	-- (this does not include this AI player, just teammates. 
+	--  because we want to keep rating points we are capturing, so we know how many capture tasks we should have.)
+	if Capture_BeingCapturedByTeammate(s_selfplayer, capturePoint) then
+		return 0.0, 0.0
+	end
+	
+	local capturePointType = Capture_GetCapturePointType(capturePoint)
+	
+	--------------------------------------------------------------------------------
+	-- score for type
+	
+	local typeScore = 0.0
+	
+	-- don't care how much of the resources is left... if there is ANY left, we consider it just as good
+	if capturePointType == CPT_FuelPoint then	
+		typeScore = typeScore + targetChoice_fuelPoint*fuel_mult		
+		
+	elseif capturePointType == CPT_MunitionPoint then
+		typeScore = typeScore + targetChoice_munitionPoint*mt_mult
+		
+	elseif capturePointType == CPT_NullPoint then
+		typeScore = typeScore + targetChoice_nullPoint
+		
+	elseif capturePointType == CPT_VictoryPoint then
+		typeScore = typeScore + targetChoice_victoryPoint*vp_mult
+	end
+	
+	capture_point_ranking.trace("type score: "..typeScore)
+	
+	-- if we didn't get any type scoring, quit
+	if typeScore <= 0.0 then
+		return 0.0, 0.0
+	end
+	
+	-- early out
+	-- if the victory point override percentage has been set 
+	if targetChoice_victoryPointPercentageOverride > 0.0 then
+		local vpPercentage = Capture_GetVictoryPointPercentage(s_selfplayer)
+	
+		-- if this isn't a victory point, and we only want victory points
+		if capturePointType ~= CPT_VictoryPoint and vpPercentage == 1.0 then
+			return 0.0, 0.0
+		end
+		
+		-- if this is a victory point and we already have enough
+		if capturePointType == CPT_VictoryPoint and vpPercentage >= targetChoice_victoryPointPercentageOverride then
+			return 0.0, 0.0
+		end
+	end
+	
+	
+	local connectionScore = 0.0
+	if (Capture_IsNextToOutOfSupply(s_selfplayer, capturePoint)) then
+		connectionScore = 10
+	end
+	
+	capture_point_ranking.trace("connection score: "..connectionScore)
+
+	--------------------------------------------------------------------------------
+	-- score for distance
+
+	local dist = Capture_GetCapturePointDistanceToBase(s_selfplayer, capturePoint)
+	local distScore = (1.0 - dist/k_maxDist) * 10.0	-- make distance on a scale of 0 to 10
+	
+	capture_point_ranking.trace(string.format("distance score: %.1f",distScore))
+
+	--------------------------------------------------------------------------------
+	-- score for enemy revert...
+	
+	--------------------------------------------------------------------------------
+	-- add randomness
+	
+	--------------------------------------------------------------------------------
+	-- final score
+	
+	local priority = typeScore + distScore + connectionScore
+	
+	-- if we aren't looking for enemy territory, don't consider resource points (non-VP points) tht aren't in supply
+	if capturePointType ~= CPT_VictoryPoint and not Capture_IsNextToSupply(s_selfplayer, capturePoint, true) then
+		-- want to consider this point as a neighbour so return non-zero for neighbour priority value
+		return 0.0, priority
+	end
+	
+	return priority, 0.0
+	
+end
+
+--------------------------------------------------------------------------------
+-- target ranking
+--   do target ranking
+
+--------------------------------------------------------------------------------
+defend_point_ranking = {}
+
+function defend_point_ranking.trace( msg )
+
+	local ticks = World_GetGameTime() * 8
+	-- pipe this out also
+	msg = "[" .. ticks .. "]" .. msg
+
+	aitrace_ext( "DefendPoint_Ranking", msg )
+end
+
+function defend_point_ranking.trace_clear()
+
+	aitraceclear_ext( "DefendPoint_Ranking" )
+
+end
+
+
+function RankDefendTargets()
+
+	defend_point_ranking.trace_clear()
+	
+	defend_point_ranking.trace("<RankDefendPoint>")
+		
+	-- start by clearing
+	Military_ClearTargets(s_selfplayer, MTARGET_Defend)
+	
+	-- priority cache
+	local priorities = {}
+	
+	-- for each player 
+	local playerCount = World_GetPlayerCount()
+	for i=1, playerCount do
+		
+		local player = World_GetPlayerAt(i)
+		
+		-- don't defend certain players
+		if Target_ShouldDefendPlayer(player) then
+			
+			-- for each military point
+			local militaryPoint_count = Military_GetMilitaryPointCount(s_selfplayer, player)
+			for j=0, militaryPoint_count-1 do
+				
+				local militaryPoint = Military_GetMilitaryPointAt(s_selfplayer, player, j)				
+				
+				-- calc priority
+				local priority, outDetails = Target_CalcDefendPriority(militaryPoint, false)
+								
+				-- don't add points with negative priority
+				if priority > 0.0 then
+				
+					-- cache the priority
+					local e = 	{	
+					Point = militaryPoint, 
+					PriorityValue = priority,
+					Neutral = false,
+					PriorityDetails = outDetails
+					}
+		
+					table.insert( priorities, e )
+
+					-- add
+					Military_AddTarget(s_selfplayer, MTARGET_Defend, militaryPoint, priority)
+				end
+			end
+		end
+	end
+	
+	-- for each neutral military point
+	if s_components[COMPONENT_ForwardDefending] == true then
+		
+		local militaryPoint_count = Military_GetNeutralMilitaryPointCount(s_selfplayer)
+		for i=0, militaryPoint_count-1 do
+			
+			local militaryPoint = Military_GetNeutralMilitaryPointAt(s_selfplayer, i)
+			
+			-- calc priority
+			local priority, outDetails = Target_CalcDefendPriority(militaryPoint, true)
+			
+			-- don't add points with negative priority
+			if priority > 0.0 then
+				
+				-- cache the priority
+				local e = 	{	
+				Point = militaryPoint, 
+				PriorityValue = priority,
+				Neutral = true,
+				PriorityDetails = outDetails
+				}
+	
+				table.insert( priorities, e )
+
+				-- add
+				Military_AddTarget(s_selfplayer, MTARGET_Defend, militaryPoint, priority)
+			end
+		end
+	end
+	
+	-- sort
+	Military_SortAndCapTargets(s_selfplayer, MTARGET_Defend)
+	
+	-- debug
+	function sort_prio(a,b)
+		return a.PriorityValue > b.PriorityValue 
+	end
+	table.sort(priorities, sort_prio )
+	
+	for idx, entry in pairs(priorities) do
+
+		if entry.PriorityValue > 0 then
+			local priorityval = string.format("%.3f",entry.PriorityValue)
+			local neutral = "Neutral"
+			if entry.Neutral == false then
+				neutral = ""
+			end
+			
+			local msg = string.format("%d. (%.3f) %s %s [importance=%.3f threat=%.3f dist=%.3f]", idx, priorityval, neutral, Military_GetMilitaryPointName(entry.Point), entry.PriorityDetails.importance, entry.PriorityDetails.threatScore, entry.PriorityDetails.distScore)
+			defend_point_ranking.trace( msg )
+
+		end
+
+		-- only show top ones
+		if idx > 15 then
+			break
+		end
+	end
+end
+
+function RankAttackTargets()
+
+	-- start by clearing
+	Military_ClearTargets(s_selfplayer, MTARGET_Attack)
+	
+	-- for each player 
+	local playerCount = World_GetPlayerCount()
+	for i=1, playerCount do
+		
+		local player = World_GetPlayerAt(i)
+		
+		-- don't attack certain players
+		if Target_ShouldAttackPlayer(player) then
+			
+			-- for each military point
+			local militaryPointCount = Military_GetMilitaryPointCount(s_selfplayer, player)
+			for j=0, militaryPointCount-1 do
+				
+				local militaryPoint = Military_GetMilitaryPointAt(s_selfplayer, player, j)
+				
+				-- calc priority
+				local priority = Target_CalcAttackPriority(militaryPoint)
+				
+				-- don't add points with negative priority
+				if priority > 0.0 then
+					
+					-- add
+					Military_AddTarget(s_selfplayer, MTARGET_Attack, militaryPoint, priority)
+				end
+			end
+		end
+	end
+
+	-- for each neutral military point
+	local militaryPoint_count = Military_GetNeutralMilitaryPointCount(s_selfplayer)
+	for i=0, militaryPoint_count-1 do
+		
+		local militaryPoint = Military_GetNeutralMilitaryPointAt(s_selfplayer, i)
+		
+		-- calc priority
+		local priority = Target_CalcAttackPriority(militaryPoint)
+		
+		-- don't add points with negative priority
+		if priority > 0.0 then
+			
+			-- add
+			Military_AddTarget(s_selfplayer, MTARGET_Attack, militaryPoint, priority)
+		end
+	end
+	
+	-- sort
+	Military_SortAndCapTargets(s_selfplayer, MTARGET_Attack)
+end
+
+--------------------------------------------------------------------------------
+capture_point_ranking = {}
+
+function capture_point_ranking.trace( msg )
+
+	local ticks = World_GetGameTime() * 8
+	-- pipe this out also
+	msg = "[" .. ticks .. "]" .. msg
+
+	aitrace_ext( "CapturePoint_Ranking", msg )
+end
+
+function capture_point_ranking.trace_clear()
+
+	aitraceclear_ext( "CapturePoint_Ranking" )
+
+end
+
+function RankCapturePoints(vp_mult, vp_max, fuel_mult, mt_mult)
+	
+	capture_point_ranking.trace_clear()
+	
+	local neighbour_mult = 0.05
+	capture_point_ranking.trace("<RankCapturePoint>")
+	capture_point_ranking.trace("Ranking capture points. VpMult:"..vp_mult .. ", NeighbourMult:"..neighbour_mult..", fuel_mult:"..fuel_mult..", mt_mult:"..mt_mult)
+	
+	capture_point_ranking.trace("targetChoice_fuelPoint: "..targetChoice_fuelPoint)
+	capture_point_ranking.trace("targetChoice_victoryPoint: "..targetChoice_victoryPoint)
+	capture_point_ranking.trace("targetChoice_munitionPoint: "..targetChoice_munitionPoint)
+	capture_point_ranking.trace("targetChoice_defence: "..targetChoice_defence)
+	capture_point_ranking.trace("targetChoice_nullPoint: "..targetChoice_nullPoint)
+	capture_point_ranking.trace("targetChoice_hq: "..targetChoice_hq)
+	capture_point_ranking.trace("targetChoice_spawner: "..targetChoice_spawner)
+
+	-- for each capture point
+	local capturePointCount = AIResource_GetCapturePointsTotal(s_selfplayer)
+	
+	-- priority cache
+	local priorities = {}
+	
+	-- calculate priorities for points
+	for i=0, capturePointCount-1 do
+		
+		local capturePoint = AIResource_GetCapturePointAt(s_selfplayer, i)
+		local capturePointID = AIResource_GetCapturePointID(s_selfplayer, capturePoint)
+		
+		capture_point_ranking.trace(string.format("[%s] [%s]", capturePointID, AIResource_GetCapturePointName(capturePoint) ) )
+		
+		-- calc priority
+		local priority, neighbour_priority = Target_CalcCapturePriority(capturePoint, vp_mult, fuel_mult, mt_mult)
+		
+		capture_point_ranking.trace("")
+		-- this is here to degrade the vp demand as its applied
+		if (priority > 0 and vp_max and vp_max > 0) then
+			if (Capture_GetCapturePointType(capturePoint) == CPT_VictoryPoint) then
+				vp_max = vp_max - 1
+				if (vp_max <= 0) then
+					vp_mult = 1.0
+				end
+			end
+		end
+		
+		-- cache the priority for use in the 2nd pass
+		local e = 	{	
+					Point = capturePoint, 
+					PointID = capturePointID, 
+					PriorityValue = priority, 
+					NeighbourValue = neighbour_priority,
+					NeighbourScore = 0
+					}
+		
+		table.insert( priorities, e )
+	end
+	
+	-- second pass, add neighbour bonus and set priority
+	for idx, entry in pairs(priorities) do
+	
+		-- only do neighbour logic for chosen points ('chosen' if priority > 0)
+		if (entry.PriorityValue > 0.0) then
+	
+			-- add up neighbour values to make the neighbour score
+			local neighbourCount = AIResource_GetNeighbourPointCount(s_selfplayer, entry.Point)
+	
+			for i=0, neighbourCount-1 do
+				local neighbourPoint = AIResource_GetNeighbourPointAt(s_selfplayer, entry.Point, i)
+				local neighbourPointID = AIResource_GetCapturePointID(s_selfplayer, neighbourPoint)
+				
+				if (neighbourPoint ~= nil) then
+		
+					for idx2, entry2 in pairs(priorities) do
+					
+						if (entry2.PointID == neighbourPointID) then
+							entry.NeighbourScore = entry.NeighbourScore + entry2.NeighbourValue
+							break
+						end
+					end
+				
+				else
+--					strategy_resourcing.trace("ERROR! Null neighbour point")			
+				end
+	
+			end
+			
+			-- apply a percentage
+			entry.NeighbourScore = entry.NeighbourScore * neighbour_mult
+		end
+
+		-- set the priority
+		AIResource_SetCapturePointPriority(s_selfplayer, entry.Point, entry.PriorityValue + entry.NeighbourScore)
+	end
+	
+	-- aitrace
+	function sort_prio(a,b)
+		return a.PriorityValue + a.NeighbourScore > b.PriorityValue + b.NeighbourScore
+	end
+	table.sort(priorities, sort_prio )
+	
+	for idx, entry in pairs(priorities) do
+
+		if entry.PriorityValue > 0 then
+			local priorityval = string.format("%.3f",entry.PriorityValue)
+			local neighbourval = string.format("%.3f",entry.NeighbourScore / neighbour_mult )
+			local totalval = string.format("%.3f",entry.PriorityValue + entry.NeighbourScore)
+			local msg = string.format("%d. (%.3f) id:%d %s [p=%.3f n=%.3f(%.3f)]", idx, totalval, entry.PointID, AIResource_GetCapturePointName(entry.Point), priorityval, entry.NeighbourScore, neighbourval )
+			capture_point_ranking.trace(msg)
+		end
+
+		-- only show top ones
+		if idx > 15 then
+			break
+		end
+	end
+end
+

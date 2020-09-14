@@ -1,0 +1,7 @@
+model =
+{
+	"mg_bunker_open",
+	--"Flag.abp",
+	--"..\\..\\..\\..\\..\\..\\races\\Common\\Weapons\\HEAVY_MACHINE_GUNS",
+	--"..\\..\\..\\..\\..\\..\\races\\allies\\vehicles\\maxinold\\maxinold",
+}

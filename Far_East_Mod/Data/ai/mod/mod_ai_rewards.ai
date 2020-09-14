@@ -1,0 +1,30 @@
+
+function AI_EnableRewards( player, race )
+
+	--[[s_rewards = {};
+
+	for i=1, #REWARDS[race] do -- go through all the rewards the player has access to
+		
+		local v = REWARDS[race][i]; -- Get a local reference to the table
+		
+		if v.AI ~= nil then -- Does the reward 
+			
+			if v.AI.ENABLE_AI then -- Can we use this?
+				
+				local r = AI_RandMax(100); -- Get a random
+				
+				if r <= v.AI.WEIGHT then -- Check if the random is less than the weight => unlock
+					
+					Cmd_Upgrade( player, v.UNLOCK ); -- Unlock (Don't know if the AI has access to this function)
+					
+					table.insert(s_rewards, { SBP_REPLACE = v.SBP, SBP_REPLACED = v.AI.SBP_REPLACE }); -- Save our choice
+					
+				end
+				
+			end
+			
+		end		
+		
+	end]]
+
+end

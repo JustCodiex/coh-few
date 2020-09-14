@@ -1,0 +1,11 @@
+atmospheres =
+{
+	{ 62002, "mp_sturzdorf_midday_00.aps" },
+	{ 62001, "mp_4p_etavaux_sunny_00.aps" },
+	{ 62009, "m13_nis13_01.aps" },
+	{ 62007, "mp_coastal_harbour_rainy_00.aps" },
+	{ 62003, "cxp2_hells_highway_stormy_01.aps"},
+	{ 62006, "night2.aps" },
+	{ 62018, "mortain_night_stormy.aps" },
+	
+}

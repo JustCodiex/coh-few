@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$19010516",
+	scenariodescription = "Edited by Lord Mikel",
+	maxplayers = 8,
+	date = "18/11/2016 9:41 AM",
+	scenarioabbrname = "Cold Waters",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		608,
+		256,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

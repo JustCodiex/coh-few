@@ -1,0 +1,42 @@
+OBJECTEDITOR started at 2013-07-08 20:53
+OS NT 6.1, 0MB Physical Memory, 0 Physical Available, 1952 Virtual Available
+RUN-OPTIONS 
+WORKING-DIR D:\THQ\First_Mod\Data\Art\Models\Races\Allies\Vehicles\M4A4
+USER tiger205
+
+20:53:51.77   PROFILE -- Time Line Profiling enabled
+20:53:51.77   ToolFramework: Opening Document: 'D:\THQ\First_Mod\Data\Art\Models\Races\Allies\Vehicles\M4A4\M4A4.rgo'
+20:53:51.77   NOTIFIER -- Handle created for directory D:\THQ\First_Mod\Data\ - 0x358
+20:53:51.77   NOTIFIER -- Handle created for directory D:\THQ\Engine\Data\ - 0x350
+
+filepath.c/466:!Assertion of (dbBreak) failed.
+
+--stack trace--
+
+
+
+
+
+
+filepath.c/466:!Assertion of (dbBreak) failed.
+
+--stack trace--
+
+
+
+
+
+luaconfigsave.c/658:!Failed to load lua file 'DATA:ResourceTagOverrides.lua'
+toolrenderview.c/79:!Initializing SPOOGE (D:\THQ\Tools\Executables\)
+deviceconfig.c/93:!Unable to find device tweek file [pc\drivers\spDx9_config.txt].
+20:53:51.86   MATHBOX -- Version=6, Cpu=INTEL Pentium-III:f=6,m=10, Mode=SSE
+luaconfigsave.c/658:!Failed to load lua file 'DATA:Shaders\ShaderDefines.lua'
+Unable to setup Shader database.
+-- FATAL EXIT --
+dx9device.c/769:!
+--stack trace--
+
+
+
+
+

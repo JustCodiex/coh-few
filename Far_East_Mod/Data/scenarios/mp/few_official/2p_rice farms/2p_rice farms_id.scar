@@ -1,0 +1,17 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+	ai_defend = Marker_FromName("ai_defend","custom_marker")
+	mkr_47 = Marker_FromName("mkr_47","custom_marker")
+	mkr_48 = Marker_FromName("mkr_48","custom_marker")
+	mkr_49 = Marker_FromName("mkr_49","custom_marker")
+	mkr_50 = Marker_FromName("mkr_50","custom_marker")
+	mkr_51 = Marker_FromName("mkr_51","custom_marker")
+	mkr_52 = Marker_FromName("mkr_52","custom_marker")
+	mkr_53 = Marker_FromName("mkr_53","custom_marker")
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+
+end

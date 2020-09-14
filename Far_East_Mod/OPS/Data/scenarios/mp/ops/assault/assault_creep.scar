@@ -1,0 +1,3001 @@
+
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- UMS Push! Creeps Behaviour
+--This file will detail the spawning and behaviour of the non player controlled 
+--creep.
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+function Push_TurretInit()
+
+	tmkr_AxisArm1TurretA = {mkr_AxisArm1Turret1a, mkr_AxisArm1Turret2a, mkr_AxisArm1Turret3a}
+	tmkr_AxisArm1TurretB = {mkr_AxisArm1Turret1b, mkr_AxisArm1Turret2b, mkr_AxisArm1Turret3b}
+	tmkr_AxisArm2TurretA = {mkr_AxisArm2Turret1a, mkr_AxisArm2Turret2a, mkr_AxisArm2Turret3a}
+	tmkr_AxisArm2TurretB = {mkr_AxisArm2Turret1b, mkr_AxisArm2Turret2b, mkr_AxisArm2Turret3b}
+	tmkr_AxisArm3TurretA = {mkr_AxisArm3Turret1a, mkr_AxisArm3Turret2a, mkr_AxisArm3Turret3a}
+	tmkr_AxisArm3TurretB = {mkr_AxisArm3Turret1b, mkr_AxisArm3Turret2b, mkr_AxisArm3Turret3b}
+	
+	teg_AxisArm1TurretSet = EGroup_CreateTable("eg_AxisArm1TurretSet%d", 3)
+	teg_AxisArm2TurretSet = EGroup_CreateTable("eg_AxisArm2TurretSet%d", 3)
+	teg_AxisArm3TurretSet = EGroup_CreateTable("eg_AxisArm3TurretSet%d", 3)
+
+
+	tmkr_AlliedArm1TurretA = {mkr_AlliedArm1Turret1a, mkr_AlliedArm1Turret2a, mkr_AlliedArm1Turret3a}
+	tmkr_AlliedArm1TurretB = {mkr_AlliedArm1Turret1b, mkr_AlliedArm1Turret2b, mkr_AlliedArm1Turret3b}
+	tmkr_AlliedArm2TurretA = {mkr_AlliedArm2Turret1a, mkr_AlliedArm2Turret2a, mkr_AlliedArm2Turret3a}
+	tmkr_AlliedArm2TurretB = {mkr_AlliedArm2Turret1b, mkr_AlliedArm2Turret2b, mkr_AlliedArm2Turret3b}
+	tmkr_AlliedArm3TurretA = {mkr_AlliedArm3Turret1a, mkr_AlliedArm3Turret2a, mkr_AlliedArm3Turret3a}
+	tmkr_AlliedArm3TurretB = {mkr_AlliedArm3Turret1b, mkr_AlliedArm3Turret2b, mkr_AlliedArm3Turret3b}
+
+	teg_AlliedArm1TurretSet = EGroup_CreateTable("eg_AlliedArm1TurretSet%d", 3)
+	teg_AlliedArm2TurretSet = EGroup_CreateTable("eg_AlliedArm2TurretSet%d", 3)
+	teg_AlliedArm3TurretSet = EGroup_CreateTable("eg_AlliedArm3TurretSet%d", 3)
+	
+	eg_AlliedArm1Hero1 = EGroup_CreateIfNotFound("eg_AlliedArm1Hero1")
+	eg_AlliedArm1Hero2 = EGroup_CreateIfNotFound("eg_AlliedArm1Hero2")
+	eg_AlliedArm1Hero3 = EGroup_CreateIfNotFound("eg_AlliedArm1Hero3")
+	eg_AlliedArm2Hero1 = EGroup_CreateIfNotFound("eg_AlliedArm2Hero1")
+	eg_AlliedArm2Hero2 = EGroup_CreateIfNotFound("eg_AlliedArm2Hero2")
+	eg_AlliedArm2Hero3 = EGroup_CreateIfNotFound("eg_AlliedArm2Hero3")
+	eg_AlliedArm3Hero1 = EGroup_CreateIfNotFound("eg_AlliedArm3Hero1")
+	eg_AlliedArm3Hero2 = EGroup_CreateIfNotFound("eg_AlliedArm3Hero2")
+	eg_AlliedArm3Hero3 = EGroup_CreateIfNotFound("eg_AlliedArm3Hero3")
+	
+	eg_AxisArm1Hero1 = EGroup_CreateIfNotFound("eg_AxisArm1Hero1")
+	eg_AxisArm1Hero2 = EGroup_CreateIfNotFound("eg_AxisArm1Hero2")
+	eg_AxisArm1Hero3 = EGroup_CreateIfNotFound("eg_AxisArm1Hero3")
+	eg_AxisArm2Hero1 = EGroup_CreateIfNotFound("eg_AxisArm2Hero1")
+	eg_AxisArm2Hero2 = EGroup_CreateIfNotFound("eg_AxisArm2Hero2")
+	eg_AxisArm2Hero3 = EGroup_CreateIfNotFound("eg_AxisArm2Hero3")
+	eg_AxisArm3Hero1 = EGroup_CreateIfNotFound("eg_AxisArm3Hero1")
+	eg_AxisArm3Hero2 = EGroup_CreateIfNotFound("eg_AxisArm3Hero2")
+	eg_AxisArm3Hero3 = EGroup_CreateIfNotFound("eg_AxisArm3Hero3")
+	
+	sg_AlliedArm1Hero1 = SGroup_CreateIfNotFound("sg_AlliedArm1Hero1")
+	sg_AlliedArm1Hero2 = SGroup_CreateIfNotFound("sg_AlliedArm1Hero2")
+	sg_AlliedArm1Hero3 = SGroup_CreateIfNotFound("sg_AlliedArm1Hero3")
+	sg_AlliedArm2Hero1 = SGroup_CreateIfNotFound("sg_AlliedArm2Hero1")
+	sg_AlliedArm2Hero2 = SGroup_CreateIfNotFound("sg_AlliedArm2Hero2")
+	sg_AlliedArm2Hero3 = SGroup_CreateIfNotFound("sg_AlliedArm2Hero3")
+	sg_AlliedArm3Hero1 = SGroup_CreateIfNotFound("sg_AlliedArm3Hero1")
+	sg_AlliedArm3Hero2 = SGroup_CreateIfNotFound("sg_AlliedArm3Hero2")
+	sg_AlliedArm3Hero3 = SGroup_CreateIfNotFound("sg_AlliedArm3Hero3")
+	
+	sg_AxisArm1Hero1 = SGroup_CreateIfNotFound("sg_AxisArm1Hero1")
+	sg_AxisArm1Hero2 = SGroup_CreateIfNotFound("sg_AxisArm1Hero2")
+	sg_AxisArm1Hero3 = SGroup_CreateIfNotFound("sg_AxisArm1Hero3")
+	sg_AxisArm2Hero1 = SGroup_CreateIfNotFound("sg_AxisArm2Hero1")
+	sg_AxisArm2Hero2 = SGroup_CreateIfNotFound("sg_AxisArm2Hero2")
+	sg_AxisArm2Hero3 = SGroup_CreateIfNotFound("sg_AxisArm2Hero3")
+	sg_AxisArm3Hero1 = SGroup_CreateIfNotFound("sg_AxisArm3Hero1")
+	sg_AxisArm3Hero2 = SGroup_CreateIfNotFound("sg_AxisArm3Hero2")
+	sg_AxisArm3Hero3 = SGroup_CreateIfNotFound("sg_AxisArm3Hero3")
+	
+	tmkr_AxisArm1Squad = Marker_GetTable("mkr_AxisArm1Squad%d")
+	tsg_AxisArm1Squad  = EGroup_CreateTable("sg_AxisArm1Squad%d", table.getn(tmkr_AxisArm1Squad))
+	tmkr_AxisArm2Squad = Marker_GetTable("mkr_AxisArm2Squad%d")
+	tsg_AxisArm2Squad  = EGroup_CreateTable("sg_AxisArm2Squad%d", table.getn(tmkr_AxisArm2Squad))
+	tmkr_AxisArm3Squad = Marker_GetTable("mkr_AxisArm3Squad%d")
+	tsg_AxisArm3Squad  = EGroup_CreateTable("sg_AxisArm3Squad%d", table.getn(tmkr_AxisArm3Squad))
+	
+	tmkr_AlliedArm1Squad = Marker_GetTable("mkr_AlliedArm1Squad%d")
+	tsg_AlliedArm1Squad  = EGroup_CreateTable("sg_AlliedArm1Squad%d", table.getn(tmkr_AlliedArm1Squad))
+	tmkr_AlliedArm2Squad = Marker_GetTable("mkr_AlliedArm2Squad%d")
+	tsg_AlliedArm2Squad  = EGroup_CreateTable("sg_AlliedArm2Squad%d", table.getn(tmkr_AlliedArm2Squad))
+	tmkr_AlliedArm3Squad = Marker_GetTable("mkr_AlliedArm3Squad%d")
+	tsg_AlliedArm3Squad  = EGroup_CreateTable("sg_AlliedArm3Squad%d", table.getn(tmkr_AlliedArm3Squad))
+	
+	tmkr_AxisArm1Defender = Marker_GetTable("mkr_AxisArm1Squad%d")
+	tsg_AxisArm1DefenderA  = SGroup_CreateTable("sg_AxisArm1DefenderA%d", table.getn(tmkr_AxisArm1Defender))
+	tsg_AxisArm1DefenderB  = SGroup_CreateTable("sg_AxisArm1DefenderB%d", table.getn(tmkr_AxisArm1Defender))
+	tsg_AxisArm1DefOvergroup = SGroup_CreateTable("sg_AxisArm1DefOvergroup%d", table.getn(tmkr_AxisArm1Defender))
+	tsg_AxisArm1Engineers = SGroup_CreateTable("tsg_AxisArm1Engineers%d", 3)
+	
+	tmkr_AxisArm2Defender = Marker_GetTable("mkr_AxisArm2Squad%d")
+	tsg_AxisArm2DefenderA  = SGroup_CreateTable("sg_AxisArm2DefenderA%d", table.getn(tmkr_AxisArm2Defender))
+	tsg_AxisArm2DefenderB  = SGroup_CreateTable("sg_AxisArm2DefenderB%d", table.getn(tmkr_AxisArm2Defender))
+	tsg_AxisArm2DefOvergroup = SGroup_CreateTable("sg_AxisArm2DefOvergroup%d", table.getn(tmkr_AxisArm2Defender))
+	tsg_AxisArm2Engineers = SGroup_CreateTable("tsg_AxisArm2Engineers%d", 3)
+	
+	tmkr_AxisArm3Defender = Marker_GetTable("mkr_AxisArm3Squad%d")
+	tsg_AxisArm3DefenderA  = SGroup_CreateTable("sg_AxisArm3DefenderA%d", table.getn(tmkr_AxisArm3Defender))
+	tsg_AxisArm3DefenderB  = SGroup_CreateTable("sg_AxisArm3DefenderB%d", table.getn(tmkr_AxisArm3Defender))
+	tsg_AxisArm3DefOvergroup = SGroup_CreateTable("sg_AxisArm3DefOvergroup%d", table.getn(tmkr_AxisArm3Defender))
+	tsg_AxisArm3Engineers = SGroup_CreateTable("tsg_AxisArm3Engineers%d", 3)
+	
+	tmkr_AlliedArm1Defender = Marker_GetTable("mkr_AlliedArm1Squad%d")
+	tsg_AlliedArm1DefenderA  = SGroup_CreateTable("sg_AlliedArm1DefenderA%d", table.getn(tmkr_AlliedArm1Defender))
+	tsg_AlliedArm1DefenderB  = SGroup_CreateTable("sg_AlliedArm1DefenderB%d", table.getn(tmkr_AlliedArm1Defender))
+	tsg_AlliedArm1DefOvergroup = SGroup_CreateTable("sg_AlliedArm1DefOvergroup%d", table.getn(tmkr_AlliedArm1Defender))
+	tsg_AlliedArm1Engineers = SGroup_CreateTable("tsg_AlliedArm1Engineers%d", 3)
+	
+	tmkr_AlliedArm2Defender = Marker_GetTable("mkr_AlliedArm2Squad%d")
+	tsg_AlliedArm2DefenderA  = SGroup_CreateTable("sg_AlliedArm2DefenderA%d", table.getn(tmkr_AlliedArm2Defender))
+	tsg_AlliedArm2DefenderB  = SGroup_CreateTable("sg_AlliedArm2DefenderB%d", table.getn(tmkr_AlliedArm2Defender))
+	tsg_AlliedArm2DefOvergroup = SGroup_CreateTable("sg_AlliedArm2DefOvergroup%d", table.getn(tmkr_AlliedArm2Defender))
+	tsg_AlliedArm2Engineers = SGroup_CreateTable("tsg_AlliedArm2Engineers%d", 3)
+	
+	tmkr_AlliedArm3Defender = Marker_GetTable("mkr_AlliedArm3Squad%d")
+	tsg_AlliedArm3DefenderA  = SGroup_CreateTable("sg_AlliedArm3DefenderA%d", table.getn(tmkr_AlliedArm3Defender))
+	tsg_AlliedArm3DefenderB  = SGroup_CreateTable("sg_AlliedArm3DefenderB%d", table.getn(tmkr_AlliedArm3Defender))
+	tsg_AlliedArm3DefOvergroup = SGroup_CreateTable("sg_AlliedArm3DefOvergroup%d", table.getn(tmkr_AlliedArm3Defender))
+	tsg_AlliedArm3Engineers = SGroup_CreateTable("tsg_AlliedArm3Engineers%d", 3)
+	
+	tmkr_AxisArm1Attacker1 = Marker_GetTable("mkr_AxisArm1Squad%d")
+	tsg_AxisArm1Attacker1  = SGroup_CreateTable("sg_AxisArm1Attacker1%d", table.getn(tmkr_AxisArm1Attacker1))
+	tmkr_AxisArm2Attacker1 = Marker_GetTable("mkr_AxisArm2Squad%d")
+	tsg_AxisArm2Attacker1  = SGroup_CreateTable("sg_AxisArm2Attacker1%d", table.getn(tmkr_AxisArm2Attacker1))
+	tmkr_AxisArm3Attacker1 = Marker_GetTable("mkr_AxisArm3Squad%d")
+	tsg_AxisArm3Attacker1  = SGroup_CreateTable("sg_AxisArm3Attacker1%d", table.getn(tmkr_AxisArm3Attacker1))
+	
+	tmkr_AlliedArm1Attacker1 = Marker_GetTable("mkr_AlliedArm1Squad%d")
+	tsg_AlliedArm1Attacker1  = SGroup_CreateTable("sg_AlliedArm1Attacker1%d", table.getn(tmkr_AlliedArm1Attacker1))
+	tmkr_AlliedArm2Attacker1 = Marker_GetTable("mkr_AlliedArm2Squad%d")
+	tsg_AlliedArm2Attacker1  = SGroup_CreateTable("sg_AlliedArm2Attacker1%d", table.getn(tmkr_AlliedArm2Attacker1))
+	tmkr_AlliedArm3Attacker1 = Marker_GetTable("mkr_AlliedArm3Squad%d")
+	tsg_AlliedArm3Attacker1  = SGroup_CreateTable("sg_AlliedArm3Attacker1%d", table.getn(tmkr_AlliedArm3Attacker1))
+	
+	--north Allied AT gun positions and groups
+	tmkr_AlliedNorth1TurretAT = Marker_GetTable("mkr_AlliedNorth1TurretAT%d")
+	tsg_AlliedNorth1TurretAT  = SGroup_CreateTable("sg_AlliedNorth1TurretAT%d", table.getn(tmkr_AlliedNorth1TurretAT))
+	
+	tmkr_AlliedNorth2TurretAT = Marker_GetTable("mkr_AlliedNorth2TurretAT%d")
+	tsg_AlliedNorth2TurretAT  = SGroup_CreateTable("sg_AlliedNorth2TurretAT%d", table.getn(tmkr_AlliedNorth2TurretAT))
+	
+	tmkr_AlliedNorth3TurretAT = Marker_GetTable("mkr_AlliedNorth3TurretAT%d")
+	tsg_AlliedNorth3TurretAT  = SGroup_CreateTable("sg_AlliedNorth3TurretAT%d", table.getn(tmkr_AlliedNorth3TurretAT))
+	
+	--center Allied AT gun positions and groups
+	tmkr_AlliedCenter1TurretAT = Marker_GetTable("mkr_AlliedCenter1TurretAT%d")
+	tsg_AlliedCenter1TurretAT  = SGroup_CreateTable("sg_AlliedCenter1TurretAT%d", table.getn(tmkr_AlliedCenter1TurretAT))
+	
+	tmkr_AlliedCenter2TurretAT = Marker_GetTable("mkr_AlliedCenter2TurretAT%d")
+	tsg_AlliedCenter2TurretAT  = SGroup_CreateTable("sg_AlliedCenter2TurretAT%d", table.getn(tmkr_AlliedCenter2TurretAT))
+	
+	tmkr_AlliedCenter3TurretAT = Marker_GetTable("mkr_AlliedCenter3TurretAT%d")
+	tsg_AlliedCenter3TurretAT  = SGroup_CreateTable("sg_AlliedCenter3TurretAT%d", table.getn(tmkr_AlliedCenter3TurretAT))
+	
+	--south Allied AT gun positions and groups
+	tmkr_AlliedSouth1TurretAT = Marker_GetTable("mkr_AlliedSouth1TurretAT%d")
+	tsg_AlliedSouth1TurretAT  = SGroup_CreateTable("sg_AlliedSouth1TurretAT%d", table.getn(tmkr_AlliedSouth1TurretAT))
+	
+	tmkr_AlliedSouth2TurretAT = Marker_GetTable("mkr_AlliedSouth2TurretAT%d")
+	tsg_AlliedSouth2TurretAT  = SGroup_CreateTable("sg_AlliedSouth2TurretAT%d", table.getn(tmkr_AlliedSouth2TurretAT))
+	
+	tmkr_AlliedSouth3TurretAT = Marker_GetTable("mkr_AlliedSouth3TurretAT%d")
+	tsg_AlliedSouth3TurretAT  = SGroup_CreateTable("sg_AlliedSouth3TurretAT%d", table.getn(tmkr_AlliedSouth3TurretAT))
+	
+	
+	--north Axis AT gun positions and groups
+	tmkr_AxisNorth1TurretAT = Marker_GetTable("mkr_AxisNorth1TurretAT%d")
+	tsg_AxisNorth1TurretAT  = SGroup_CreateTable("sg_AxisNorth1TurretAT%d", table.getn(tmkr_AxisNorth1TurretAT))
+	
+	tmkr_AxisNorth2TurretAT = Marker_GetTable("mkr_AxisNorth2TurretAT%d")
+	tsg_AxisNorth2TurretAT  = SGroup_CreateTable("sg_AxisNorth2TurretAT%d", table.getn(tmkr_AxisNorth2TurretAT))
+	
+	tmkr_AxisNorth3TurretAT = Marker_GetTable("mkr_AxisNorth3TurretAT%d")
+	tsg_AxisNorth3TurretAT  = SGroup_CreateTable("sg_AxisNorth3TurretAT%d", table.getn(tmkr_AxisNorth3TurretAT))
+	
+	--center Axis AT gun positions and groups
+	tmkr_AxisCenter1TurretAT = Marker_GetTable("mkr_AxisCenter1TurretAT%d")
+	tsg_AxisCenter1TurretAT  = SGroup_CreateTable("sg_AxisCenter1TurretAT%d", table.getn(tmkr_AxisCenter1TurretAT))
+	
+	tmkr_AxisCenter2TurretAT = Marker_GetTable("mkr_AxisCenter2TurretAT%d")
+	tsg_AxisCenter2TurretAT  = SGroup_CreateTable("sg_AxisCenter2TurretAT%d", table.getn(tmkr_AxisCenter2TurretAT))
+	
+	tmkr_AxisCenter3TurretAT = Marker_GetTable("mkr_AxisCenter3TurretAT%d")
+	tsg_AxisCenter3TurretAT  = SGroup_CreateTable("sg_AxisCenter3TurretAT%d", table.getn(tmkr_AxisCenter3TurretAT))
+	
+	--south Axis AT gun positions and groups
+	tmkr_AxisSouth1TurretAT = Marker_GetTable("mkr_AxisSouth1TurretAT%d")
+	tsg_AxisSouth1TurretAT  = SGroup_CreateTable("sg_AxisSouth1TurretAT%d", table.getn(tmkr_AxisSouth1TurretAT))
+	
+	tmkr_AxisSouth2TurretAT = Marker_GetTable("mkr_AxisSouth2TurretAT%d")
+	tsg_AxisSouth2TurretAT  = SGroup_CreateTable("sg_AxisSouth2TurretAT%d", table.getn(tmkr_AxisSouth2TurretAT))
+	
+	tmkr_AxisSouth3TurretAT = Marker_GetTable("mkr_AxisSouth3TurretAT%d")
+	tsg_AxisSouth3TurretAT  = SGroup_CreateTable("sg_AxisSouth3TurretAT%d", table.getn(tmkr_AxisSouth3TurretAT))
+
+	tmkr_AlliedArm1Hero = Marker_GetTable("mkr_AlliedArm1Hero%d")
+	tsg_AlliedArm1Bomber = SGroup_CreateTable("sg_AlliedArm1Bomber%d", table.getn(tmkr_AlliedArm1Hero))
+	tmkr_AlliedArm2Hero = Marker_GetTable("mkr_AlliedArm2Hero%d")
+	tsg_AlliedArm2Bomber = SGroup_CreateTable("sg_AlliedArm2Bomber%d", table.getn(tmkr_AlliedArm2Hero))
+	tmkr_AlliedArm3Hero = Marker_GetTable("mkr_AlliedArm3Hero%d")
+	tsg_AlliedArm3Bomber = SGroup_CreateTable("sg_AlliedArm3Bomber%d", table.getn(tmkr_AlliedArm3Hero))
+	
+	tmkr_AxisArm1Hero = Marker_GetTable("mkr_AxisArm1Hero%d")
+	tsg_AxisArm1Bomber = SGroup_CreateTable("sg_AxisArm1Bomber%d", table.getn(tmkr_AxisArm1Hero))
+	tmkr_AxisArm2Hero = Marker_GetTable("mkr_AxisArm2Hero%d")
+	tsg_AxisArm2Bomber = SGroup_CreateTable("sg_AxisArm2Bomber%d", table.getn(tmkr_AxisArm2Hero))
+	tmkr_AxisArm3Hero = Marker_GetTable("mkr_AxisArm3Hero%d")
+	tsg_AxisArm3Bomber = SGroup_CreateTable("sg_AxisArm3Bomber%d", table.getn(tmkr_AxisArm3Hero))
+	
+	t_directions = {"north", "center", "south"}	
+	
+	t_allied_north_mortar_bunkers = {eg_mortar_arm1_allied_1, eg_mortar_arm1_allied_2, eg_mortar_arm1_allied_3}
+	for i = 1, table.getn(t_allied_north_mortar_bunkers) do
+		
+		EGroup_SetPlayerOwner(t_allied_north_mortar_bunkers[i], g_AlliedCreepPlayer)
+		EGroup_SetInvulnerable(t_allied_north_mortar_bunkers[i], true)
+		
+	end
+	
+	t_allied_center_mortar_bunkers = {eg_mortar_arm2_allied_1, eg_mortar_arm2_allied_2, eg_mortar_arm2_allied_3}		
+	for i = 1, table.getn(t_allied_center_mortar_bunkers) do
+		
+		EGroup_SetPlayerOwner(t_allied_center_mortar_bunkers[i], g_AlliedCreepPlayer)
+		EGroup_SetInvulnerable(t_allied_center_mortar_bunkers[i], true)
+	end
+	
+	t_allied_south_mortar_bunkers =	{eg_mortar_arm3_allied_1, eg_mortar_arm3_allied_2, eg_mortar_arm3_allied_3}
+	for i = 1, table.getn(t_allied_south_mortar_bunkers) do
+		
+		EGroup_SetPlayerOwner(t_allied_south_mortar_bunkers[i], g_AlliedCreepPlayer)
+		EGroup_SetInvulnerable(t_allied_south_mortar_bunkers[i], true)
+	end
+	
+	t_axis_north_mortar_bunkers = {eg_mortar_arm1_axis_1, eg_mortar_arm1_axis_2, eg_mortar_arm1_axis_3}
+	for i = 1, table.getn(t_axis_north_mortar_bunkers) do
+		
+		EGroup_SetPlayerOwner(t_axis_north_mortar_bunkers[i], g_AxisCreepPlayer)
+		EGroup_SetInvulnerable(t_axis_north_mortar_bunkers[i], true)
+	end
+	
+	t_axis_center_mortar_bunkers = {eg_mortar_arm2_axis_1, eg_mortar_arm2_axis_2, eg_mortar_arm2_axis_3}		
+	for i = 1, table.getn(t_axis_center_mortar_bunkers) do
+		
+		EGroup_SetPlayerOwner(t_axis_center_mortar_bunkers[i], g_AxisCreepPlayer)
+		EGroup_SetInvulnerable(t_axis_center_mortar_bunkers[i], true)
+	
+	end
+	
+	t_axis_south_mortar_bunkers =	{eg_mortar_arm3_axis_1, eg_mortar_arm3_axis_2, eg_mortar_arm3_axis_3}
+	for i = 1, table.getn(t_axis_south_mortar_bunkers) do
+		
+		EGroup_SetPlayerOwner(t_axis_south_mortar_bunkers[i], g_AxisCreepPlayer)
+		EGroup_SetInvulnerable(t_axis_south_mortar_bunkers[i], true)
+		
+	end
+	
+	t_breach = {}
+	--t_breach.level = {axisBreachLevel = 1, axisBreached = {false, false, false, false}, alliesBreachLevel = 1, alliesBreached = {false, false, false, false}}			
+	
+	t_breach.level = {
+		{num = 1, flags = {false, false, false, false}, searchorder = {1, 0}},
+		{num = 1, flags = {false, false, false, false}, searchorder = {0, 1}},
+	}		
+	
+	t_breach.group = {
+		Allies = {
+			{teg_AlliedArm1TurretSet[1],teg_AlliedArm2TurretSet[1],teg_AlliedArm3TurretSet[1]},
+			{teg_AlliedArm1TurretSet[2],teg_AlliedArm2TurretSet[2],teg_AlliedArm3TurretSet[2]},
+			{teg_AlliedArm1TurretSet[3],teg_AlliedArm2TurretSet[3],teg_AlliedArm3TurretSet[3]},
+		},
+		Axis = {
+			{teg_AxisArm1TurretSet[1],teg_AxisArm2TurretSet[1],teg_AxisArm3TurretSet[1]},
+			{teg_AxisArm1TurretSet[2],teg_AxisArm2TurretSet[2],teg_AxisArm3TurretSet[2]},
+			{teg_AxisArm1TurretSet[3],teg_AxisArm2TurretSet[3],teg_AxisArm3TurretSet[3]},
+		},
+	}
+
+		
+	t_breach.SpeechPlayer = {
+		soundData.enemyapproach.firstline.playerhasbreached, soundData.enemyapproach.secondline.playerhasbreached, soundData.enemyapproach.thirdline.playerhasbreached
+		}
+	t_breach.SpeechEnemy = {
+		soundData.enemyapproach.firstline.enemyhasbreached, soundData.enemyapproach.secondline.enemyhasbreached, soundData.enemyapproach.thirdline.enemyhasbreached
+		}
+		
+		
+	
+t_mortar = {}
+t_mortar = {
+	-- allies
+	{
+		
+		selectedBranch = nil,
+		
+		branchInfo = {
+		
+			-- north
+			{
+				--egroup info
+				egroup = {eg_mortar_arm1_allied_1, eg_mortar_arm1_allied_2, eg_mortar_arm1_allied_3}, 
+				selectedGroup = eg_mortar_arm1_allied1,
+				targetInfo = {
+					{matchdir = "north", targetarea = {mkr_MortarTargetNorth_1, mkr_MortarTargetNorth_2,  mkr_MortarTargetNorth_3,}},
+					{matchdir = "center", targetarea = {mkr_MortarTargetCenter_1, mkr_MortarTargetCenter_2, mkr_MortarTargetCenter_3,}},
+					{matchdir = "south",  targetarea = {mkr_MortarTargetSouth_1, mkr_MortarTargetSouth_2, mkr_MortarTargetSouth_3,}},
+				},
+				dir = "north",
+				rank = 1,
+				selected = false,
+			},
+			
+			-- center
+			{
+				--egroup info
+				egroup = {eg_mortar_arm2_allied_1, eg_mortar_arm2_allied_2, eg_mortar_arm2_allied_3}, 
+				selectedGroup = eg_mortar_arm2_allied1,
+				targetInfo = {
+					{matchdir = "north", targetarea = {mkr_MortarTargetNorth_1, mkr_MortarTargetNorth_2,  mkr_MortarTargetNorth_3,}},
+					{matchdir = "center", targetarea = {mkr_MortarTargetCenter_1, mkr_MortarTargetCenter_2, mkr_MortarTargetCenter_3,}},
+					{matchdir = "south",  targetarea = {mkr_MortarTargetSouth_1, mkr_MortarTargetSouth_2, mkr_MortarTargetSouth_3,}},
+				},
+				dir = "center",
+				rank = 1,
+				selected = false,
+			},
+			
+			-- south
+			{
+				--egroup info
+				egroup = {eg_mortar_arm3_allied_1, eg_mortar_arm3_allied_2, eg_mortar_arm3_allied_3},
+				selectedGroup = eg_mortar_arm3_allied1,
+				targetInfo = {
+					{matchdir = "north", targetarea = {mkr_MortarTargetNorth_1, mkr_MortarTargetNorth_2,  mkr_MortarTargetNorth_3,}},
+					{matchdir = "center", targetarea = {mkr_MortarTargetCenter_1, mkr_MortarTargetCenter_2, mkr_MortarTargetCenter_3,}},
+					{matchdir = "south",  targetarea = {mkr_MortarTargetSouth_1, mkr_MortarTargetSouth_2, mkr_MortarTargetSouth_3,}},
+				},
+				dir = "south",
+				rank = 1,
+				selected = false,
+			},
+		},
+
+	},
+
+	--axis
+	{
+	
+		selectedBranch = nil,
+		
+		branchInfo = {
+			-- north
+			{
+				--egroup info
+				egroup = {eg_mortar_arm1_axis_1, eg_mortar_arm1_axis_2, eg_mortar_arm1_axis_3},
+				selectedGroup = eg_mortar_arm1_axis_1,
+				targetInfo = {
+					{matchdir = "north", targetarea = {mkr_MortarTargetNorth_1, mkr_MortarTargetNorth_11,  mkr_MortarTargetNorth_12,}},
+					{matchdir = "center", targetarea = {mkr_MortarTargetCenter_1, mkr_MortarTargetCenter_11, mkr_MortarTargetCenter_12,}},
+					{matchdir = "south", targetarea = {mkr_MortarTargetSouth_1, mkr_MortarTargetSouth_11, mkr_MortarTargetSouth_12,}},		
+				},
+				dir = "north",
+				rank = 1,
+				selected = false,
+			},
+			
+			-- center
+			{
+				--egroup info
+				egroup = {eg_mortar_arm2_axis_1, eg_mortar_arm2_axis_2, eg_mortar_arm2_axis_3},
+				selectedGroup = eg_mortar_arm2_axis_1,
+				targetInfo = {
+					{matchdir = "north", targetarea = {mkr_MortarTargetNorth_1, mkr_MortarTargetNorth_11,  mkr_MortarTargetNorth_12,}},
+					{matchdir = "center", targetarea = {mkr_MortarTargetCenter_1, mkr_MortarTargetCenter_11, mkr_MortarTargetCenter_12,}},
+					{matchdir = "south", targetarea = {mkr_MortarTargetSouth_1, mkr_MortarTargetSouth_11, mkr_MortarTargetSouth_12,}},		
+				},
+				dir = "center",
+				rank = 1,
+				selected = false,
+			},
+			
+			-- south
+			{
+				--egroup info
+				egroup = {eg_mortar_arm3_axis_1, eg_mortar_arm3_axis_2, eg_mortar_arm3_axis_3},
+				selectedGroup = eg_mortar_arm3_axis_1,
+				targetInfo = {
+					{matchdir = "north", targetarea = {mkr_MortarTargetNorth_1, mkr_MortarTargetNorth_11,  mkr_MortarTargetNorth_12,}},
+					{matchdir = "center", targetarea = {mkr_MortarTargetCenter_1, mkr_MortarTargetCenter_11, mkr_MortarTargetCenter_12,}},
+					{matchdir = "south", targetarea = {mkr_MortarTargetSouth_1, mkr_MortarTargetSouth_11, mkr_MortarTargetSouth_12,}},		
+				},
+				dir = "south",
+				rank = 1,
+				selected = false,
+			},
+		},
+	},
+}
+	
+		
+		
+	
+	-- keeps track of the status of the turrets on the Allied side
+	-- level = arm's difficulty level depending on number of turrets destroyed 
+	-- name = group of turrets
+	-- state = are the turrets alive?
+	-- has to be in this order 
+
+	t_SpawnStates = {
+		{
+			{
+				level = 1, 
+				phase = 1, 
+				team = 0,
+				locInfo = {
+					{
+						set = teg_AlliedArm1TurretSet[1], 
+						state = true, 
+						buildings = {eg_AlliedArm1Turret1a, eg_AlliedArm1Turret1b}, 
+						spawnmarker = {mkr_AlliedArm1Turret1a, mkr_AlliedArm1Turret1b}, 
+						heromarker = mkr_AlliedArm1Hero1, 
+						egroup = eg_AlliedArm1Hero1, 
+						sgrouphold = sg_AlliedArm1Hero1, 
+						destructmarker = mkr_AlliedArm1SDSpawn1, 
+						selfdestruct = false, 
+						SDtimer = "AlliedArm1Hero1Timer",
+						bomber = tsg_AlliedArm1Bomber[1], 
+						surrenderpoint = mkr_AxisHQ, 
+						mortargroup = t_allied_north_mortar_bunkers[1],
+						mortarStripes = eg_mortar_arm1_allied1_stripes,
+					},
+					
+					{
+						set = teg_AlliedArm1TurretSet[2], 
+						state = true, 
+						buildings = {eg_AlliedArm1Turret2a, eg_AlliedArm1Turret2b}, 
+						spawnmarker = {mkr_AlliedArm1Turret2a, mkr_AlliedArm1Turret2b},
+						heromarker = mkr_AlliedArm1Hero2, 
+						egroup = eg_AlliedArm1Hero2, 
+						sgrouphold = sg_AlliedArm1Hero2, 
+						destructmarker = mkr_AlliedArm1SDSpawn2, 
+						selfdestruct = false, 
+						SDtimer = "AlliedArm1Hero2Timer",
+						bomber = tsg_AlliedArm1Bomber[2], 
+						surrenderpoint = mkr_AxisHQ, 
+						mortargroup = t_allied_north_mortar_bunkers[2],
+						mortarStripes = eg_mortar_arm1_allied2_stripes,
+					},
+					
+					{
+						set = teg_AlliedArm1TurretSet[3], 
+						state = true, 
+						buildings = {eg_AlliedArm1Turret3a, eg_AlliedArm1Turret3b}, 
+						spawnmarker = {mkr_AlliedArm1Turret3a, mkr_AlliedArm1Turret3b},
+						heromarker = mkr_AlliedArm1Hero3, 
+						egroup = eg_AlliedArm1Hero3, 
+						sgrouphold = sg_AlliedArm1Hero3, 
+						destructmarker = mkr_AlliedArm1SDSpawn3, 
+						selfdestruct = false, 
+						SDtimer = "AlliedArm1Hero3Timer",
+						bomber = tsg_AlliedArm1Bomber[3], 
+						surrenderpoint = mkr_AxisHQ, 
+						mortargroup = t_allied_north_mortar_bunkers[3],
+						mortarStripes = eg_mortar_arm1_allied3_stripes,
+					},
+				},
+			},
+			
+			{
+				level = 1, 
+				phase = 1, 
+				team = 0,
+				locInfo = {
+					{set = teg_AlliedArm2TurretSet[1], state = true, buildings = {eg_AlliedArm2Turret1a, eg_AlliedArm2Turret1b}, spawnmarker = {mkr_AlliedArm2Turret1a, mkr_AlliedArm2Turret1b}, 
+					heromarker = mkr_AlliedArm2Hero1, egroup = eg_AlliedArm2Hero1, sgrouphold = sg_AlliedArm2Hero1, destructmarker = mkr_AlliedArm2SDSpawn1, selfdestruct = false, SDtimer = "AlliedArm2Hero1Timer",
+					bomber = tsg_AlliedArm2Bomber[1], surrenderpoint = mkr_AxisHQ, mortargroup = t_allied_center_mortar_bunkers[1],
+					mortarStripes = eg_mortar_arm2_allied1_stripes,},
+					{set = teg_AlliedArm2TurretSet[2], state = true, buildings = {eg_AlliedArm2Turret2a, eg_AlliedArm2Turret2b}, spawnmarker = {mkr_AlliedArm2Turret2a, mkr_AlliedArm2Turret2b}, 
+					heromarker = mkr_AlliedArm2Hero2, egroup = eg_AlliedArm2Hero2, sgrouphold = sg_AlliedArm2Hero2, destructmarker = mkr_AlliedArm2SDSpawn2, selfdestruct = false, SDtimer = "AlliedArm2Hero2Timer",
+					bomber = tsg_AlliedArm2Bomber[2], surrenderpoint = mkr_AxisHQ, mortargroup = t_allied_center_mortar_bunkers[2],
+					mortarStripes = eg_mortar_arm2_allied2_stripes,},
+					{set = teg_AlliedArm2TurretSet[3], state = true, buildings = {eg_AlliedArm2Turret3a, eg_AlliedArm2Turret3b}, spawnmarker = {mkr_AlliedArm2Turret3a, mkr_AlliedArm2Turret3b}, 
+					heromarker = mkr_AlliedArm2Hero3, egroup = eg_AlliedArm2Hero3, sgrouphold = sg_AlliedArm2Hero3, destructmarker = mkr_AlliedArm2SDSpawn3, selfdestruct = false, SDtimer = "AlliedArm2Hero3Timer",
+					bomber = tsg_AlliedArm2Bomber[3], surrenderpoint = mkr_AxisHQ, mortargroup = t_allied_center_mortar_bunkers[3],
+					mortarStripes = eg_mortar_arm2_allied3_stripes,},
+				},
+			},
+			
+			{
+				level = 1, 
+				phase = 1, 
+				team = 0,
+				locInfo = {	
+					{set = teg_AlliedArm3TurretSet[1], state = true, buildings = {eg_AlliedArm3Turret1a, eg_AlliedArm3Turret1b}, spawnmarker = {mkr_AlliedArm3Turret1a, mkr_AlliedArm3Turret1b}, 
+					heromarker = mkr_AlliedArm3Hero1, egroup = eg_AlliedArm3Hero1, sgrouphold = sg_AlliedArm3Hero1, destructmarker = mkr_AlliedArm3SDSpawn1, selfdestruct = false, SDtimer = "AlliedArm3Hero1Timer",
+					bomber = tsg_AlliedArm3Bomber[1], surrenderpoint = mkr_AxisHQ, mortargroup = t_allied_south_mortar_bunkers[1],
+					mortarStripes = eg_mortar_arm3_allied1_stripes,},
+					{set = teg_AlliedArm3TurretSet[2], state = true, buildings = {eg_AlliedArm3Turret2a, eg_AlliedArm3Turret2b}, spawnmarker = {mkr_AlliedArm3Turret2a, mkr_AlliedArm3Turret2b},
+					heromarker = mkr_AlliedArm3Hero2, egroup = eg_AlliedArm3Hero2, sgrouphold = sg_AlliedArm3Hero2, destructmarker = mkr_AlliedArm3SDSpawn2, selfdestruct = false, SDtimer = "AlliedArm3Hero2Timer",
+					bomber = tsg_AlliedArm3Bomber[2], surrenderpoint = mkr_AxisHQ, mortargroup = t_allied_south_mortar_bunkers[2],
+					mortarStripes = eg_mortar_arm3_allied2_stripes,},
+					{set = teg_AlliedArm3TurretSet[3], state = true, buildings = {eg_AlliedArm3Turret3a, eg_AlliedArm3Turret3b}, spawnmarker = {mkr_AlliedArm3Turret3a, mkr_AlliedArm3Turret3b},
+					heromarker = mkr_AlliedArm3Hero3, egroup = eg_AlliedArm3Hero3, sgrouphold = sg_AlliedArm3Hero3, destructmarker = mkr_AlliedArm3SDSpawn3, selfdestruct = false, SDtimer = "AlliedArm3Hero3Timer",
+					bomber = tsg_AlliedArm3Bomber[3], surrenderpoint = mkr_AxisHQ, mortargroup = t_allied_south_mortar_bunkers[3],
+					mortarStripes = eg_mortar_arm3_allied3_stripes,},
+				},
+			},
+		},
+		
+		
+		{
+			{
+				level = 1, 
+				phase = 1, 
+				team = 1,
+				locInfo = {
+					{set = teg_AxisArm1TurretSet[1], state = true, buildings = {eg_AxisArm1Turret1a, eg_AxisArm1Turret1b}, spawnmarker = {mkr_AxisArm1Turret1a, mkr_AxisArm1Turret1b},
+					heromarker = mkr_AxisArm1Hero1, egroup = eg_AxisArm1Hero1, sgrouphold = sg_AxisArm1Hero1, destructmarker = mkr_AxisArm1SDSpawn1, selfdestruct = false, SDtimer = "AxisArm1Hero1Timer",
+					bomber = tsg_AxisArm1Bomber[1], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_north_mortar_bunkers[1],
+					mortarStripes = eg_mortar_arm1_axis1_stripes,},
+					{set = teg_AxisArm1TurretSet[2], state = true, buildings = {eg_AxisArm1Turret2a, eg_AxisArm1Turret2b}, spawnmarker = {mkr_AxisArm1Turret2a, mkr_AxisArm1Turret2b}, 
+					heromarker = mkr_AxisArm1Hero2, egroup = eg_AxisArm1Hero2, sgrouphold = sg_AxisArm1Hero2, destructmarker = mkr_AxisArm1SDSpawn2, selfdestruct = false, SDtimer = "AxisArm1Hero2Timer",
+					bomber = tsg_AxisArm1Bomber[2], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_north_mortar_bunkers[2],
+					mortarStripes = eg_mortar_arm1_axis2_stripes,},
+					{set = teg_AxisArm1TurretSet[3], state = true, buildings = {eg_AxisArm1Turret3a, eg_AxisArm1Turret3b}, spawnmarker = {mkr_AxisArm1Turret3a, mkr_AxisArm1Turret3b}, 
+					heromarker = mkr_AxisArm1Hero3, egroup = eg_AxisArm1Hero3, sgrouphold = sg_AxisArm1Hero3, destructmarker = mkr_AxisArm1SDSpawn3, selfdestruct = false, SDtimer = "AxisArm1Hero3Timer",
+					bomber = tsg_AxisArm1Bomber[3], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_north_mortar_bunkers[3],
+					mortarStripes = eg_mortar_arm1_axis3_stripes,},
+				},
+			},
+			
+			{
+				level = 1, 
+				phase = 1, 
+				team = 1,	
+				locInfo = {
+					{set = teg_AxisArm2TurretSet[1], state = true, buildings = {eg_AxisArm2Turret1a, eg_AxisArm2Turret1b}, spawnmarker = {mkr_AxisArm2Turret1a, mkr_AxisArm2Turret1b},
+					heromarker = mkr_AxisArm2Hero1, egroup = eg_AxisArm2Hero1, sgrouphold = sg_AxisArm2Hero1, destructmarker = mkr_AxisArm2SDSpawn1, selfdestruct = false, SDtimer = "AxisArm2Hero1Timer",
+					bomber = tsg_AxisArm2Bomber[1], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_center_mortar_bunkers[1],
+					mortarStripes = eg_mortar_arm2_axis1_stripes,},
+					{set = teg_AxisArm2TurretSet[2], state = true, buildings = {eg_AxisArm2Turret2a, eg_AxisArm2Turret2b}, spawnmarker = {mkr_AxisArm2Turret2a, mkr_AxisArm2Turret2b}, 
+					heromarker = mkr_AxisArm2Hero2, egroup = eg_AxisArm2Hero2, sgrouphold = sg_AxisArm2Hero2, destructmarker = mkr_AxisArm2SDSpawn2, selfdestruct = false, SDtimer = "AxisArm2Hero2Timer",
+					bomber = tsg_AxisArm2Bomber[2], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_center_mortar_bunkers[2],
+					mortarStripes = eg_mortar_arm2_axis2_stripes,},
+					{set = teg_AxisArm2TurretSet[3], state = true, buildings = {eg_AxisArm2Turret3a, eg_AxisArm2Turret3b}, spawnmarker = {mkr_AxisArm2Turret3a, mkr_AxisArm2Turret3b}, 
+					heromarker = mkr_AxisArm2Hero3, egroup = eg_AxisArm2Hero3, sgrouphold = sg_AxisArm2Hero3, destructmarker = mkr_AxisArm2SDSpawn3, selfdestruct = false, SDtimer = "AxisArm2Hero3Timer",
+					bomber = tsg_AxisArm2Bomber[3], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_center_mortar_bunkers[3],
+					mortarStripes = eg_mortar_arm2_axis3_stripes,},
+				},
+			},
+			
+			{
+				level = 1, 
+				phase = 1, 
+				team = 1, 
+				locInfo = {	
+					{set = teg_AxisArm3TurretSet[1], state = true, buildings = {eg_AxisArm3Turret1a, eg_AxisArm3Turret1b}, spawnmarker = {mkr_AxisArm3Turret1a, mkr_AxisArm3Turret1b},
+					heromarker = mkr_AxisArm3Hero1, egroup = eg_AxisArm3Hero1, sgrouphold = sg_AxisArm3Hero1, destructmarker = mkr_AxisArm3SDSpawn1, selfdestruct = false, SDtimer = "AxisArm3Hero1Timer",
+					bomber = tsg_AxisArm3Bomber[1], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_south_mortar_bunkers[1],
+					mortarStripes = eg_mortar_arm3_axis1_stripes,},
+					{set = teg_AxisArm3TurretSet[2], state = true, buildings = {eg_AxisArm3Turret2a, eg_AxisArm3Turret2b}, spawnmarker = {mkr_AxisArm3Turret2a, mkr_AxisArm3Turret2b},
+					heromarker = mkr_AxisArm3Hero2, egroup = eg_AxisArm3Hero2, sgrouphold = sg_AxisArm3Hero2, destructmarker = mkr_AxisArm3SDSpawn2, selfdestruct = false, SDtimer = "AxisArm3Hero2Timer",
+					bomber = tsg_AxisArm3Bomber[2], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_south_mortar_bunkers[2],
+					mortarStripes = eg_mortar_arm3_axis2_stripes,},
+					{set = teg_AxisArm3TurretSet[3], state = true, buildings = {eg_AxisArm3Turret3a, eg_AxisArm3Turret3b}, spawnmarker = {mkr_AxisArm3Turret3a, mkr_AxisArm3Turret3b},
+					heromarker = mkr_AxisArm3Hero3, egroup = eg_AxisArm3Hero3, sgrouphold = sg_AxisArm3Hero3, destructmarker = mkr_AxisArm3SDSpawn3, selfdestruct = false, SDtimer = "AxisArm3Hero3Timer",
+					bomber = tsg_AxisArm3Bomber[3], surrenderpoint = mkr_AllyHQ, mortargroup = t_axis_south_mortar_bunkers[3],
+					mortarStripes = eg_mortar_arm3_axis3_stripes,},
+				},
+			},
+		},
+	}
+	
+
+
+	t_TurretStates = {
+		{
+			{
+				level = 1, 
+				phase = 1, 
+				team = 0,
+				targetturret = {
+					{
+						name = teg_AxisArm1TurretSet[1], state = true, numberdestroyed = 0,
+						spawninfo = {{spawnbuilding = eg_AlliedArm1Turret1a, spawnmarker= mkr_AlliedArm1Turret1a},{spawnbuilding = eg_AlliedArm1Turret1b, spawnmarker = mkr_AlliedArm1Turret1b}}
+					}, 
+					
+					{
+						name = teg_AxisArm1TurretSet[2], state = true, numberdestroyed = 0,
+						spawninfo = {{spawnbuilding = eg_AlliedArm1Turret2a, spawnmarker= mkr_AlliedArm1Turret2a},{spawnbuilding = eg_AlliedArm1Turret2b, spawnmarker = mkr_AlliedArm1Turret2b}}
+					}, 
+					
+					{
+						name = teg_AxisArm1TurretSet[3], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AlliedArm1Turret3a, spawnmarker= mkr_AlliedArm1Turret3a},{spawnbuilding = eg_AlliedArm1Turret3b, spawnmarker = mkr_AlliedArm1Turret3b}}
+					}, 
+				},
+			},
+			{
+				level = 1, 
+				phase = 1, 
+				team = 0,
+				targetturret = {
+					{
+						name = teg_AxisArm2TurretSet[1], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AlliedArm2Turret1a, spawnmarker= mkr_AlliedArm2Turret1a},{spawnbuilding = eg_AlliedArm2Turret1b, spawnmarker = mkr_AlliedArm2Turret1b}}
+					}, 
+					
+					{
+						name = teg_AxisArm2TurretSet[2], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AlliedArm2Turret2a, spawnmarker= mkr_AlliedArm2Turret2a},{spawnbuilding = eg_AlliedArm2Turret2b, spawnmarker = mkr_AlliedArm2Turret2b}}
+					}, 
+					
+					{
+						name = teg_AxisArm2TurretSet[3], state = true, numberdestroyed = 0,
+						spawninfo = {{spawnbuilding = eg_AlliedArm2Turret3a, spawnmarker= mkr_AlliedArm2Turret3a},{spawnbuilding = eg_AlliedArm2Turret3b, spawnmarker = mkr_AlliedArm2Turret3b}}
+					}, 
+				},
+			},	
+			{
+				level = 1, 
+				phase = 1, 
+				team = 0,
+				targetturret = {
+					{
+						name = teg_AxisArm3TurretSet[1], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AlliedArm3Turret1a, spawnmarker= mkr_AlliedArm3Turret1a},{spawnbuilding = eg_AlliedArm3Turret1b, spawnmarker = mkr_AlliedArm3Turret1b}}
+					}, 
+					
+					{
+						name = teg_AxisArm3TurretSet[2], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AlliedArm3Turret2a, spawnmarker= mkr_AlliedArm3Turret2a},{spawnbuilding = eg_AlliedArm3Turret2b, spawnmarker = mkr_AlliedArm3Turret2b}}
+					}, 
+					
+					{
+						name = teg_AxisArm3TurretSet[3], state = true, numberdestroyed = 0,
+						spawninfo = {{spawnbuilding = eg_AlliedArm3Turret3a, spawnmarker= mkr_AlliedArm3Turret3a},{spawnbuilding = eg_AlliedArm3Turret3b, spawnmarker = mkr_AlliedArm3Turret3b}}
+					}, 
+				},
+			},			
+		},
+		
+		
+		{
+			{
+				level = 1, 
+				phase = 1, 
+				team = 1,
+				targetturret = 
+					{
+						{
+							name = teg_AlliedArm1TurretSet[1], state = true, numberdestroyed = 0,  
+							spawninfo = {{spawnbuilding = eg_AxisArm1Turret1a, spawnmarker= mkr_AxisArm1Turret1a},{spawnbuilding = eg_AxisArm1Turret1b, spawnmarker = mkr_AxisArm1Turret1b}}
+						}, 
+						
+						{
+							name = teg_AlliedArm1TurretSet[2], state = true, numberdestroyed = 0, 
+							spawninfo = {{spawnbuilding = eg_AxisArm1Turret2a, spawnmarker= mkr_AxisArm1Turret2a},{spawnbuilding = eg_AxisArm1Turret2b, spawnmarker = mkr_AxisArm1Turret2b}}
+						}, 
+						
+						{
+							name = teg_AlliedArm1TurretSet[3], state = true, numberdestroyed = 0,
+							spawninfo = {{spawnbuilding = eg_AxisArm1Turret3a, spawnmarker= mkr_AxisArm1Turret3a},{spawnbuilding = eg_AxisArm1Turret3b, spawnmarker = mkr_AxisArm1Turret3b}}
+						}, 
+					},
+			},
+			{
+				level = 1,
+				phase = 1, 
+				team = 1,				
+				targetturret = 
+					{
+						{
+							name = teg_AlliedArm2TurretSet[1], state = true, numberdestroyed = 0,  
+							spawninfo = {{spawnbuilding = eg_AxisArm2Turret1a, spawnmarker= mkr_AxisArm2Turret1a},{spawnbuilding = eg_AxisArm2Turret1b, spawnmarker = mkr_AxisArm2Turret1b}}
+						}, 
+						
+						{
+							name = teg_AlliedArm2TurretSet[2], state = true, numberdestroyed = 0,
+							spawninfo = {{spawnbuilding = eg_AxisArm2Turret2a, spawnmarker= mkr_AxisArm2Turret2a},{spawnbuilding = eg_AxisArm2Turret2b, spawnmarker = mkr_AxisArm2Turret2b}}
+						}, 
+						
+						{
+							name = teg_AlliedArm2TurretSet[3], state = true, numberdestroyed = 0, 
+							spawninfo = {{spawnbuilding = eg_AxisArm2Turret3a, spawnmarker= mkr_AxisArm2Turret3a},{spawnbuilding = eg_AxisArm2Turret3b, spawnmarker = mkr_AxisArm2Turret3b}}
+						}, 
+					},
+			},	
+			{
+				level = 1, 
+				phase = 1, 
+				team = 1,
+				targetturret = {
+					{
+						name = teg_AlliedArm3TurretSet[1], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AxisArm3Turret1a, spawnmarker= mkr_AxisArm3Turret1a},{spawnbuilding = eg_AxisArm3Turret1b, spawnmarker = mkr_AxisArm3Turret1b}}
+					}, 
+					
+					{
+						name = teg_AlliedArm3TurretSet[2], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AxisArm3Turret2a, spawnmarker= mkr_AxisArm3Turret2a},{spawnbuilding = eg_AxisArm3Turret2b, spawnmarker = mkr_AxisArm3Turret2b}}
+					}, 
+					
+					{
+						name = teg_AlliedArm3TurretSet[3], state = true, numberdestroyed = 0, 
+						spawninfo = {{spawnbuilding = eg_AxisArm3Turret3a, spawnmarker= mkr_AxisArm3Turret3a},{spawnbuilding = eg_AxisArm3Turret3b, spawnmarker = mkr_AxisArm3Turret3b}}
+					}, 
+				},
+			},			
+		},
+	}
+
+	t_TurretSpawnInfo = {
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm1Turret1a, location = tmkr_AlliedArm1TurretA[1], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm1TurretSet[1], 
+		name2 = tsg_AlliedArm1Squad[1], name3a = tsg_AlliedArm1DefenderA[1], name3b = tsg_AlliedArm1DefenderB[1], location2 = tmkr_AlliedArm1Squad[1], unittype = SBP.COHO.ENGINEER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm1Attacker1[1], facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedNorth1TurretAT1, nameAT1 = tsg_AlliedNorth1TurretAT[1], locationAT2 = mkr_AlliedNorth1TurretAT2, nameAT2 = tsg_AlliedNorth1TurretAT[2], locationAT3 = mkr_AlliedNorth1TurretAT3, 
+		nameAT3 = tsg_AlliedNorth1TurretAT[3], facingAT1 = mkr_AlliedNorth1TurretAT1Facing, facingAT2 = mkr_AlliedNorth1TurretAT2Facing, facingAT3 = mkr_AlliedNorth1TurretAT3Facing,
+		overgroup = tsg_AlliedArm1DefOvergroup[1], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm1Engineers[1], engineerspawn = mkr_AlliedArm1SDSpawn1, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm1Turret1b, location = tmkr_AlliedArm1TurretB[1], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm1TurretSet[1], 
+		name2 = tsg_AlliedArm1Squad[1], name3a = tsg_AlliedArm1DefenderA[2], name3b = tsg_AlliedArm1DefenderB[2], location2 = tmkr_AlliedArm1Squad[2], unittype = SBP.COHO.ENGINEER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm1Attacker1[2],	facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedCenter1TurretAT1, nameAT1 = tsg_AlliedCenter1TurretAT[1], locationAT2 = mkr_AlliedCenter1TurretAT2, nameAT2 = tsg_AlliedCenter1TurretAT[2], locationAT3 = mkr_AlliedCenter1TurretAT3, 
+		nameAT3 = tsg_AlliedCenter1TurretAT[3], facingAT1 = mkr_AlliedCenter1TurretAT1Facing, facingAT2 = mkr_AlliedCenter1TurretAT2Facing, facingAT3 = mkr_AlliedCenter1TurretAT3Facing,
+		overgroup = tsg_AlliedArm1DefOvergroup[1], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm1Engineers[1], engineerspawn = mkr_AlliedArm1SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm1Turret2a, location = tmkr_AlliedArm1TurretA[2], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm1TurretSet[2], 
+		name2 = tsg_AlliedArm1Squad[2], name3a = tsg_AlliedArm1DefenderA[3], name3b = tsg_AlliedArm1DefenderB[3], location2 = tmkr_AlliedArm1Squad[3], unittype = SBP.COHO.RIFLEMEN_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm1Attacker1[3], facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedNorth2TurretAT1, nameAT1 = tsg_AlliedNorth2TurretAT[1], locationAT2 = mkr_AlliedNorth2TurretAT2, nameAT2 = tsg_AlliedNorth2TurretAT[2], locationAT3 = mkr_AlliedNorth2TurretAT3, 
+		nameAT3 = tsg_AlliedNorth2TurretAT[3], facingAT1 = mkr_AlliedNorth2TurretAT1Facing, facingAT2 = mkr_AlliedNorth2TurretAT2Facing, facingAT3 = mkr_AlliedNorth2TurretAT3Facing,
+		overgroup = tsg_AlliedArm1DefOvergroup[2], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm1Engineers[2], engineerspawn = mkr_AlliedArm1SDSpawn2, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm1Turret2b, location = tmkr_AlliedArm1TurretB[2], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm1TurretSet[2], 
+		name2 = tsg_AlliedArm1Squad[2], name3a = tsg_AlliedArm1DefenderA[4], name3b = tsg_AlliedArm1DefenderB[4], location2 = tmkr_AlliedArm1Squad[4], unittype = SBP.COHO.RIFLEMEN_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm1Attacker1[4], facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedCenter2TurretAT1, nameAT1 = tsg_AlliedCenter2TurretAT[1], locationAT2 = mkr_AlliedCenter2TurretAT2, nameAT2 = tsg_AlliedCenter2TurretAT[2], locationAT3 = mkr_AlliedCenter2TurretAT3, 
+		nameAT3 = tsg_AlliedCenter2TurretAT[3], facingAT1 = mkr_AlliedCenter2TurretAT1Facing, facingAT2 = mkr_AlliedCenter2TurretAT2Facing, facingAT3 = mkr_AlliedCenter2TurretAT3Facing,
+		overgroup = tsg_AlliedArm1DefOvergroup[2], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm1Engineers[2], engineerspawn = mkr_AlliedArm1SDSpawn2, destroyed = false},
+		
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm1Turret3a, location = tmkr_AlliedArm1TurretA[3], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm1TurretSet[3], 
+		name2 = tsg_AlliedArm1Squad[3], name3a = tsg_AlliedArm1DefenderA[5], name3b = tsg_AlliedArm1DefenderB[5], location2 = tmkr_AlliedArm1Squad[5], unittype = SBP.COHO.RANGER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, 	attacker1 = tsg_AlliedArm1Attacker1[5],	facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedNorth3TurretAT1, nameAT1 = tsg_AlliedNorth3TurretAT[1], locationAT2 = mkr_AlliedNorth3TurretAT2, nameAT2 = tsg_AlliedNorth3TurretAT[2], locationAT3 = mkr_AlliedNorth3TurretAT3, 
+		nameAT3 = tsg_AlliedNorth3TurretAT[3], facingAT1 = mkr_AlliedNorth3TurretAT1Facing, facingAT2 = mkr_AlliedNorth3TurretAT2Facing, facingAT3 = mkr_AlliedNorth3TurretAT3Facing,
+		overgroup = tsg_AlliedArm1DefOvergroup[3], randombp = {SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm1Engineers[3], engineerspawn = mkr_AlliedArm1SDSpawn3, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm1Turret3b, location = tmkr_AlliedArm1TurretB[3], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm1TurretSet[3], 
+		name2 = tsg_AlliedArm1Squad[3], name3a = tsg_AlliedArm1DefenderA[6], name3b = tsg_AlliedArm1DefenderB[6], location2 = tmkr_AlliedArm1Squad[6], unittype = SBP.COHO.RANGER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, 	attacker1 = tsg_AlliedArm1Attacker1[6], facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedCenter3TurretAT1, nameAT1 = tsg_AlliedCenter3TurretAT[1],  facingAT1 = mkr_AlliedCenter3TurretAT1Facing, 
+		overgroup = tsg_AlliedArm1DefOvergroup[3], randombp = {SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm1Engineers[3], engineerspawn = mkr_AlliedArm1SDSpawn3, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm2Turret1a, location = tmkr_AlliedArm2TurretA[1], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm2TurretSet[1], 
+		name2 = tsg_AlliedArm2Squad[1], name3a = tsg_AlliedArm2DefenderA[1], name3b = tsg_AlliedArm2DefenderB[1], location2 = tmkr_AlliedArm2Squad[1], unittype = SBP.COHO.ENGINEER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm2Attacker1[1],	facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedSouth1TurretAT1, nameAT1 = tsg_AlliedSouth1TurretAT[1], locationAT2 = mkr_AlliedSouth1TurretAT2, nameAT2 = tsg_AlliedSouth1TurretAT[2],facingAT1 = mkr_AlliedSouth1TurretAT1Facing, 
+		facingAT2 = mkr_AlliedSouth1TurretAT2Facing, overgroup = tsg_AlliedArm2DefOvergroup[1], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm2Engineers[1], engineerspawn = mkr_AlliedArm2SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm2Turret1b, location = tmkr_AlliedArm2TurretB[1], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm2TurretSet[1], 
+		name2 = tsg_AlliedArm2Squad[1], name3a = tsg_AlliedArm2DefenderA[2], name3b = tsg_AlliedArm2DefenderB[2], location2 = tmkr_AlliedArm2Squad[2], unittype = SBP.COHO.ENGINEER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm2Attacker1[2],	 facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm2DefOvergroup[1], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm2Engineers[1], engineerspawn = mkr_AlliedArm2SDSpawn1, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm2Turret2a, location = tmkr_AlliedArm2TurretA[2], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm2TurretSet[2], 
+		name2 = tsg_AlliedArm2Squad[2], name3a = tsg_AlliedArm2DefenderA[3], name3b = tsg_AlliedArm2DefenderB[3], location2 = tmkr_AlliedArm2Squad[3], unittype = SBP.COHO.RIFLEMEN_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm2Attacker1[3], facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedSouth2TurretAT1, nameAT1 = tsg_AlliedSouth2TurretAT[1], locationAT2 = mkr_AlliedSouth2TurretAT2, nameAT2 = tsg_AlliedSouth2TurretAT[2], locationAT3 = mkr_AlliedSouth2TurretAT3, 
+		nameAT3 = tsg_AlliedSouth2TurretAT[3], facingAT1 = mkr_AlliedSouth2TurretAT1Facing, facingAT2 = mkr_AlliedSouth2TurretAT2Facing, facingAT3 = mkr_AlliedSouth2TurretAT3Facing,
+		overgroup = tsg_AlliedArm2DefOvergroup[2], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm2Engineers[2], engineerspawn = mkr_AlliedArm2SDSpawn2, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm2Turret2b, location = tmkr_AlliedArm2TurretB[2], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm2TurretSet[2], 
+		name2 = tsg_AlliedArm2Squad[2], name3a = tsg_AlliedArm2DefenderA[4], name3b = tsg_AlliedArm2DefenderB[4], location2 = tmkr_AlliedArm2Squad[4], unittype = SBP.COHO.RIFLEMEN_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm2Attacker1[4],	facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm2DefOvergroup[2], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm2Engineers[2], engineerspawn = mkr_AlliedArm2SDSpawn3, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm2Turret3a, location = tmkr_AlliedArm2TurretA[3], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm2TurretSet[3], 
+		name2 = tsg_AlliedArm2Squad[3], name3a = tsg_AlliedArm2DefenderA[5], name3b = tsg_AlliedArm2DefenderB[5], location2 = tmkr_AlliedArm2Squad[5], unittype = SBP.COHO.RANGER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, 	attacker1 = tsg_AlliedArm2Attacker1[5],facing = mkr_AxisHQ, guntype2 = SBP.ALLIES.AT_57MM,
+		locationAT1 = mkr_AlliedSouth3TurretAT1, nameAT1 = tsg_AlliedSouth3TurretAT[1], locationAT2 = mkr_AlliedSouth3TurretAT2, nameAT2 = tsg_AlliedSouth3TurretAT[2], locationAT3 = mkr_AlliedSouth3TurretAT3, 
+		nameAT3 = tsg_AlliedSouth3TurretAT[3], facingAT1 = mkr_AlliedSouth3TurretAT1Facing, facingAT2 = mkr_AlliedSouth3TurretAT2Facing, facingAT3 = mkr_AlliedSouth3TurretAT3Facing,
+		overgroup = tsg_AlliedArm2DefOvergroup[3], randombp = {SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm2Engineers[3], engineerspawn = mkr_AlliedArm2SDSpawn3, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm2Turret3b, location = tmkr_AlliedArm2TurretB[3], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm2TurretSet[3], 
+		name2 = tsg_AlliedArm2Squad[3], name3a = tsg_AlliedArm2DefenderA[6], name3b = tsg_AlliedArm2DefenderB[6], location2 = tmkr_AlliedArm2Squad[6], unittype = SBP.COHO.RANGER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, 	attacker1 = tsg_AlliedArm2Attacker1[6], 	facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm2DefOvergroup[3], randombp = {SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm2Engineers[3], engineerspawn = mkr_AlliedArm2SDSpawn3, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm3Turret1a, location = tmkr_AlliedArm3TurretA[1], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm3TurretSet[1], 
+		name2 = tsg_AlliedArm3Squad[1], name3a = tsg_AlliedArm3DefenderA[1], name3b = tsg_AlliedArm3DefenderB[1], location2 = tmkr_AlliedArm3Squad[1], unittype = SBP.COHO.ENGINEER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm3Attacker1[1],	facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm3DefOvergroup[1], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm3Engineers[1], engineerspawn = mkr_AlliedArm3SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm3Turret1b, location = tmkr_AlliedArm3TurretB[1], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm3TurretSet[1], 
+		name2 = tsg_AlliedArm3Squad[1], name3a = tsg_AlliedArm3DefenderA[2], name3b = tsg_AlliedArm3DefenderB[2], location2 = tmkr_AlliedArm3Squad[2], unittype = SBP.COHO.ENGINEER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm3Attacker1[2], facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm3DefOvergroup[1], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm3Engineers[1], engineerspawn = mkr_AlliedArm3SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm3Turret2a, location = tmkr_AlliedArm3TurretA[2], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm3TurretSet[2], 
+		name2 = tsg_AlliedArm3Squad[2], name3a = tsg_AlliedArm3DefenderA[3], name3b = tsg_AlliedArm3DefenderB[3], location2 = tmkr_AlliedArm3Squad[3], unittype = SBP.COHO.RIFLEMEN_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm3Attacker1[3], facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm3DefOvergroup[2], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm3Engineers[2], engineerspawn = mkr_AlliedArm3SDSpawn2, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm3Turret2b, location = tmkr_AlliedArm3TurretB[2], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm3TurretSet[2], 
+		name2 = tsg_AlliedArm3Squad[2], name3a = tsg_AlliedArm3DefenderA[4], name3b = tsg_AlliedArm3DefenderB[4], location2 = tmkr_AlliedArm3Squad[4], unittype = SBP.COHO.RIFLEMEN_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AlliedArm3Attacker1[4], facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm3DefOvergroup[2], randombp = {SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm3Engineers[2], engineerspawn = mkr_AlliedArm3SDSpawn2, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm3Turret3a, location = tmkr_AlliedArm3TurretA[3], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm3TurretSet[3], 
+		name2 = tsg_AlliedArm3Squad[3], name3a = tsg_AlliedArm3DefenderA[5], name3b = tsg_AlliedArm3DefenderB[5], location2 = tmkr_AlliedArm3Squad[5], unittype = SBP.COHO.RANGER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, 	attacker1 = tsg_AlliedArm3Attacker1[5], facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm3DefOvergroup[3], randombp = {SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm3Engineers[3], engineerspawn = mkr_AlliedArm3SDSpawn3, destroyed = false},
+		
+		{faction = g_AlliedCreepPlayer, name = eg_AlliedArm3Turret3b, location = tmkr_AlliedArm3TurretB[3], guntype = EBP.COHO.PUSH_BUNKER_ALLIES, turretset = teg_AlliedArm3TurretSet[3], 
+		name2 = tsg_AlliedArm3Squad[3], name3a = tsg_AlliedArm3DefenderA[6], name3b = tsg_AlliedArm3DefenderB[6], location2 = tmkr_AlliedArm3Squad[6], unittype = SBP.COHO.RANGER_PUSH_CREEP, unittype2 = SBP.COHO.RIFLEMEN_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.ALLIES.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, 	attacker1 = tsg_AlliedArm3Attacker1[6], facing = mkr_AxisHQ,
+		overgroup = tsg_AlliedArm3DefOvergroup[3], randombp = {SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP}, surrenderpoint = mkr_AxisHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.ENGINEER_PUSH_CREEP, engineersquad = tsg_AlliedArm3Engineers[3], engineerspawn = mkr_AlliedArm3SDSpawn3, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm1Turret1a, location = tmkr_AxisArm1TurretA[1], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm1TurretSet[1], 
+		name2 = tsg_AxisArm1Squad[1],  name3a = tsg_AxisArm1DefenderA[1], name3b = tsg_AxisArm1DefenderB[1], location2 = tmkr_AxisArm1Squad[1], unittype = SBP.COHO.PIONEER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm1Attacker1[1], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisNorth1TurretAT1, nameAT1 = tsg_AxisNorth1TurretAT[1], locationAT2 = mkr_AxisNorth1TurretAT2, nameAT2 = tsg_AxisNorth1TurretAT[2], locationAT3 = mkr_AxisNorth1TurretAT3, 
+		nameAT3 = tsg_AxisNorth1TurretAT[3], facingAT1 = mkr_AxisNorth1TurretAT1Facing, facingAT2 = mkr_AxisNorth1TurretAT2Facing, facingAT3 = mkr_AxisNorth1TurretAT3Facing,
+		overgroup = tsg_AxisArm1DefOvergroup[1], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm1Engineers[1], engineerspawn = mkr_AxisArm1SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm1Turret1b, location = tmkr_AxisArm1TurretB[1], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm1TurretSet[1], 
+		name2 = tsg_AxisArm1Squad[1],  name3a = tsg_AxisArm1DefenderA[2], name3b = tsg_AxisArm1DefenderB[2], location2 = tmkr_AxisArm1Squad[2], unittype = SBP.COHO.PIONEER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm1Attacker1[2], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisCenter1TurretAT1, nameAT1 = tsg_AxisCenter1TurretAT[1], locationAT2 = mkr_AxisCenter1TurretAT2, nameAT2 = tsg_AxisCenter1TurretAT[2], locationAT3 = mkr_AxisCenter1TurretAT3, 
+		nameAT3 = tsg_AxisCenter1TurretAT[3], facingAT1 = mkr_AxisCenter1TurretAT1Facing, facingAT2 = mkr_AxisCenter1TurretAT2Facing, facingAT3 = mkr_AxisCenter1TurretAT3Facing,
+		overgroup = tsg_AxisArm1DefOvergroup[1], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm1Engineers[1], engineerspawn = mkr_AxisArm1SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm1Turret2a, location = tmkr_AxisArm1TurretA[2], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm1TurretSet[2], 
+		name2 = tsg_AxisArm1Squad[2],	 name3a = tsg_AxisArm1DefenderA[3], name3b = tsg_AxisArm1DefenderB[3], location2 = tmkr_AxisArm1Squad[3], unittype = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm1Attacker1[3], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisNorth2TurretAT1, nameAT1 = tsg_AxisNorth2TurretAT[1], locationAT2 = mkr_AxisNorth2TurretAT2, nameAT2 = tsg_AxisNorth2TurretAT[2], locationAT3 = mkr_AxisNorth2TurretAT3, 
+		nameAT3 = tsg_AxisNorth2TurretAT[3], facingAT1 = mkr_AxisNorth2TurretAT1Facing, facingAT2 = mkr_AxisNorth2TurretAT2Facing, facingAT3 = mkr_AxisNorth2TurretAT3Facing,
+		overgroup = tsg_AxisArm1DefOvergroup[2], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm1Engineers[2], engineerspawn = mkr_AxisArm1SDSpawn2, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm1Turret2b, location = tmkr_AxisArm1TurretB[2], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm1TurretSet[2], 
+		name2 = tsg_AxisArm1Squad[2],  name3a = tsg_AxisArm1DefenderA[4], name3b = tsg_AxisArm1DefenderB[4], location2 = tmkr_AxisArm1Squad[4], unittype = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm1Attacker1[4], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisCenter2TurretAT1, nameAT1 = tsg_AxisCenter2TurretAT[1], locationAT2 = mkr_AxisCenter2TurretAT2, nameAT2 = tsg_AxisCenter2TurretAT[2], locationAT3 = mkr_AxisCenter2TurretAT3, 
+		nameAT3 = tsg_AxisCenter2TurretAT[3], facingAT1 = mkr_AxisCenter2TurretAT1Facing, facingAT2 = mkr_AxisCenter2TurretAT2Facing, facingAT3 = mkr_AxisCenter2TurretAT3Facing,
+		overgroup = tsg_AxisArm1DefOvergroup[2], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm1Engineers[2], engineerspawn = mkr_AxisArm1SDSpawn2, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm1Turret3a, location = tmkr_AxisArm1TurretA[3], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm1TurretSet[3], 
+		name2 = tsg_AxisArm1Squad[3],  name3a = tsg_AxisArm1DefenderA[5], name3b = tsg_AxisArm1DefenderB[5], location2 = tmkr_AxisArm1Squad[5], unittype = SBP.COHO.STORMTROOPER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm1Attacker1[5], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisNorth3TurretAT1, nameAT1 = tsg_AxisNorth3TurretAT[1], locationAT2 = mkr_AxisNorth3TurretAT2, nameAT2 = tsg_AxisNorth3TurretAT[2], locationAT3 = mkr_AxisNorth3TurretAT3, 
+		nameAT3 = tsg_AxisNorth3TurretAT[3], facingAT1 = mkr_AxisNorth3TurretAT1Facing, facingAT2 = mkr_AxisNorth3TurretAT2Facing, facingAT3 = mkr_AxisNorth3TurretAT3Facing,
+		overgroup = tsg_AxisArm1DefOvergroup[3], randombp = {SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP, SBP.AXIS.STORMTROOPER}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm1Engineers[3], engineerspawn = mkr_AxisArm1SDSpawn3, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm1Turret3b, location = tmkr_AxisArm1TurretB[3], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm1TurretSet[3], 
+		name2 = tsg_AxisArm1Squad[3],  name3a = tsg_AxisArm1DefenderA[6], name3b = tsg_AxisArm1DefenderB[6], location2 = tmkr_AxisArm1Squad[6], unittype = SBP.COHO.STORMTROOPER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm1Attacker1[6], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisCenter3TurretAT1, nameAT1 = tsg_AxisCenter3TurretAT[1], locationAT2 = mkr_AxisCenter3TurretAT2, nameAT2 = tsg_AxisCenter3TurretAT[2], facingAT1 = mkr_AxisCenter3TurretAT1Facing, 
+		facingAT2 = mkr_AxisCenter3TurretAT2Facing,
+		overgroup = tsg_AxisArm1DefOvergroup[3], randombp = {SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP, SBP.AXIS.STORMTROOPER}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm1Engineers[3], engineerspawn = mkr_AxisArm1SDSpawn3, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm2Turret1a, location = tmkr_AxisArm2TurretA[1], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm2TurretSet[1], 
+		name2 = tsg_AxisArm2Squad[1],  name3a = tsg_AxisArm2DefenderA[1], name3b = tsg_AxisArm2DefenderB[1], location2 = tmkr_AxisArm2Squad[1], unittype = SBP.COHO.PIONEER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm2Attacker1[1], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisSouth1TurretAT1, nameAT1 = tsg_AxisSouth1TurretAT[1], locationAT2 = mkr_AxisSouth1TurretAT2, nameAT2 = tsg_AxisSouth1TurretAT[2], locationAT3 = mkr_AxisSouth1TurretAT3, 
+		nameAT3 = tsg_AxisSouth1TurretAT[3], facingAT1 = mkr_AxisSouth1TurretAT1Facing, facingAT2 = mkr_AxisSouth1TurretAT2Facing, facingAT3 = mkr_AxisSouth1TurretAT3Facing,
+		overgroup = tsg_AxisArm2DefOvergroup[1], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm2Engineers[1], engineerspawn = mkr_AxisArm2SDSpawn1, destroyed = false},			
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm2Turret1b, location = tmkr_AxisArm2TurretB[1], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm2TurretSet[1], 
+		name2 = tsg_AxisArm2Squad[1],  name3a = tsg_AxisArm2DefenderA[2], name3b = tsg_AxisArm2DefenderB[2], location2 = tmkr_AxisArm2Squad[2], unittype = SBP.COHO.PIONEER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm2Attacker1[2], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm2DefOvergroup[1], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm2Engineers[1], engineerspawn = mkr_AxisArm2SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm2Turret2a, location = tmkr_AxisArm2TurretA[2], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm2TurretSet[2], 
+		name2 = tsg_AxisArm2Squad[2],  name3a = tsg_AxisArm2DefenderA[3], name3b = tsg_AxisArm2DefenderB[3], location2 = tmkr_AxisArm2Squad[3], unittype = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm2Attacker1[3], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisSouth2TurretAT1, nameAT1 = tsg_AxisSouth2TurretAT[1], locationAT2 = mkr_AxisSouth2TurretAT2, nameAT2 = tsg_AxisSouth2TurretAT[2], facingAT1 = mkr_AxisSouth2TurretAT1Facing,
+		facingAT2 = mkr_AxisSouth2TurretAT2Facing,
+		overgroup = tsg_AxisArm2DefOvergroup[2], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm2Engineers[2], engineerspawn = mkr_AxisArm2SDSpawn2, destroyed = false},	
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm2Turret2b, location = tmkr_AxisArm2TurretB[2], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm2TurretSet[2], 
+		name2 = tsg_AxisArm2Squad[2],  name3a = tsg_AxisArm2DefenderA[4], name3b = tsg_AxisArm2DefenderB[4], location2 = tmkr_AxisArm2Squad[4], unittype = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm2Attacker1[4], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm2DefOvergroup[2], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm2Engineers[2], engineerspawn = mkr_AxisArm2SDSpawn2, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm2Turret3a, location = tmkr_AxisArm2TurretA[3], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm2TurretSet[3], 
+		name2 = tsg_AxisArm2Squad[3],  name3a = tsg_AxisArm2DefenderA[5], name3b = tsg_AxisArm2DefenderB[5], location2 = tmkr_AxisArm2Squad[5], unittype = SBP.COHO.STORMTROOPER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm2Attacker1[5], facing = mkr_AllyHQ, guntype2 = SBP.AXIS.PAK_38,
+		locationAT1 = mkr_AxisSouth3TurretAT1, nameAT1 = tsg_AxisSouth3TurretAT[1], locationAT2 = mkr_AxisSouth3TurretAT2, nameAT2 = tsg_AxisSouth3TurretAT[2], facingAT1 = mkr_AxisSouth3TurretAT1Facing,
+		facingAT2 = mkr_AxisSouth3TurretAT2Facing,
+		overgroup = tsg_AxisArm2DefOvergroup[3], randombp = {SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP, SBP.AXIS.STORMTROOPER}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm2Engineers[3], engineerspawn = mkr_AxisArm2SDSpawn3, destroyed = false},	
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm2Turret3b, location = tmkr_AxisArm2TurretB[3], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm2TurretSet[3], 
+		name2 = tsg_AxisArm2Squad[3],  name3a = tsg_AxisArm2DefenderA[6], name3b = tsg_AxisArm2DefenderB[6], location2 = tmkr_AxisArm2Squad[6], unittype = SBP.COHO.STORMTROOPER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm2Attacker1[6], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm2DefOvergroup[3], randombp = {SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP, SBP.AXIS.STORMTROOPER}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm2Engineers[3], engineerspawn = mkr_AxisArm2SDSpawn3, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm3Turret1a, location = tmkr_AxisArm3TurretA[1], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm3TurretSet[1], 
+		name2 = tsg_AxisArm3Squad[1],  name3a = tsg_AxisArm3DefenderA[1], name3b = tsg_AxisArm3DefenderB[1], location2 = tmkr_AxisArm3Squad[1], unittype = SBP.COHO.PIONEER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm3Attacker1[1], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm3DefOvergroup[1], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm3Engineers[1], engineerspawn = mkr_AxisArm3SDSpawn1, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm3Turret1b, location = tmkr_AxisArm3TurretB[1], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm3TurretSet[1], 
+		name2 = tsg_AxisArm3Squad[1],  name3a = tsg_AxisArm3DefenderA[2], name3b = tsg_AxisArm3DefenderB[2], location2 = tmkr_AxisArm3Squad[2], unittype = SBP.COHO.PIONEER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm3Attacker1[2], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm3DefOvergroup[1], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm3Engineers[1], engineerspawn = mkr_AxisArm3SDSpawn1, destroyed = false},
+		
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm3Turret2a, location = tmkr_AxisArm3TurretA[2], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm3TurretSet[2], 
+		name2 = tsg_AxisArm3Squad[2],  name3a = tsg_AxisArm3DefenderA[3], name3b = tsg_AxisArm3DefenderB[3], location2 = tmkr_AxisArm3Squad[3], unittype = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm3Attacker1[3], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm3DefOvergroup[2], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm3Engineers[2], engineerspawn = mkr_AxisArm3SDSpawn2, destroyed = false},
+		
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm3Turret2b, location = tmkr_AxisArm3TurretB[2], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm3TurretSet[2], 
+		name2 = tsg_AxisArm3Squad[2],  name3a = tsg_AxisArm3DefenderA[4], name3b = tsg_AxisArm3DefenderB[4], location2 = tmkr_AxisArm3Squad[4], unittype = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm3Attacker1[4], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm3DefOvergroup[2], randombp = {SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm3Engineers[2], engineerspawn = mkr_AxisArm3SDSpawn2, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm3Turret3a, location = tmkr_AxisArm3TurretA[3], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm3TurretSet[3], 
+		name2 = tsg_AxisArm3Squad[3],  name3a = tsg_AxisArm3DefenderA[5], name3b = tsg_AxisArm3DefenderB[5], location2 = tmkr_AxisArm3Squad[5], unittype = SBP.COHO.STORMTROOPER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm3Attacker1[5], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm3DefOvergroup[3], randombp = {SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP, SBP.AXIS.STORMTROOPER}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm3Engineers[3], engineerspawn = mkr_AxisArm3SDSpawn3, destroyed = false},
+		
+		{faction = g_AxisCreepPlayer, name = eg_AxisArm3Turret3b, location = tmkr_AxisArm3TurretB[3], guntype = EBP.COHO.PUSH_BUNKER_AXIS, turretset = teg_AxisArm3TurretSet[3], 
+		name2 = tsg_AxisArm3Squad[3],  name3a = tsg_AxisArm3DefenderA[6], name3b = tsg_AxisArm3DefenderB[6], location2 = tmkr_AxisArm3Squad[6], unittype = SBP.COHO.STORMTROOPER_PUSH_CREEP, unittype2 = SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, 
+		unittype3 = EBP.COHO.MORTAR_NEST, unittype4 = SBP.AXIS.OFFICER, unittype5 = EBP.CW.BOFORS_NEST, attacker1 = tsg_AxisArm3Attacker1[6], facing = mkr_AllyHQ,
+		overgroup = tsg_AxisArm3DefOvergroup[3], randombp = {SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.PIONEER_PUSH_CREEP, SBP.AXIS.STORMTROOPER}, surrenderpoint = mkr_AllyHQ, underattack1 = false, underattack2 = false,
+		engineersdeployed = false, engineerbp = SBP.COHO.PIONEER_PUSH_CREEP, engineersquad = tsg_AxisArm3Engineers[3], engineerspawn = mkr_AxisArm3SDSpawn3, destroyed = false},
+		
+	}
+	
+	
+	tsg_AlliedVehicle = SGroup_CreateTable("sg_AlliedVehicle%d", 3)
+	sg_AlliedVehicleOvergroup = SGroup_CreateIfNotFound("sg_AlliedVehicleOvergroup")
+	tsg_AxisVehicle = SGroup_CreateTable("sg_AxisVehicle%d", 3)
+	sg_AxisVehicleOvergroup = SGroup_CreateIfNotFound("sg_AxisVehicleOvergroup")
+	
+	tmkr_AlliedVehicleSpawn = Marker_GetTable("mkr_AlliedVehicleSpawn%d")
+	tmkr_AxisVehicleSpawn = Marker_GetTable("mkr_AxisVehicleSpawn%d")
+	
+	sg_vehicleAttacker = SGroup_CreateIfNotFound("sg_vehicleAttacker")
+	
+	t_AlliedVehicleInfo = {
+	
+		{name = tsg_AlliedVehicle[1], faction = g_AlliedCreepPlayer, associatedbuildings = {t_allied_north_mortar_bunkers[1], t_allied_north_mortar_bunkers[2], t_allied_north_mortar_bunkers[3]},  overgroup = sg_AlliedVehicleOvergroup,
+			spawnpoint = tmkr_AlliedVehicleSpawn, vehicletype = {SBP.ALLIES.JEEP, SBP.ALLIES.GREYHOUND, SBP.ALLIES.SHERMAN}, vehiclelevel = 1, timer = "AlliedArm1Timer", timerstarted = false,
+			attacker = sg_vehicleAttacker}, --associatedbuildings = {eg_AxisArm1Hero1, eg_AxisArm1Hero2, eg_AxisArm1Hero3},
+		{name = tsg_AlliedVehicle[2], faction = g_AlliedCreepPlayer, associatedbuildings = {t_allied_center_mortar_bunkers[1], t_allied_center_mortar_bunkers[2], t_allied_center_mortar_bunkers[3]}, overgroup = sg_AlliedVehicleOvergroup, 
+			spawnpoint = tmkr_AlliedVehicleSpawn, vehicletype = {SBP.ALLIES.JEEP, SBP.ALLIES.GREYHOUND, SBP.ALLIES.SHERMAN}, vehiclelevel = 1, timer = "AlliedArm2Timer", timerstarted = false,
+			attacker = sg_vehicleAttacker}, --associatedbuildings = {eg_AxisArm2Hero1, eg_AxisArm2Hero2, eg_AxisArm2Hero3},
+		{name = tsg_AlliedVehicle[3], faction = g_AlliedCreepPlayer, associatedbuildings = {t_allied_center_mortar_bunkers[1], t_allied_center_mortar_bunkers[2], t_allied_center_mortar_bunkers[3]},  overgroup = sg_AlliedVehicleOvergroup, 
+			spawnpoint = tmkr_AlliedVehicleSpawn, vehicletype = {SBP.ALLIES.JEEP, SBP.ALLIES.GREYHOUND, SBP.ALLIES.SHERMAN}, vehiclelevel = 1, timer = "AlliedArm3Timer", timerstarted = false,
+			attacker = sg_vehicleAttacker}, --associatedbuildings = {eg_AxisArm3Hero1, eg_AxisArm3Hero2, eg_AxisArm3Hero3},
+	}	
+	
+	t_AxisVehicleInfo = {
+		{name = tsg_AxisVehicle[1], faction = g_AxisCreepPlayer, associatedbuildings = {t_axis_north_mortar_bunkers[1], t_axis_north_mortar_bunkers[2], t_axis_north_mortar_bunkers[3]}, overgroup = sg_AxisVehicleOvergroup, 
+			spawnpoint = tmkr_AxisVehicleSpawn, vehicletype = {SBP.AXIS.MOTORCYCLE, SBP.AXIS.PUMA, SBP.AXIS.PANZER}, vehiclelevel = 1, timer = "AxisArm1Timer", timerstarted = false,
+			attacker = sg_vehicleAttacker}, --associatedbuildings = {eg_AlliedArm1Hero1, eg_AlliedArm1Hero2, eg_AlliedArm1Hero3},
+		{name = tsg_AxisVehicle[2], faction = g_AxisCreepPlayer, associatedbuildings = {t_axis_center_mortar_bunkers[1], t_axis_center_mortar_bunkers[2], t_axis_center_mortar_bunkers[3]}, overgroup = sg_AxisVehicleOvergroup,  
+			spawnpoint = tmkr_AxisVehicleSpawn, vehicletype = {SBP.AXIS.MOTORCYCLE, SBP.AXIS.PUMA, SBP.AXIS.PANZER}, vehiclelevel = 1, timer = "AxisArm2Timer", timerstarted = false,
+			attacker = sg_vehicleAttacker}, --associatedbuildings = {eg_AlliedArm2Hero1, eg_AlliedArm2Hero2, eg_AlliedArm2Hero3},
+		{name = tsg_AxisVehicle[3], faction = g_AxisCreepPlayer, associatedbuildings = {t_axis_south_mortar_bunkers[1], t_axis_south_mortar_bunkers[2], t_axis_south_mortar_bunkers[3]}, overgroup = sg_AxisVehicleOvergroup,  
+			spawnpoint = tmkr_AxisVehicleSpawn, vehicletype = {SBP.AXIS.MOTORCYCLE, SBP.AXIS.PUMA, SBP.AXIS.PANZER}, vehiclelevel = 1, timer = "AxisArm3Timer", timerstarted = false,
+			attacker = sg_vehicleAttacker}, --associatedbuildings = {eg_AlliedArm3Hero1, eg_AlliedArm3Hero2, eg_AlliedArm3Hero3},
+	}
+	
+
+end
+
+
+function Push_CreepInit()
+
+	g_TimeBetweenCreepWaves = 15 -- time between creep waves
+	
+	-- only sub-tables 1 and 3 referenced - deg 8/dec/08
+	t_AlliedCreepType = {{SBP.COHO.ENGINEER_PUSH_CREEP, SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP},
+						{false, false, false, false},
+						{SBP.COHO.RIFLEMEN_PUSH_CREEP, SBP.COHO.PARATROOPER_PUSH_CREEP, SBP.COHO.RANGER_PUSH_CREEP, SBP.COHO.ENGINEER_PUSH_CREEP},
+						--{false, false, false, false},
+					  }                                                        
+	-- only sub-tables 1 and 3 referenced - deg 8/dec/08
+	t_AxisCreepType = {{SBP.COHO.PIONEER_PUSH_CREEP, SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP,  SBP.COHO.STORMTROOPER_PUSH_CREEP},
+						{false, false, false,  false},
+						{SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, SBP.COHO.GRENADIER_PUSH_CREEP, SBP.COHO.STORMTROOPER_PUSH_CREEP,  SBP.COHO.PIONEER_PUSH_CREEP},
+						--{false, false, false,  false},
+					  }                                     
+					  
+	t_AlliedSpawnPointArm1 = { {mkr_AlliedArm1Turret1a, mkr_AlliedArm1Turret2a, mkr_AlliedArm1Turret3a},
+							{mkr_AlliedArm1Turret1b, mkr_AlliedArm1Turret2b, mkr_AlliedArm1Turret3b },
+							}
+							
+	t_AlliedSpawnPointArm2 = { {mkr_AlliedArm2Turret1a, mkr_AlliedArm2Turret2a, mkr_AlliedArm2Turret3a},
+							{mkr_AlliedArm2Turret1b, mkr_AlliedArm2Turret2b, mkr_AlliedArm2Turret3b },
+							}	
+
+	t_AlliedSpawnPointArm3 = { {mkr_AlliedArm3Turret1a, mkr_AlliedArm3Turret2a, mkr_AlliedArm3Turret3a},
+							{mkr_AlliedArm3Turret1b, mkr_AlliedArm3Turret2b, mkr_AlliedArm3Turret3b },
+							}							
+					  
+
+	t_AxisSpawnPointArm1 = { {mkr_AxisArm1Turret1a, mkr_AxisArm1Turret2a, mkr_AxisArm1Turret3a},
+							{mkr_AxisArm1Turret1b, mkr_AxisArm1Turret2b, mkr_AxisArm1Turret3b },
+							}	
+					  
+	t_AxisSpawnPointArm2 = { {mkr_AxisArm2Turret1a, mkr_AxisArm2Turret2a, mkr_AxisArm2Turret3a},
+							{mkr_AxisArm2Turret1b, mkr_AxisArm2Turret2b, mkr_AxisArm2Turret3b },
+							}		
+
+	t_AxisSpawnPointArm3 = { {mkr_AxisArm3Turret1a, mkr_AxisArm3Turret2a, mkr_AxisArm3Turret3a},
+							{mkr_AxisArm3Turret1b, mkr_AxisArm3Turret2b, mkr_AxisArm3Turret3b },
+							}	
+							
+	
+	t_AlliedSpawnPointFirst = { {mkr_AlliedArm1Turret1a, mkr_AlliedArm1Turret1b},
+							{mkr_AlliedArm2Turret1a, mkr_AlliedArm2Turret1b},
+							{mkr_AlliedArm3Turret1a, mkr_AlliedArm3Turret1b},
+							}
+							
+	t_AlliedSpawnPointSecond = { {mkr_AlliedArm1Turret2a, mkr_AlliedArm1Turret2b},
+							{mkr_AlliedArm2Turret2a, mkr_AlliedArm2Turret2b},
+							{mkr_AlliedArm3Turret2a, mkr_AlliedArm3Turret2b},
+							}
+							
+	t_AlliedSpawnPointThird = { {mkr_AlliedArm1Turret3a, mkr_AlliedArm1Turret3b},
+							{mkr_AlliedArm2Turret3a, mkr_AlliedArm2Turret3b},
+							{mkr_AlliedArm3Turret3a, mkr_AlliedArm3Turret3b},
+							}	
+							
+	
+	t_OverallCreepType = {t_AlliedCreepType, t_AxisCreepType}
+	
+		
+	t_AlliedCreepInfo = {
+	
+		-- arm1
+		{	
+			creepTimer = "AlliedCreepSpawnTimer1", -- name of arm's creep timer
+			timer = 10,
+			creepTimerOn = false, -- state of arm's creep timer
+			playerFaction = g_AlliedCreepPlayer,
+			turretWatch = t_TurretStates[1][1],
+			groups = {
+
+				{
+					squadname = SGroup_CreateIfNotFound("sg_AlliedArm1aType1Creep"),
+					squadgroupname = SGroup_CreateTable("sg_AlliedArm1aType1CreepSquad%d", 10),
+					blueprint = t_AlliedCreepType[1],
+					number = 2,
+					size = 3,
+					spawnpoint = t_AlliedSpawnPointArm1[1],
+					destination = mkr_attack_destination_allied,
+					destination2 = mkr_AlliedArm1aGather,
+					facing = mkr_AxisHQ,
+					path = "AlliedArm1a", -- specified path
+					indTimerName = "tmr_AlliedArm1a",
+					indTime = 14,
+				},
+					
+					
+				{
+					squadname = SGroup_CreateIfNotFound("sg_AlliedArm1aType3Creep"),
+					squadgroupname = SGroup_CreateTable("sg_AlliedArm1aType3CreepSquad%d",10),
+					blueprint = t_AlliedCreepType[3],					
+					number = 2,
+					size = 3,
+					spawnpoint = t_AlliedSpawnPointArm1[2],
+					destination = mkr_attack_destination_allied,
+					destination2 = mkr_AlliedArm1aGather,
+					facing = mkr_AxisHQ,
+					path = "AlliedArm1b", -- specified path
+					indTimerName = "tmr_AlliedArm1b",
+					indTime = 12,					
+				},
+			
+			},
+		},
+		
+		-- arm2
+		{
+			
+			creepTimer = "AlliedCreepSpawnTimer2",
+			timer = 6, 
+			creepTimerOn = false,
+			playerFaction = g_AlliedCreepPlayer,
+			turretWatch = t_TurretStates[1][2],
+			groups = {
+				
+					{
+						squadname = SGroup_CreateIfNotFound("sg_AlliedArm2aType1Creep"),
+						squadgroupname = SGroup_CreateTable("sg_AlliedArm2aType1CreepSquad%d",10),
+						blueprint = t_AlliedCreepType[1],
+						number = 2,
+						size = 3,
+						spawnpoint = t_AlliedSpawnPointArm2[1],
+						destination = mkr_attack_destination_allied,
+						destination2 = mkr_AlliedArm2aGather,
+						facing = mkr_AxisHQ,
+						path = "AlliedArm2a",
+						indTimerName = "tmr_AlliedArm2a",
+						indTime = 10,
+					},
+					{
+						squadname = SGroup_CreateIfNotFound("sg_AlliedArm2aType3Creep"),
+						squadgroupname = SGroup_CreateTable("sg_AlliedArm2aType3CreepSquad%d",10),
+						blueprint = t_AlliedCreepType[3],
+						number = 2,
+						size = 3,
+						spawnpoint = t_AlliedSpawnPointArm2[2],
+						destination = mkr_attack_destination_allied,
+						destination2 = mkr_AlliedArm2aGather,
+						facing = mkr_AxisHQ,
+						path = "AlliedArm2b",
+						indTimerName = "tmr_AlliedArm2b",
+						indTime = 9,						
+					},
+					
+				
+			},
+
+		
+		},
+		
+		-- arm3
+		{
+			creepTimer = "AlliedCreepSpawnTimer3",
+			timer = 1,
+			creepTimerOn = false,
+			playerFaction = g_AlliedCreepPlayer,
+			turretWatch = t_TurretStates[1][3],
+			groups = {
+					{
+						squadname = SGroup_CreateIfNotFound("sg_AlliedArm3aType1Creep"),
+						squadgroupname = SGroup_CreateTable("sg_AlliedArm3aType1CreepSquad%d",10),
+						blueprint = t_AlliedCreepType[1],
+						number = 2,
+						size = 3,
+						spawnpoint = t_AlliedSpawnPointArm3[1],
+						destination = mkr_attack_destination_allied,
+						destination2 = mkr_AlliedArm3aGather,
+						facing = mkr_AxisHQ,
+						path = "AlliedArm3a",
+						indTimerName = "tmr_AlliedArm3a",
+						indTime = 7,						
+					},
+					{
+						squadname = SGroup_CreateIfNotFound("sg_AlliedArm3aType3Creep"),
+						squadgroupname = SGroup_CreateTable("sg_AlliedArm3aType3CreepSquad%d",10),
+						blueprint = t_AlliedCreepType[3],
+						number = 2,
+						size = 3,
+						spawnpoint = t_AlliedSpawnPointArm3[2],
+						destination = mkr_attack_destination_allied,
+						destination2 = mkr_AlliedArm3aGather,
+						facing = mkr_AxisHQ,
+						path = "AlliedArm3b",
+						indTimerName = "tmr_AlliedArm3b",
+						indTime = 5,						
+					},
+					
+				
+			},
+		},
+	}
+	
+
+	
+		
+	t_AxisCreepInfo = {
+	
+		-- arm1
+		{	
+			creepTimer = "AxisCreepSpawnTimer1", -- name of arm's creep timer
+			timer = 10, 
+			creepTimerOn = false, -- state of arm's creep timer
+			playerFaction = g_AxisCreepPlayer,
+			turretWatch = t_TurretStates[2][1],
+			groups = {
+				--group 1
+						{
+							squadname = SGroup_CreateIfNotFound("sg_AxisArm1aType1Creep"),
+							squadgroupname = SGroup_CreateTable("sg_AxisArm1aType1CreepSquad%d",10),
+							blueprint = t_AxisCreepType[1],
+							number = 2,
+							size = 3,
+							spawnpoint = t_AxisSpawnPointArm1[1],
+							destination = mkr_attack_destination_axis,
+							destination2 = mkr_AxisArm1aGather,
+							facing = mkr_AllyHQ,
+							path = "AxisArm1a",
+							indTimerName = "tmr_AxisArm1a",
+							indTime = 13,
+						},
+						{
+							squadname = SGroup_CreateIfNotFound("sg_AxisArm1aType3Creep"),
+							squadgroupname = SGroup_CreateTable("sg_AxisArm1aType3CreepSquad%d",10),
+							blueprint = t_AxisCreepType[3],					
+							number = 2,
+							size = 3,
+							spawnpoint = t_AxisSpawnPointArm1[2],
+							destination = mkr_attack_destination_axis,
+							destination2 = mkr_AxisArm1aGather,
+							facing = mkr_AllyHQ,
+							path = "AxisArm1b",
+							indTimerName = "tmr_AxisArm1b",
+							indTime = 11,
+						},								
+
+					},
+
+		},
+		
+		-- arm2
+		{
+			
+			creepTimer = "AxisCreepSpawnTimer2",
+			timer = 6,
+			creepTimerOn = false,
+			playerFaction = g_AxisCreepPlayer,
+			turretWatch = t_TurretStates[2][2],
+			groups = {
+						{
+							squadname = SGroup_CreateIfNotFound("sg_AxisArm2aType1Creep"),
+							squadgroupname = SGroup_CreateTable("sg_AxisArm2aType1CreepSquad%d",10),
+							blueprint = t_AxisCreepType[1],
+							number = 2,
+							size = 3,
+							spawnpoint = t_AxisSpawnPointArm2[1],
+							destination = mkr_attack_destination_axis,
+							destination2 = mkr_AxisArm2aGather,
+							facing = mkr_AllyHQ,
+							path = "AxisArm2a",
+							indTimerName = "tmr_AxisArm2a",
+							indTime = 9,
+						},
+						
+						{
+							squadname = SGroup_CreateIfNotFound("sg_AxisArm2aType3Creep"),
+							squadgroupname = SGroup_CreateTable("sg_AxisArm2aType3CreepSquad%d",10),
+							blueprint = t_AxisCreepType[3],
+							number = 2,
+							size = 3,
+							spawnpoint = t_AxisSpawnPointArm2[2],
+							destination = mkr_attack_destination_axis,
+							destination2 = mkr_AxisArm2aGather,
+							facing = mkr_AllyHQ,
+							path = "AxisArm2b",
+							indTimerName = "tmr_AxisArm2b",
+							indTime = 7,
+						},
+
+					},
+				
+				
+		},
+		
+		-- arm3
+		{
+			creepTimer = "AxisCreepSpawnTimer3",
+			timer = 1,
+			creepTimerOn = false,
+			playerFaction = g_AxisCreepPlayer,
+			turretWatch = t_TurretStates[2][3],
+			groups = {
+						
+						{
+							squadname = SGroup_CreateIfNotFound("sg_AxisArm3aType1Creep"),
+							squadgroupname = SGroup_CreateTable("sg_AxisArm3aType1CreepSquad%d",10),
+							blueprint = t_AxisCreepType[1],
+							number = 2,
+							size = 3,
+							spawnpoint = t_AxisSpawnPointArm3[1],
+							destination = mkr_attack_destination_axis,
+							destination2 = mkr_AxisArm3aGather,
+							facing = mkr_AllyHQ,
+							path = "AxisArm3a",
+							indTimerName = "tmr_AxisArm3a",
+							indTime = 5,
+						},
+						
+						{
+							squadname = SGroup_CreateIfNotFound("sg_AxisArm3aType3Creep"),
+							squadgroupname = SGroup_CreateTable("sg_AxisArm3aType3CreepSquad%d",10),
+							blueprint = t_AxisCreepType[3],
+							number = 2,
+							size = 3,
+							spawnpoint = t_AxisSpawnPointArm3[2],
+							destination = mkr_attack_destination_axis,
+							destination2 = mkr_AxisArm3aGather,
+							facing = mkr_AllyHQ,
+							path = "AxisArm3b",
+							indTimerName = "tmr_AxisArm3b",
+							indTime = 3,
+						},
+
+					},
+				
+		},
+	}
+	
+	
+	t_FactionInfo = {t_AlliedCreepInfo, t_AxisCreepInfo} -- has to be in this order
+	
+end
+	
+function Rule_TEST()
+
+	Util_CreateSquads(g_AxisCreepPlayer, sg_AxisArm3dType3Creep, SBP.COHO.STORMTROOPER_PUSH_CREEP, mkr_Center)
+
+
+end	
+function Rule_TurretSpawn()
+
+	for k, v in pairs(t_TurretSpawnInfo) do
+		if EGroup_CountSpawned(v.name) <= 0 then
+			Util_CreateEntities(v.faction, v.name, v.guntype, v.location, 1)
+		else
+			EGroup_SetPlayerOwner(v.name, v.faction)
+		end
+		
+		if v.nameAT1 ~= nil then
+			Util_CreateSquads(v.faction, v.nameAT1, v.guntype2, v.locationAT1)
+			SGroup_FacePosition(v.nameAT1, Marker_GetPosition(v.facingAT1))
+		end
+		
+		if v.nameAT2 ~= nil then
+			Util_CreateSquads(v.faction, v.nameAT2, v.guntype2, v.locationAT2)
+			SGroup_FacePosition(v.nameAT2, Marker_GetPosition(v.facingAT2))
+		end
+		
+		if v.nameAT3 ~= nil then
+			Util_CreateSquads(v.faction, v.nameAT3, v.guntype2, v.locationAT3)
+			SGroup_FacePosition(v.nameAT3, Marker_GetPosition(v.facingAT3))
+		end
+		
+		local _SetEntity = function(gid, idx, eid)	
+			UI_EnableEntityMinimapIndicator(eid, false)
+		end
+		
+		EGroup_ForEach(v.name, _SetEntity)
+		
+		if EGroup_ContainsBlueprints(v.name, EBP.COHO.PUSH_BUNKER_AXIS, true) then
+--~ 			print("apply1")
+--~ 			Modify_SightRadius(v.name, 0.5)
+--~ 			Modify_WeaponRange(v.name, "hardpoint_01", 0.4)
+--~ 			Modify_WeaponDamage(v.name, "hardpoint_01", 0.2)
+			--Modify_WeaponRange(v.name, "hardpoint_01", 0.8)
+			--Modify_WeaponDamage(v.name, "hardpoint_01", 0.4)
+			
+			
+		end
+		
+		if EGroup_ContainsBlueprints(v.name, EBP.COHO.PUSH_BUNKER_ALLIES, true) then
+--~ 			print("apply2")
+--~ 			Modify_SightRadius(v.name, 0.5)
+--~ 			Modify_WeaponRange(v.name, "hardpoint_01", 0.4)
+--~ 			Modify_WeaponDamage(v.name, "hardpoint_01", 0.2)
+			--Modify_WeaponRange(v.name, "hardpoint_01", 0.8)
+			--Modify_WeaponDamage(v.name, "hardpoint_01", 0.4)
+			
+		end
+		
+		EGroup_AddEGroup(v.turretset, v.name)
+		
+		local l_randomcreeptype = World_GetRand(1, table.getn(v.randombp))
+		Util_CreateSquads(v.faction, v.name3a, v.randombp[l_randomcreeptype], Util_GetOffsetPosition(v.location2, OFFSET_LEFT, 8), nil, 1, nil, nil, nil,nil, v.facing)
+		
+		if v.randombp[l_randomcreeptype] == SBP.COHO.RANGER_PUSH_CREEP then
+			
+			local randomweapon = World_GetRand(1, 4)
+			
+			if randomweapon == 1 then
+				--print("upgraded thompsons?")
+				Cmd_InstantUpgrade(v.name3a, UPG.COHO.PUSH.CREEP_THOMPSON, 2)
+			end
+			
+		elseif v.randombp[l_randomcreeptype] == SBP.COHO.STORMTROOPER_PUSH_CREEP then
+			
+			local randomweapon = World_GetRand(1, 4)
+			
+			if randomweapon == 1 then
+				--print("upgraded mp44?")
+				Cmd_InstantUpgrade(v.name3a, UPG.COHO.PUSH.CREEP_MP44, 2)
+			end
+		end
+		
+		SGroup_AddGroup(v.overgroup, v.name3a) -- puts this into a control overgroup
+		
+		
+	end
+
+	for i = 1, table.getn(t_FactionInfo) do
+		
+		for k, arm in pairs(t_FactionInfo[i]) do
+			Timer_Start(arm.creepTimer, 20) -- 120?
+		end
+	end
+	
+	Rule_AddOneShot(Rule_TeamMGSetup, 0)
+	
+end
+
+function Rule_TeamMGSetup()
+	EGroup_SetPlayerOwner(eg_Team1BaseMGGroup, g_AlliedCreepPlayer)
+	EGroup_SetPlayerOwner(eg_Team2BaseMGGroup, g_AxisCreepPlayer)		
+end
+
+
+function Rule_Creep_Mines_Init()
+
+	eg_mine_a = EGroup_CreateTable("eg_mine_a%d", 5)
+	eg_mine_b = EGroup_CreateTable("eg_mine_b%d", 5)
+	eg_mine_c = EGroup_CreateTable("eg_mine_c%d", 5)
+	eg_mine_d = EGroup_CreateTable("eg_mine_d%d", 5)
+
+	t_allied_mines_a = {
+		{name = eg_mine_a[1], place = mkr_mine_a_1, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_a[2], place = mkr_mine_a_2, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_a[3], place = mkr_mine_a_3, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_a[4], place = mkr_mine_a_4, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_a[5], place = mkr_mine_a_5, blueprint = EBP.SP.MINE_ASSAULT},
+	}
+	
+	t_allied_mines_b = {
+		{name = eg_mine_b[1], place = mkr_mine_b_1, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_b[2], place = mkr_mine_b_2, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_b[3], place = mkr_mine_b_3, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_b[4], place = mkr_mine_b_4, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_b[5], place = mkr_mine_b_5, blueprint = EBP.SP.MINE_ASSAULT},
+	}
+	
+	
+	t_axis_mines_c = {
+		{name = eg_mine_c[1], place = mkr_mine_c_1, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_c[2], place = mkr_mine_c_2, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_c[3], place = mkr_mine_c_3, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_c[4], place = mkr_mine_c_4, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_c[5], place = mkr_mine_c_5, blueprint = EBP.SP.MINE_ASSAULT},
+	}
+	t_axis_mines_d = {
+		{name = eg_mine_d[1], place = mkr_mine_d_1, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_d[2], place = mkr_mine_d_2, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_d[3], place = mkr_mine_d_3, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_d[4], place = mkr_mine_d_4, blueprint = EBP.SP.MINE_ASSAULT},
+		{name = eg_mine_d[5], place = mkr_mine_d_5, blueprint = EBP.SP.MINE_ASSAULT},
+	}
+	
+end
+
+function Rule_Creep_Mines_Spawn()
+
+	for k,v in pairs(Table_GetRandomItem(t_allied_mines_a, World_GetRand(3,4))) do
+		
+		local l_randommines = World_GetRand(4, 5)
+		
+		for i = 1, l_randommines do
+		
+			Util_CreateEntities(g_AlliedCreepPlayer, v.name, v.blueprint, Util_GetRandomPosition(v.place), 1)
+		
+		end
+		
+	
+	end
+	
+	for k,v in pairs(Table_GetRandomItem(t_allied_mines_b, World_GetRand(3,4))) do
+		
+		local l_randommines = World_GetRand(4, 5)
+		
+		for i = 1, l_randommines do
+			
+			Util_CreateEntities(g_AlliedCreepPlayer, v.name, v.blueprint, Util_GetRandomPosition(v.place), 1)
+			
+		end
+		
+	end
+	
+	for k,v in pairs(Table_GetRandomItem(t_axis_mines_c, World_GetRand(3,4))) do
+		
+		local l_randommines = World_GetRand(4, 5)
+		
+		for i = 1, l_randommines do
+			
+			Util_CreateEntities(g_AxisCreepPlayer, v.name, v.blueprint, Util_GetRandomPosition(v.place), 1)
+			
+		end
+		
+	end
+	
+	for k,v in pairs(Table_GetRandomItem(t_axis_mines_d, World_GetRand(3,4))) do
+		
+		local l_randommines = World_GetRand(4, 5)
+		
+		for i = 1, l_randommines do
+			
+			Util_CreateEntities(g_AxisCreepPlayer, v.name, v.blueprint, Util_GetRandomPosition(v.place), 1)
+			
+		end
+		
+	end
+
+end
+
+
+-- timer function that automatically checks to see if the current wave timer has expired, etc.  Also basic behaviour
+function Rule_CreepSurrender()
+	
+	for k, v in pairs(t_TurretSpawnInfo) do
+		
+		if SGroup_IsEmpty(v.engineersquad) == false then
+			if EGroup_IsEmpty(v.turretset) == true then 
+				Cmd_Surrender(v.engineersquad, nil, v.surrenderpoint) -- surrender overgroup if turret set is empty
+				SGroup_RemoveGroup(v.engineersquad, v.engineersquad)
+			end
+		end
+		
+		if SGroup_IsEmpty(v.overgroup) == false then -- if overgroup actually has stuff 
+			if EGroup_IsEmpty(v.turretset) == true then 
+				Cmd_Surrender(v.overgroup, nil, v.surrenderpoint) -- surrender overgroup if turret set is empty
+				SGroup_RemoveGroup(v.overgroup, v.overgroup) -- removes current contents of overgroup
+			end
+		end		
+		
+	end	
+end				
+
+	
+function Rule_AlliedCreepActionA()				
+				
+	for k, v in pairs(t_TurretSpawnInfo) do			
+				
+	
+		if SGroup_IsEmpty(v.name3a) == false then
+	
+			if SGroup_ContainsBlueprints(v.name3a, SBP.COHO.RIFLEMEN_PUSH_CREEP, ANY) then
+				
+				Type1CreepA(v.name3a, v)
+				
+			elseif SGroup_ContainsBlueprints(v.name3a, SBP.COHO.PARATROOPER_PUSH_CREEP, ANY) then
+				
+				Type2CreepA(v.name3a, v)
+				
+				
+			elseif SGroup_ContainsBlueprints(v.name3a, SBP.COHO.RANGER_PUSH_CREEP, ANY) then
+				
+				Type3CreepA(v.name3a, v)
+				
+			elseif SGroup_ContainsBlueprints(v.name3a, SBP.COHO.ENGINEER_PUSH_CREEP, ANY) then
+				
+				Type4CreepA(v.name3a, v)
+				
+			end
+			
+			
+		end
+		
+	end
+	
+end
+
+function Rule_AlliedCreepActionB()				
+
+--~ 	for k, v in pairs(t_TurretSpawnInfo) do			
+
+--~ 		if SGroup_IsEmpty(v.name3b) == false then
+--~ 				
+--~ 			if SGroup_ContainsBlueprints(v.name3b, SBP.COHO.RIFLEMEN_PUSH_CREEP, ANY) then
+--~ 			
+--~ 				Type1CreepB(v.name3b, v)
+--~ 				
+--~ 			elseif SGroup_ContainsBlueprints(v.name3b, SBP.COHO.PARATROOPER_PUSH_CREEP, ANY) then
+--~ 				
+--~ 				Type2CreepB(v.name3b, v)
+--~ 				
+--~ 			elseif SGroup_ContainsBlueprints(v.name3b, SBP.COHO.RANGER_PUSH_CREEP, ANY) then
+
+--~ 				Type3CreepB(v.name3b, v)
+--~ 				
+--~ 			elseif SGroup_ContainsBlueprints(v.name3b, SBP.COHO.ENGINEER_PUSH_CREEP, ANY) then
+--~ 				
+--~ 				Type4CreepB(v.name3b, v)
+--~ 				
+--~ 			end
+--~ 							
+--~ 		end
+--~ 	end
+
+end
+
+
+function Rule_AxisCreepActionA()		
+
+	for k, v in pairs(t_TurretSpawnInfo) do			
+		if SGroup_IsEmpty(v.name3a) == false then
+		
+			if SGroup_ContainsBlueprints(v.name3a, SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, ANY) then
+	
+				Type1CreepA(v.name3a, v)
+			
+			elseif SGroup_ContainsBlueprints(v.name3a, SBP.COHO.GRENADIER_PUSH_CREEP, ANY) then
+				
+				Type2CreepA(v.name3a, v)
+				
+			elseif SGroup_ContainsBlueprints(v.name3a, SBP.AXIS.STORMTROOPER, ANY) then
+
+				Type3CreepA(v.name3a, v)
+						
+			elseif SGroup_ContainsBlueprints(v.name3a, SBP.COHO.PIONEER_PUSH_CREEP, ANY) then
+			
+				Type4CreepA(v.name3a, v)
+						
+			end
+				
+				
+		end
+
+		
+	end
+	
+end
+
+function Rule_AxisCreepActionB()		
+	
+--~ 	for k, v in pairs(t_TurretSpawnInfo) do		
+--~ 		
+--~ 		if SGroup_IsEmpty(v.name3b) == false then
+--~ 		
+--~ 			if SGroup_ContainsBlueprints(v.name3b, SBP.COHO.VOLKSGRENADIER_PUSH_CREEP, ANY) then
+--~ 		
+--~ 				Type1CreepB(v.name3b, v)
+--~ 		
+--~ 			elseif SGroup_ContainsBlueprints(v.name3b, SBP.COHO.GRENADIER_PUSH_CREEP, ANY) then
+--~ 				
+--~ 				Type2CreepB(v.name3b, v)
+--~ 					
+--~ 			elseif SGroup_ContainsBlueprints(v.name3b, SBP.AXIS.STORMTROOPER, ANY) then
+--~ 				
+--~ 				Type3CreepB(v.name3b, v)
+--~ 					
+--~ 			elseif SGroup_ContainsBlueprints(v.name3b, SBP.COHO.PIONEER_PUSH_CREEP, ANY) then
+--~ 				
+--~ 				Type4CreepB(v.name3b, v)
+--~ 					
+--~ 			end
+--~ 			
+--~ 			
+--~ 		end	
+--~ 	end
+
+end		
+
+-- reserved for creep type 1 of group a
+
+function Type1CreepA(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack1 == false then -- if the sgroup is under attack during the last little while
+		--print("11111")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack1 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+			
+			Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+			SGroup_Clear(l_tempattacker)
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack1 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack1 = false
+		
+		
+	end
+	
+end
+
+-- reserved for creep type 1 of group b
+
+function Type1CreepB(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack2 == false then -- if the sgroup is under attack during the last little while
+		--print("22222")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack2 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+			
+			Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+			SGroup_Clear(l_tempattacker)
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack2 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack2 = false
+		
+		
+	end
+	
+end
+
+-- reserved for creep type 2 of group a
+
+function Type2CreepA(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack1 == false then -- if the sgroup is under attack during the last little while
+		--print("33333")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack1 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local randomnade = World_GetRand(1, 7)
+			
+			if randomnade == 1 then
+			--print("toss!")
+			
+				if SGroup_ContainsBlueprints(CreepGroup, SBP.COHO.PARATROOPER_PUSH_CREEP, ANY) then
+					
+					Cmd_Ability(CreepGroup, ABILITY.COHO.UMS.PUSH.ALLY_GRENADE_NOREQS_NOCOST, l_tempattacker)
+				
+				elseif SGroup_ContainsBlueprints(CreepGroup, SBP.COHO.GRENADIER_PUSH_CREEP, ANY) then
+				
+					Cmd_Ability(CreepGroup, ABILITY.COHO.UMS.PUSH.AXIS_GRENADE_NOREQS_NOCOST, l_tempattacker)
+				
+				end
+				
+				SGroup_Clear(l_tempattacker)
+			
+			else
+				
+				local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+				
+				Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+				SGroup_Clear(l_tempattacker)
+				
+			end
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack1 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack1 = false
+		
+		
+	end
+	
+end
+
+
+-- reserved for creep type 2 of group b
+function Type2CreepB(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack2 == false then -- if the sgroup is under attack during the last little while
+		--print("44444")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack2 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local randomnade = World_GetRand(1, 7)
+			
+			if randomnade == 1 then
+				
+				--print("toss!")
+				
+				if SGroup_ContainsBlueprints(CreepGroup, SBP.COHO.PARATROOPER_PUSH_CREEP, ANY) then
+					
+					Cmd_Ability(CreepGroup, ABILITY.COHO.UMS.PUSH.ALLY_GRENADE_NOREQS_NOCOST, l_tempattacker)
+				
+				elseif SGroup_ContainsBlueprints(CreepGroup, SBP.COHO.GRENADIER_PUSH_CREEP, ANY) then
+				
+					Cmd_Ability(CreepGroup, ABILITY.COHO.UMS.PUSH.AXIS_GRENADE_NOREQS_NOCOST, l_tempattacker)
+				
+				end
+			
+				SGroup_Clear(l_tempattacker)
+			
+			else
+				
+				local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+				
+				Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+				SGroup_Clear(l_tempattacker)
+				
+			end
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack2 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack2 = false
+		
+		
+	end
+	
+end
+
+-- reserved for creep type 3 of group a
+
+function Type3CreepA(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack1 == false then -- if the sgroup is under attack during the last little while
+		--print("55555")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack1 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+			
+			Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+			SGroup_Clear(l_tempattacker)
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack1 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack1 = false
+		
+		
+	end
+	
+end
+
+-- reserved for creep type 3 of group b
+
+function Type3CreepB(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack2 == false then -- if the sgroup is under attack during the last little while
+		--print("66666")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack2 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+			
+			Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+			SGroup_Clear(l_tempattacker)
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack2 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack2 = false
+		
+		
+	end
+	
+end
+
+-- reserved for creep type 4 of group a
+
+function Type4CreepA(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack1 == false then -- if the sgroup is under attack during the last little while
+		--print("77777")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack1 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+			
+			Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+			SGroup_Clear(l_tempattacker)
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack1 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack1 = false
+		
+		
+	end
+	
+end
+
+
+-- reserved for creep type 4 of group b
+
+
+function Type4CreepB(CreepGroup, CreepTable)
+	
+	if SGroup_IsUnderAttack(CreepGroup, ANY, 5) and CreepTable.underattack2 == false then -- if the sgroup is under attack during the last little while
+		--print("88888")
+		local l_tempattacker = SGroup_CreateIfNotFound("l_tempattacker")
+		local lt_offsets = {OFFSET_FRONT, OFFSET_LEFT, OFFSET_RIGHT} -- table of frontal attacks
+		local l_randomoffset = lt_offsets[World_GetRand(1, table.getn(lt_offsets))]
+		
+		
+		CreepTable.underattack2 = true
+		SGroup_GetLastAttacker(CreepGroup, l_tempattacker)
+		
+		if SGroup_IsEmpty(l_tempattacker) == false then -- makes sure that l_tempattacker has someone to react to first!
+			
+			local l_tempattackerposition = Util_GetOffsetPosition(l_tempattacker, l_randomoffset, 20) 
+			
+			Cmd_AttackMove(CreepGroup, l_tempattackerposition, nil, nil, 10) 
+			SGroup_Clear(l_tempattacker)
+			
+		else -- if somehow the attacker got destroyed or the attacks stopped after 10 seconds (specified above), move back to original position. 
+			
+			--Cmd_AttackMove(CreepGroup, CreepTable.location2)
+						
+			if SGroup_IsEmpty(CreepGroup) == false then
+				
+				Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+			end
+			
+		end
+		
+	elseif SGroup_IsUnderAttack(CreepGroup, ANY, 5) == false and CreepTable.underattack2 == true then
+		
+		Cmd_Move(CreepGroup, CreepTable.location2, nil, nil, nil, nil, nil, 10)
+		
+		CreepTable.underattack2 = false
+		
+		
+	end
+	
+end
+
+
+function Rule_SetHQBunkerOwner()
+
+	if EGroup_IsEmpty(eg_Team1HQBunker) == false then
+	
+		EGroup_SetPlayerOwner(eg_Team1HQBunker, g_AlliedCreepPlayer)
+		EGroup_SetSharedProductionQueue(eg_Team1HQBunker, true)
+	
+	end
+
+	if EGroup_IsEmpty(eg_Team2HQBunker) == false then
+	
+		EGroup_SetPlayerOwner(eg_Team2HQBunker, g_AxisCreepPlayer)
+		EGroup_SetSharedProductionQueue(eg_Team2HQBunker, true)
+	
+	end
+	
+
+end
+
+
+
+function Rule_HeroSpawn()
+	for b = 1, table.getn(t_FactionInfo) do
+		
+		for k, arm in pairs(t_FactionInfo[b]) do
+			local team 		= t_SpawnStates[b][k].team
+			local locInfo 	= t_SpawnStates[b][k].locInfo
+			
+			-- unlocking all of the mortar bunkers at once - deg 8/dec/08
+			for i = 1, #(locInfo) do 
+				if locInfo[i].mortarShared ~= true then 
+					local player = false
+					local race = false
+					-- allies
+					if team == 0 then							
+						player = g_AlliedCreepPlayer
+						race = TRACE_ALLIES
+					-- axis
+					elseif team == 1 then 
+						player = g_AxisCreepPlayer
+						race = TRACE_AXIS
+					end
+					
+					if Player_GetRaceName(player) == race then
+						EGroup_SetSharedProductionQueue(locInfo[i].mortargroup, true)
+					end
+					
+					locInfo[i].mortarShared = true
+				end
+				-- archive function 
+				if EGroup_IsHoldingAny(locInfo[i].mortargroup) then
+					EGroup_GetSquadsHeld(locInfo[i].mortargroup, locInfo[i].sgrouphold) 
+					local owner = Util_GetPlayerOwner(locInfo[i].sgrouphold)						
+					Player_AddResource(owner, RT_Manpower, 1)
+					SGroup_DestroyAllSquads(locInfo[i].sgrouphold)
+				end
+			end
+		end
+	end
+end
+
+
+function Rule_HeroSpawnDestructTracker()
+
+-- checks through a table continually
+	for i = 1, #(t_SpawnStates) do 
+		for x = 1, #(t_SpawnStates[i]) do 
+			for k,this in pairs(t_SpawnStates[i][x].locInfo) do 
+				-- finally to the business end of this table
+				if this.mortarIsDead ~= true then
+					-- if the mortar isn't dead yet
+					if EGroup_IsEmpty(this.mortargroup) == false then
+						-- are either of the mgnests dead?
+						local mgnest1 = this.buildings[1]
+						local mgnest2 = this.buildings[2]
+						if this.mortarIsHurt ~= true and (EGroup_IsEmpty(mgnest1) or EGroup_IsEmpty(mgnest2) ) then
+							this.mortarIsHurt = true
+							-- smack the mortar
+							EGroup_SetInvulnerable(this.mortargroup, false)
+							EGroup_SetAvgHealth(this.mortargroup, .45)
+							EGroup_SetInvulnerable(this.mortargroup, true)
+							EGroup_SetAnimatorEvent( this.mortargroup, "half_dead" ) 
+						-- are both of the mgnests dead?
+						elseif EGroup_IsEmpty(mgnest1) and EGroup_IsEmpty(mgnest2) then
+							-- kill the mortar
+							EGroup_SetInvulnerable(this.mortargroup, false)
+							EGroup_Kill(this.mortargroup)
+							EGroup_Kill(this.mortarStripes)
+						end
+					-- set the flag
+					else
+						this.mortarIsDead = true
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function Rule_AlliedCreepSpawner()
+
+	if g_GameOver == true then
+		Rule_RemoveMe()
+	else
+		-- for each faction "arm" do
+		for k, arm in pairs(t_AlliedCreepInfo) do
+			--print("arm "..k.." turret level "..arm.turretWatch.level)
+			-- for each turrets in the arm do...
+			for j, this in pairs(arm.groups) do
+				-- checks to see if there is anything in the spawned overgroup for the arm... if there is nothing, then continue
+				if math.floor(Timer_GetRemaining(arm.creepTimer)+0.5) == this.indTime  and (SGroup_Count(this.squadname) < 3) then
+					-- This part checks to see if the opposite faction's "level" (determined by the number of pairs of emplacements that are destroyed in a faction's specific "arm" )
+					-- is less than or equal to the number of blueprint lists/tables for that creep group.
+					-- Each list/table contains the types of creeps to be spawned for the corresponding faction level for that arm (i.e. if first pair is gone, then
+					-- the level is considered "1", and thus the game will grab creep spawns from the 1st entry in each of the tables specified in .blueprint
+					if arm.turretWatch.level <= 4 then	
+						
+						local level =  t_SpawnStates[1][k].level
+						local location = this.spawnpoint[level]
+						local targetTurret1 = arm.turretWatch.targetturret[level].spawninfo[1].spawnbuilding
+						local targetMarker1 = arm.turretWatch.targetturret[level].spawninfo[1].spawnmarker
+						local targetTurret2 = arm.turretWatch.targetturret[level].spawninfo[2].spawnbuilding
+						local targetMarker2 = arm.turretWatch.targetturret[level].spawninfo[2].spawnmarker
+						
+						if EGroup_IsEmpty(targetTurret1) == true and EGroup_IsEmpty(targetTurret2) == true then
+							-- do nothing
+						else
+							-- find spawn point
+							if EGroup_IsEmpty(targetTurret1) == true then
+								location = targetMarker2
+							-- the other one must exist
+							else
+								location = targetMarker1
+							end
+							-- create squad
+							Util_CreateSquads(arm.playerFaction, this.squadname, this.blueprint[arm.turretWatch.level], Util_GetOffsetPosition(location, OFFSET_BACK, 5), this.destination, 1, nil, true)  --this.spawnpoint[arm.turretWatch.level]
+							SGroup_AddGroup(this.squadgroupname[SGroup_Count(this.squadname)], this.squadname)
+							
+							-- streamlining the upgrade routine - deg 8/dec/08
+							local randUPG = World_GetRand(1, 4)
+							
+							if randUPG == 1 then
+								if SGroup_ContainsBlueprints(this.squadgroupname[SGroup_Count(this.squadname)], SBP.COHO.ENGINEER_PUSH_CREEP, true) then
+									Cmd_InstantUpgrade(this.squadgroupname[SGroup_Count(this.squadname)], UPG.ALLIES.ENGINEER_FLAMETHROWER)
+								elseif SGroup_ContainsBlueprints(this.squadgroupname[SGroup_Count(this.squadname)], SBP.COHO.PARATROOPER_PUSH_CREEP, true) then
+									Cmd_InstantUpgrade(this.squadgroupname[SGroup_Count(this.squadname)], UPG.COHO.PUSH.CREEP_LMG)
+								elseif SGroup_ContainsBlueprints(this.squadgroupname[SGroup_Count(this.squadname)], SBP.COHO.RANGER_PUSH_CREEP, true) then 
+									Cmd_InstantUpgrade(this.squadgroupname[SGroup_Count(this.squadname)], UPG.COHO.PUSH.CREEP_BAZOOKA)
+								end
+							end
+							
+							-- move orders
+							Cmd_SquadPath(this.squadname, this.path, true, false, true, 0)
+							
+						end
+						
+					end
+					
+					break -- break is here to stop the for loop from advancing.  Makes it so only 1 group is ever spawned at a time
+					
+				elseif Timer_GetRemaining(arm.creepTimer) == 0 then
+					
+					local delay = 0
+					local level = arm.turretWatch.level
+					-- streamlining the math - deg 8/dec/08
+					if level > 1  then
+						delay = 15*(level-1) -- equals 15, 30, 45
+					end
+					
+					Timer_Start(arm.creepTimer, (75 + delay)) -- starts timer with next wave
+					
+				end
+			end
+		end
+	end	
+end
+
+function Rule_AxisCreepSpawner()
+
+	if g_GameOver == true then
+		
+		Rule_RemoveMe()
+		
+	else
+		-- for each faction "arm" do
+		for k, arm in pairs(t_AxisCreepInfo) do
+			
+			-- if the spawn timer is not on then
+			--if arm.creepTimerOn == false then
+			
+			-- for each turrets in the arm do...
+			for j, this in pairs(arm.groups) do
+				-- checks to see if there is anything in the spawned overgroup for the arm... if there is nothing, then continue
+				if  math.floor(Timer_GetRemaining(arm.creepTimer)+0.5) == this.indTime  and (SGroup_Count(this.squadname) < 3) then
+					
+					if arm.turretWatch.level <= 4 then	
+						
+						local level =  t_SpawnStates[2][k].level
+						local location = this.spawnpoint[level]
+						local targetTurret1 = arm.turretWatch.targetturret[level].spawninfo[1].spawnbuilding
+						local targetMarker1 = arm.turretWatch.targetturret[level].spawninfo[1].spawnmarker
+						local targetTurret2 = arm.turretWatch.targetturret[level].spawninfo[2].spawnbuilding
+						local targetMarker2 = arm.turretWatch.targetturret[level].spawninfo[2].spawnmarker
+						
+						-- if both are empty
+						if EGroup_IsEmpty(targetTurret1) == true and EGroup_IsEmpty(targetTurret2) == true then
+							-- do nothing
+						else
+							-- find position
+							if EGroup_IsEmpty(targetTurret1) == true then
+								location = targetMarker2
+							-- the second one must exist
+							else
+								location = targetMarker1
+							end
+							
+							Util_CreateSquads(arm.playerFaction, this.squadname, this.blueprint[arm.turretWatch.level], Util_GetOffsetPosition(location, OFFSET_BACK, 5), this.destination, 1, nil, true)  --this.spawnpoint[arm.turretWatch.level]
+							SGroup_AddGroup(this.squadgroupname[SGroup_Count(this.squadname)], this.squadname)
+							
+							-- streamlining upgrade routine - deg 8/dec/08
+							local randUPG = World_GetRand(1, 4)
+							
+							if randUPG == 1 then
+								if SGroup_ContainsBlueprints(this.squadgroupname[SGroup_Count(this.squadname)], SBP.COHO.PIONEER_PUSH_CREEP, true) then 
+									Cmd_InstantUpgrade(this.squadgroupname[SGroup_Count(this.squadname)], UPG.AXIS.PIONEER_FLAMETHROWER)
+								elseif SGroup_ContainsBlueprints(this.squadgroupname[SGroup_Count(this.squadname)], SBP.COHO.GRENADIER_PUSH_CREEP, true) then 
+									Cmd_InstantUpgrade(this.squadgroupname[SGroup_Count(this.squadname)], UPG.COHO.PUSH.CREEP_LMG)
+								elseif SGroup_ContainsBlueprints(this.squadgroupname[SGroup_Count(this.squadname)], SBP.COHO.STORMTROOPER_PUSH_CREEP, true) then 
+									Cmd_InstantUpgrade(this.squadgroupname[SGroup_Count(this.squadname)], UPG.COHO.PUSH.CREEP_PANZERSHRECK)
+								end
+							end
+							
+							Cmd_SquadPath(this.squadname, this.path, true, false, true, 0)
+							
+						end
+					end
+					
+					break -- break is here to stop the for loop from advancing.  Makes it so only 1 group is ever spawned at a time
+					
+				elseif Timer_GetRemaining(arm.creepTimer) == 0 then
+					
+					local delay = 0
+					local level = arm.turretWatch.level
+					-- streamlining the math - deg 8/dec/08
+					if level > 1  then
+						delay = 15*(level-1) -- equals 15, 30, 45
+					end
+					
+					Timer_Start(arm.creepTimer, (75 + delay)) -- starts timer with next wave
+					
+				end
+			end
+		end
+	end
+end
+
+
+function Rule_EntityKilled(squad)
+	Entity_GetLastAttackers(squad, sgroup, 10)
+	
+end
+
+
+-- function to track the turret states from both sides
+function Rule_TrackTurrets()
+
+	for i = 1, table.getn(t_TurretStates) do -- for every sub-table inside t_TurretStates...
+		
+		for k, v in pairs(t_TurretStates[i]) do
+			
+			if v.level < 4 then 
+				
+				--if the specified turret is empty (destroyed), and it's state is "true" then
+				if EGroup_IsEmpty(v.targetturret[v.level].name) and v.targetturret[v.level].state == true then
+					
+					-- set the turret state to "false" to represent it being destroyed
+					v.targetturret[v.level].state = false
+					
+					print("mg level pushed back")
+					-- move the creep escalation level up by 1 
+					v.level = v.level + 1
+					
+				elseif EGroup_Count(v.targetturret[v.level].name) <= 1 and v.targetturret[v.level].numberdestroyed == 0 then
+					
+					if Player_GetTeam(Game_GetLocalPlayer()) == v.team then
+						
+						local speechPath = soundData.building.mgnest.enemy_mgnest_destroyed
+						
+						PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+						
+					else
+						
+						local speechPath = soundData.building.mgnest.player_mgnest_destroyed
+						
+						PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+						
+					end
+					
+					v.targetturret[v.level].numberdestroyed = v.targetturret[v.level].numberdestroyed +1
+					
+				elseif EGroup_Count(v.targetturret[v.level].name) <= 0 and v.targetturret[v.level].numberdestroyed == 1 then
+					
+					if Player_GetTeam(Game_GetLocalPlayer()) == v.team then
+						
+						local speechPath = soundData.building.mgnest.enemy_mgnest_destroyed
+						
+						PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+						
+					else
+						
+						local speechPath = soundData.building.mgnest.player_mgnest_destroyed
+						
+						PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+						
+					end
+					
+					v.targetturret[v.level].numberdestroyed = v.targetturret[v.level].numberdestroyed +1
+					
+				end
+			end
+		end
+	end
+end
+
+-- function to track the spawn point states from both sides
+function Rule_TrackSpawn()
+
+	for i = 1, table.getn(t_SpawnStates) do -- for every sub-table inside t_SpawnStates
+		
+		for k, v in pairs(t_SpawnStates[i]) do
+			
+			if v.level < 4 then 
+				
+				--if the specified turret is empty (destroyed), and it's state is "true" then
+				if EGroup_IsEmpty(v.locInfo[v.level].set) and v.locInfo[v.level].state == true then
+					-- set the turret state to "false" to represent it being destroyed
+					v.locInfo[v.level].state = false
+					-- makes sure that the level limit for the mortar bunker used is up to "3"
+					if v.level <= 3 then
+						-- move the creep escalation level up by 1 if not at limit "3"
+						if v.level < 3 then
+							v.level = v.level + 1
+						end
+						
+						if Player_GetTeam(Game_GetLocalPlayer()) == v.team then
+							
+							local speechPath = soundData.building.mortar.player_mortar_destroyed
+							PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+							
+						else
+							
+							local speechPath = soundData.building.mortar.enemy_mortar_destroyed
+							PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+							
+						end
+						
+						if Rule_Exists(Rule_LineBreachTrack) == false then
+							Rule_AddOneShot(Rule_LineBreachTrack, 4)
+						end
+						
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function Rule_LineBreachTrack()
+	
+	-- the tables included here specify
+	-- t_breach.group.Axis and t_breach.group.Allies = a table of egroups representing the mg bunkers
+	-- 'BreachLevel' = the 'level' or tier of defenses the player has managed to breach 
+	local levels = {
+		{egroup = t_breach.group.Allies, num = t_breach.level[1].num},
+		{egroup = t_breach.group.Axis, num = t_breach.level[2].num}, 
+		
+	}
+
+	for k,level in pairs(levels) do
+		
+		-- tracks Axis line breach
+		if level.num < 4 then
+		
+		-- grabs local breach level group
+			local breachgroup = level.egroup[level.num]
+			
+			for i = 1, table.getn(breachgroup) do
+				
+				if breachgroup[i] ~= nil and EGroup_IsEmpty(breachgroup[i]) == true then
+					
+					--throws in the level number specified and the number in the table of the race.
+					PlayBreachSpeech(level.num, k)
+					if level.num <= 2 then
+						t_breach.level[k].num = t_breach.level[k].num + 1	
+					end
+					break
+					
+				end
+				
+			end
+			
+		end
+		
+	end
+	
+end
+
+function PlayBreachSpeech(levelNumber, teamNumber)
+
+	if t_breach.level[teamNumber].flags[levelNumber] == false then
+		
+		if Player_GetTeam(Game_GetLocalPlayer()) == t_breach.level[teamNumber].searchorder[1] then
+			-- playes speech if player broke line of enemy
+			local speechPath = t_breach.SpeechPlayer[levelNumber]
+			PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+		
+		elseif Player_GetTeam(Game_GetLocalPlayer()) == t_breach.level[teamNumber].searchorder[2] then
+			-- playes speech if enemy broke line of player
+			local speechPath = t_breach.SpeechEnemy[levelNumber]
+			PlayPushSpeech(Game_GetLocalPlayer(), speechPath)
+		end
+		
+		t_breach.level[teamNumber].flags[levelNumber] = true
+		
+	end
+
+end
+
+
+function Rule_EngineerSpawn()
+
+	local l_lastattacker = SGroup_CreateIfNotFound("l_lastattacker")
+
+	for k, v in pairs(t_TurretSpawnInfo) do
+		
+		if SGroup_IsEmpty(v.overgroup) == false then
+			
+			if SGroup_IsUnderAttack(v.overgroup, ANY, 5) and v.engineersdeployed == false then
+				
+				SGroup_GetLastAttacker(v.overgroup, l_lastattacker)
+				
+				if SGroup_IsEmpty(v.engineersquad) == true then
+					
+					
+					Util_CreateSquads(v.faction, v.engineersquad, v.engineerbp, v.engineerspawn, nil, 1, nil, true)
+					
+					--SGroup_AddGroup(v.overgroup, v.engineersquad)
+					
+					local l_RandomFlamer = World_GetRand(1, 3)
+					
+					if SGroup_ContainsBlueprints(v.engineersquad, SBP.COHO.PIONEER_PUSH_CREEP, true) then 
+						
+						if l_RandomFlamer == 1 then
+							
+							Cmd_InstantUpgrade(v.engineersquad, UPG.AXIS.PIONEER_FLAMETHROWER)
+							
+						end
+									
+					elseif SGroup_ContainsBlueprints(v.engineersquad, SBP.COHO.ENGINNER_PUSH_CREEP, true) then 
+						
+						if l_RandomFlamer == 1 then
+							
+							Cmd_InstantUpgrade(v.engineersquad, UPG.ALLIES.ENGINEER_FLAMETHROWER)
+							
+						end
+						
+					end
+					
+					v.engineersdeployed = true
+					
+					if SGroup_IsEmpty(l_lastattacker) == false then
+						
+						Cmd_Attack(v.engineersquad, l_lastattacker)
+						
+					end
+					
+					
+				end
+				
+			end
+		 
+		end	
+		
+	end
+
+end
+
+
+function Rule_EngineerBehaviour()
+
+	for k,v in pairs(t_TurretSpawnInfo) do
+		
+		if SGroup_IsEmpty(v.engineersquad) == false then
+			
+			
+			--print(SGroup_IsUnderAttack(v.name, ANY, 5) == true)
+			if SGroup_IsUnderAttack(v.engineersquad, ANY, 5) == true then
+				
+				local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+				
+				-- what if EGroup attacks (i.e. bunker?)
+				SGroup_GetLastAttacker(v.engineersquad, l_LastAttacker)
+				
+				if SGroup_IsEmpty(l_LastAttacker) == false then
+					
+					Cmd_Attack(v.engineersquad, l_LastAttacker)
+					
+				end
+				
+			elseif SGroup_IsUnderAttack(v.overgroup, ANY, 5) == true then 
+				
+				local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+				
+				-- what if EGroup attacks (i.e. bunker?)
+				SGroup_GetLastAttacker(v.overgroup, l_LastAttacker)
+				
+				if SGroup_IsEmpty(l_LastAttacker) == false then
+					
+					Cmd_Attack(v.engineersquad, l_LastAttacker)
+					
+				end
+				
+			elseif SGroup_IsIdle(v.engineersquad, ALL) == true then
+				
+				Cmd_AttackMove(v.engineersquad, v.engineerspawn, nil, nil, 10)
+				
+			end
+		end
+		
+	end
+
+end
+
+
+	
+function Rule_AlliedVehicleSpawn()
+
+	for k,v in pairs(t_AlliedVehicleInfo) do
+		
+		for z = 1, table.getn(v.associatedbuildings) do
+			
+			if EGroup_IsEmpty(v.associatedbuildings[z]) and (z == v.vehiclelevel) then
+				
+				-- check to keep it from going higher than the number of sbps in the vehicletype subtable - deg 9/dec/08
+				if v.vehiclelevel < #(v.vehicletype) then
+					v.vehiclelevel = v.vehiclelevel + 1
+				end
+				
+			end
+			
+		end
+		
+	end
+	
+	local l_randomvehiclespawn = World_GetRand(1, table.getn(t_AlliedVehicleInfo))
+	local l_randomarm = t_AlliedVehicleInfo[l_randomvehiclespawn]
+	
+	if SGroup_IsEmpty(l_randomarm.overgroup) then
+	
+		if SGroup_IsEmpty(l_randomarm.name) then
+			
+			if l_randomarm.timerstarted == false then
+				
+				Timer_Start(l_randomarm.timer, 30)
+				
+				l_randomarm.timerstarted = true
+				
+			elseif Timer_GetRemaining(l_randomarm.timer) <= 0 then
+				
+				Util_CreateSquads(l_randomarm.faction, l_randomarm.name, l_randomarm.vehicletype[l_randomarm.vehiclelevel], l_randomarm.spawnpoint[World_GetRand(1, table.getn(l_randomarm.spawnpoint))])
+				
+				SGroup_AddGroup(l_randomarm.overgroup, l_randomarm.name)
+				
+				l_randomarm.timerstarted = false
+				
+				local l_localplayer = Game_GetLocalPlayer()
+				
+				if Player_GetRaceName(l_localplayer) == TRACE_AXIS and (l_randomarm.vehicletype[l_randomarm.vehiclelevel] == SBP.ALLIES.JEEP) then
+					
+					local speechPath = soundData.enemyapproach.vehiclespawn.cycle_jeep
+					PlayPushSpeech(l_localplayer, speechPath)
+					
+				elseif Player_GetRaceName(l_localplayer) == TRACE_AXIS and (l_randomarm.vehicletype[l_randomarm.vehiclelevel] == SBP.ALLIES.GREYHOUND) then
+					
+					local speechPath = soundData.enemyapproach.vehiclespawn.lightvehicle
+					PlayPushSpeech(l_localplayer, speechPath)
+					
+				elseif Player_GetRaceName(l_localplayer) == TRACE_AXIS and (l_randomarm.vehicletype[l_randomarm.vehiclelevel] == SBP.ALLIES.SHERMAN) then
+					
+					local speechPath = soundData.enemyapproach.vehiclespawn.tank
+					PlayPushSpeech(l_localplayer, speechPath)
+					
+				end
+				
+			end
+			
+		end
+		
+	end
+	
+end	
+	
+function Rule_AlliedVehicleBehaviour()
+
+	for k,v in pairs(t_AlliedVehicleInfo) do
+		
+		if SGroup_IsEmpty(v.overgroup) == false and SGroup_IsEmpty(v.name) == false then
+			
+			local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+			
+			--print(SGroup_IsUnderAttack(v.name, ANY, 5) == true)
+			if SGroup_IsUnderAttack(v.name, ANY, 5) == true then
+				
+				-- what if EGroup attacks (i.e. bunker?)
+				SGroup_GetLastAttacker(v.name, l_LastAttacker)
+				
+				if SGroup_IsEmpty(l_LastAttacker) == false then
+					
+					if SGroup_Compare(l_LastAttacker, v.attacker) then
+						-- do nothing
+					else
+						
+						if SGroup_IsEmpty(l_LastAttacker) == false then
+							
+							-- first priority is AT gun
+							if SGroup_ContainsBlueprints(l_LastAttacker, SBP.AXIS.PAK_38, ANY) then
+								
+								Cmd_Attack(v.name, l_LastAttacker)
+								
+								v.attacker = l_LastAttacker
+								
+								SGroup_Clear(l_LastAttacker)
+								
+							else	
+								
+								Cmd_Attack(v.name, l_LastAttacker)
+								
+								v.attacker = l_LastAttacker
+								
+								SGroup_Clear(l_LastAttacker)
+								
+							end
+							
+						end
+						
+					end
+					
+				end
+				
+			else
+				Creep_VehicleBehavior(v.name, g_AxisCreepPlayer, mkr_AxisHQ)
+			end
+		end
+	end
+
+end
+
+function Creep_VehicleBehavior(sgroup, enemyPlayer, enemyHQ)
+	if SGroup_IsIdle(sgroup, ALL) == true then
+		
+		Player_GetAll(enemyPlayer)
+		
+		if SGroup_IsEmpty(sg_allsquads) == false then
+			Cmd_Attack(sgroup, sg_allsquads)
+		else
+			Cmd_AttackMove(sgroup, Marker_GetPosition(enemyHQ))
+		end
+	end
+end
+
+function Rule_AxisVehicleSpawn()
+
+	for k,v in pairs(t_AxisVehicleInfo) do
+		
+		for z = 1, table.getn(v.associatedbuildings) do
+			
+			if EGroup_IsEmpty(v.associatedbuildings[z]) and (z == v.vehiclelevel) then
+				-- check to keep it from going higher than the number of sbps in the vehicletype subtable - deg 9/dec/08
+				if v.vehiclelevel < #(v.vehicletype) then
+					v.vehiclelevel = v.vehiclelevel + 1
+				end
+			end
+			
+		end
+		
+	end
+	
+	local l_randomvehiclespawn = World_GetRand(1, table.getn(t_AxisVehicleInfo))
+	local l_randomarm = t_AxisVehicleInfo[l_randomvehiclespawn]
+	
+	if SGroup_IsEmpty(l_randomarm.overgroup) then
+		
+		if SGroup_IsEmpty(l_randomarm.name) then
+			
+			if l_randomarm.timerstarted == false then
+				
+				Timer_Start(l_randomarm.timer, 30)
+				
+				l_randomarm.timerstarted = true
+				
+			elseif Timer_GetRemaining(l_randomarm.timer) <= 0 then
+				
+				Util_CreateSquads(l_randomarm.faction, l_randomarm.name, l_randomarm.vehicletype[l_randomarm.vehiclelevel], l_randomarm.spawnpoint[World_GetRand(1, table.getn(l_randomarm.spawnpoint))])
+				
+				SGroup_AddGroup(l_randomarm.overgroup, l_randomarm.name)
+				
+				l_randomarm.timerstarted = false
+				
+				local l_localplayer = Game_GetLocalPlayer()
+				
+				if Player_GetRaceName(l_localplayer) == TRACE_ALLIES and (l_randomarm.vehicletype[l_randomarm.vehiclelevel] == SBP.AXIS.MOTORCYCLE) then
+					
+					local speechPath = soundData.enemyapproach.vehiclespawn.cycle_jeep
+					PlayPushSpeech(l_localplayer, speechPath)
+					
+				elseif Player_GetRaceName(l_localplayer) == TRACE_ALLIES and (l_randomarm.vehicletype[l_randomarm.vehiclelevel] == SBP.AXIS.PUMA) then
+					
+					local speechPath = soundData.enemyapproach.vehiclespawn.lightvehicle
+					PlayPushSpeech(l_localplayer, speechPath)
+					
+				elseif Player_GetRaceName(l_localplayer) == TRACE_ALLIES and (l_randomarm.vehicletype[l_randomarm.vehiclelevel] == SBP.AXIS.PANZER) then
+					
+					local speechPath = soundData.enemyapproach.vehiclespawn.tank
+					PlayPushSpeech(l_localplayer, speechPath)
+					
+				end
+				
+			end
+			
+		end
+		
+	end
+	
+end	
+
+
+function Rule_AxisVehicleBehaviour()
+
+	for k,v in pairs(t_AxisVehicleInfo) do
+		
+		if SGroup_IsEmpty(v.overgroup) == false and SGroup_IsEmpty(v.name) == false then
+			
+			local l_LastAttacker = SGroup_CreateIfNotFound("l_LastAttacker")
+			
+			--print(SGroup_IsUnderAttack(v.name, ANY, 5) == true)
+			if SGroup_IsUnderAttack(v.name, ANY, 5) == true then
+				
+				-- what if EGroup attacks (i.e. bunker?)
+				SGroup_GetLastAttacker(v.name, l_LastAttacker)
+				
+				if SGroup_IsEmpty(l_LastAttacker) == false then
+					
+					if SGroup_Compare(l_LastAttacker, v.attacker) then
+						
+						-- do nothing
+						
+					else
+						
+						if SGroup_IsEmpty(l_LastAttacker) == false then
+							
+							-- first priority is AT gun
+							if SGroup_ContainsBlueprints(l_LastAttacker, SBP.ALLIES.AT_57MM, ANY) then
+								
+								Cmd_Attack(v.name, l_LastAttacker)
+								
+								v.attacker = l_LastAttacker
+								
+								SGroup_Clear(l_LastAttacker)
+								
+							else	
+								
+								Cmd_Attack(v.name, l_LastAttacker)
+								
+								v.attacker = l_LastAttacker
+								
+								SGroup_Clear(l_LastAttacker)
+								
+							end
+							
+						end
+						
+					end
+					
+				end
+				
+			else
+				Creep_VehicleBehavior(v.name, g_AlliedCreepPlayer, mkr_AllyHQ)
+			end
+		end
+		
+	end
+
+end
+
+
+function Rule_HQDefenderInit()
+
+	-- initialize HQ defenderes
+	
+	tsg_Team1HQDefenders = SGroup_CreateTable("sg_Team1HQDefender%d", 3)
+	tsg_Team2HQDefenders = SGroup_CreateTable("sg_Team2HQDefender%d", 3)
+	tmkr_Team1HQDefenderLoc = Marker_GetTable("mkr_Team1HQDefender%d")
+	tmkr_Team2HQDefenderLoc = Marker_GetTable("mkr_Team2HQDefender%d")
+	
+	t_HQDefenderData = {
+	
+		{name = tsg_Team1HQDefenders[1], blueprint = SBP.ALLIES.HEAVYMG, location = tmkr_Team1HQDefenderLoc[1], respawnlocation = mkr_Team1FinalReinforcementSpawn, 
+			dead = false, setup = false, respawntimer = "Team1HQDefenderTimer1", setuptimer = "Team1HQDefSetup1", faction = g_AlliedCreepPlayer, weapondetectloc = mkr_Team1HQWeaponDetect,},
+		{name = tsg_Team1HQDefenders[2], blueprint = SBP.ALLIES.HEAVYMG, location = tmkr_Team1HQDefenderLoc[2], respawnlocation = mkr_Team1FinalReinforcementSpawn, 
+			dead = false, setup = false, respawntimer = "Team1HQDefenderTimer2", setuptimer = "Team1HQDefSetup2", faction = g_AlliedCreepPlayer, weapondetectloc = mkr_Team1HQWeaponDetect,},
+		{name = tsg_Team1HQDefenders[3], blueprint = SBP.ALLIES.MORTAR, location = tmkr_Team1HQDefenderLoc[3], respawnlocation = mkr_Team1FinalReinforcementSpawn, 
+			dead = false, setup = false, respawntimer = "Team1HQDefenderTimer3", setuptimer = "Team1HQDefSetup3", faction = g_AlliedCreepPlayer, weapondetectloc = mkr_Team1HQWeaponDetect,},
+		{name = tsg_Team2HQDefenders[1], blueprint = SBP.AXIS.HEAVYMG, location = tmkr_Team2HQDefenderLoc[1], respawnlocation = mkr_Team2FinalReinforcementSpawn, 
+			dead = false, setup = false, respawntimer = "Team2HQDefenderTimer1", setuptimer = "Team2HQDefSetup1", faction = g_AxisCreepPlayer, weapondetectloc = mkr_Team2HQWeaponDetect,},
+		{name = tsg_Team2HQDefenders[2], blueprint = SBP.AXIS.HEAVYMG, location = tmkr_Team2HQDefenderLoc[2], respawnlocation = mkr_Team2FinalReinforcementSpawn, 
+			dead = false, setup = false, respawntimer = "Team2HQDefenderTimer2", setuptimer = "Team2HQDefSetup2", faction = g_AxisCreepPlayer, weapondetectloc = mkr_Team2HQWeaponDetect,},
+		{name = tsg_Team2HQDefenders[3], blueprint = SBP.AXIS.MORTAR, location = tmkr_Team2HQDefenderLoc[3], respawnlocation = mkr_Team2FinalReinforcementSpawn,
+			dead = false, setup = false, respawntimer = "Team2HQDefenderTimer3", setuptimer = "Team2HQDefSetup3", faction = g_AxisCreepPlayer, weapondetectloc = mkr_Team2HQWeaponDetect,},
+	}
+	
+	
+	
+end
+
+
+function Rule_HQDefenderSpawn()
+
+	-- spawn HQ defenders
+	
+	for k, v in pairs(t_HQDefenderData) do
+		
+		Util_CreateSquads(v.faction, v.name, v.blueprint, v.location)
+		Cmd_InstantSetupTeamWeapon(v.name)
+		
+		v.setup = true
+	end
+
+end
+
+
+
+
+
+function Rule_HQDefenderRespawn()
+
+	if g_GameOver == true then
+		Rule_RemoveMe()
+	else
+		
+		-- if HQ defender squad is dead, then start timer and set flag to dead
+		for k, v in pairs(t_HQDefenderData) do
+			if v.dead == false then
+				if SGroup_IsEmpty(v.name) then
+					
+					local junkweapons = EGroup_CreateIfNotFound("junkweapons")
+					World_GetNeutralEntitiesNearMarker(junkweapons, v.weapondetectloc)
+					
+					EGroup_Filter(junkweapons, {EBP.PICKUP.ALLIES.MORTAR, EBP.PICKUP.ALLIES.HMG, EBP.PICKUP.AXIS.HMG, EBP.PICKUP.AXIS.MORTAR}, FILTER_KEEP)
+					
+					if EGroup_IsEmpty(junkweapons) == false then
+						EGroup_DestroyAllEntities(junkweapons)
+						EGroup_Clear(junkweapons)
+					end
+					
+					Timer_Start(v.respawntimer, 45)
+					v.dead = true
+					
+				elseif SGroup_IsEmpty(v.name) == false and v.setup == false then
+					
+					if Timer_GetRemaining(v.setuptimer) <= 0 then -- assumes the sgroup is not empty
+						
+						Cmd_InstantSetupTeamWeapon(v.name)
+						v.setup = true
+						
+					end
+				end
+				
+			elseif v.dead == true then -- if HQ defender squad is already dead and respawn timer finishes, then start setup timer after sending replacement on its way.
+				
+				-- we do not want the hq defender squads respawning if either human player has anybody near the endzone
+				local playerNear = false
+				for i = 1, #(t_PlayerIDInfo) do 
+					if t_PlayerIDInfo[i].isHuman == true then
+						Player_GetAllSquadsNearMarker(t_PlayerIDInfo[i].playerID, sg_AllUnitsTemp, v.respawnlocation, 40)
+						if SGroup_IsEmpty(sg_AllUnitsTemp) == false then
+							playerNear = true
+							break
+						end
+					end
+				end
+				
+				if Timer_GetRemaining(v.respawntimer) <= 0 and playerNear == false then
+					Util_CreateSquads(v.faction, v.name, v.blueprint, v.respawnlocation, v.location)
+					Timer_Start(v.setuptimer, 10)
+					v.dead = false
+					v.setup = false
+					
+				end
+			end
+		end
+	end
+
+end
+

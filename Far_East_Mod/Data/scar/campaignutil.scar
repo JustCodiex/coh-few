@@ -1,0 +1,253 @@
+CONSTANTS = {
+	CHINA = {
+		SBP = {
+			ZhaoXingWen_M01 			= BP_GetSquadBlueprint("sbps/races/allies/soldiers/sp/zhao_xingwen_sp_m01_squad.lua"),
+		},
+		ACTOR = {
+			-- Generic
+			NRA_CORPORAL				= "InGame\\portraits\\speech_axis_soldier",	
+			
+			-- Heroes
+			ZhaoXingWen					= "InGame\\portraits\\speech_cmnw_cutting",
+		},
+	},
+	JAPAN = {
+		ABILITY = {
+			--SHANPAO_BOMBARDMENT_SP 		= BP_GetAbilityBlueprint("abilities/sp/nra01/japanese_tpye94_artillery_barrage_sp.lua"),
+		},
+		SBP = {
+			--SHANPAO_SP					= BP_GetSquadBlueprint("sbps/races/axis/vehicles/sp/94shanpao_sp.lua"),
+			KWANTUNG_SP						= BP_GetSquadBlueprint("sbps/races/axis/soldiers/sp_few/kwantung_3man_sp_squad.lua"),
+		},
+	},
+	KOREA = {
+		SBP = {
+			GENGPING_DEMOLITION				= BP_GetSquadBlueprint("sbps/races/axis/soldiers/sp_few/gengping_demolition_sp_squad.lua"),
+		},
+		UPGRADE = {
+			NEAR_RAILWAY 					= BP_GetUpgradeBlueprint("upgrade/sp_near_railway.lua"),
+		},
+		EBP = {
+			DEMOLITION						= BP_GetEntityBlueprint("ebps/props/sp_gengping_demolition.lua"),
+		},
+		ACTOR = {
+			GENGPING						= "InGame\\portraits\\speech_korean02",
+			SOLDIER							= "InGame\\portraits\\speech_korean01",
+		},
+	},
+	CAMPAIGN = {
+		MUKDEN = {
+			M01								= BP_GetMedalBlueprint("medals/mukden_a"),
+			M02								= BP_GetMedalBlueprint("medals/mukden_b"),
+			M03								= BP_GetMedalBlueprint("medals/mukden_c"),
+		},
+	},
+}
+
+import("campaigndefencesequence.scar"); -- So we can create defensive sequences
+import("campaignpatrolsequence.scar"); -- So we can create patrol sequences
+import("campaignbounty.scar"); -- So we can use the resource bounty features
+
+function Campaign_DefaultInit()
+	g_allresourcepoints = World_GetAllStrategicPoints();
+end
+
+Scar_AddInit(Campaign_DefaultInit);
+
+-- Description: Get random position near position
+-- Credits: Mannerheim
+-- Note: Yay Lazyness
+function Util_GetRandomOffset(pos, mindist, maxdist)	
+	local newpos = pos
+	newpos.x = newpos.x + World_GetRand(mindist, maxdist)
+	newpos.z = newpos.z + World_GetRand(mindist, maxdist)
+	return newpos
+end
+
+--? @shortdesc: Returns a EGroup (__ENTITYEG) containing an entity. Basically converts an entity into an EGroup
+--? @result EGroup
+--? @args Entity entity
+function EGroup_FromEntity(entity)
+	__ENTITYEG = EGroup_CreateIfNotFound("__ENTITYEG");
+	EGroup_Clear(__ENTITYEG);
+	EGroup_Add(__ENTITYEG, entity);
+	return __ENTITYEG;
+end
+
+--? @shortdesc: Returns a SGroup (__SQUADSG) containing a squad. Basically converts a squad into an SGroup
+--? @result SGroup
+--? @args Squad squad
+function SGroup_FromSquad(squad)
+	__SQUADSG = SGroup_CreateIfNotFound("__SQUADSG");
+	SGroup_Clear(__SQUADSG);
+	SGroup_Add(__SQUADSG, squad);
+	return __SQUADSG;
+end
+
+function Squad_DestroyAmount(squad, amount)
+	if (amount < Squad_Count(squad)) then
+		local t_destroy = {};
+		for i = 0, Squad_Count(squad)-1 do
+			if (i < amount) then
+				table.insert(t_destroy, Squad_EntityAt(squad, i));
+			end
+		end
+		for i = 1, #t_destroy do
+			Entity_Destroy(t_destroy[i]);
+		end
+	else
+		Squad_Destroy(squad);
+	end
+end
+
+--? @shortdesc: Pick an item inside a table based on a condition
+--? @result SGroup
+--? @args Table list, Real condition_value
+function Util_PickConditioned(list, condition_value)
+	local t_candidates = {};
+	for i = 1, #list do
+		if (condition_value >= list[i].CONDITION or list[i].CONDITION == 0) then
+			table.insert(t_candidates, list[i]);
+		end
+	end
+	if (#t_candidates > 0) then
+		return t_candidates[World_GetRand(1, #t_candidates)];
+	else
+		return nil;
+	end
+end
+
+--? @shortdesc: Set the playable area of a mission
+--? @result Void
+--? @args Marker mkr
+function Util_SetPlayArea( mkr )
+	if mkr ~= nil then
+		Misc_RestrictCommandsToMarker( mkr ); -- Limit commands to this rectangular marker
+		Camera_ClampToMarker( mkr ); -- Limit the camera movement to inside this rectangular marker
+	else
+		Misc_RemoveCommandRestriction(); -- Remove restriction
+		Camera_Unclamp(); -- Remove restriction
+	end
+end
+
+--? @shortdesc: Spawn units inside each entity
+--? @result Void
+--? @args EGroup egroup, Player player, SGroup sgroup, SquadBlueprint, blueprint, Integer amount, Integer loadout, Table upgrades
+function Util_SpawnInStructures(egroup, player, sgroup, blueprint, amount, loadout, upgrades)
+	local _entityloop = function(egroupid, itemindex, entityID)
+		Util_CreateSquads( player, sgroup, blueprint, EGroup_FromEntity(entityID), nil, amount, loadout, false, nil, upgrades, nil); 
+	end
+	EGroup_ForEachEx( egroup, _entityloop, true, false ); 
+end
+
+--? @shortdesc: Split a squad in two
+--? @result Void
+--? @args SGroup target, Integer toRemove, SquadBlueprint product, Boolean once
+function Util_SplitSquads(target, toRemove, product, once)
+
+	local _new_squad = nil;
+
+	local _squadloop = function(sgroupid, itemindex, squadID)
+		if product == nil then
+			if toRemove < Squad_Count(squadID) then
+				_new_squad = Squad_CreateAndSpawnToward( Squad_GetBlueprint( squadID ), Squad_GetPlayerOwner( squadID ), toRemove, Squad_GetPosition( squadID ), Squad_GetHeading( squadID ) );
+				Squad_DestroyAmount(squadID, toRemove);
+				if once then
+					return true;
+				end
+			end
+		else
+			if toRemove < Squad_Count(squadID) then
+				_new_squad = Squad_CreateAndSpawnToward( product, Squad_GetPlayerOwner( squadID ), 0, Squad_GetPosition( squadID ), Squad_GetHeading( squadID ) );
+				Squad_DestroyAmount(squadID, toRemove);
+				if once then
+					return true;
+				end
+			end
+		end
+	end
+	
+	SGroup_ForEachEx( target, _squadloop, true, false );
+	
+	return _new_squad;
+
+end
+
+function Util_SelectBasedOnDifficulty(a,b,c,d)
+	local v = Game_GetSPDifficulty();
+	if (g_difficulty == GD_EXPERT) then
+		return a
+	elseif (g_difficulty == GD_HARD) then
+		return b
+	elseif (g_difficulty == GD_NORMAL) then
+		return c
+	elseif (g_difficulty == GD_EASY) then
+		return d
+	end
+end
+
+--? @shortdesc: Get all the strategic points in the world
+--? @result Table
+--? @args Boolean countvp
+function World_GetAllStrategicPoints( countvp )
+
+	if countvp == nil then 
+		countvp = false;
+	end
+	
+	local count = World_GetNumEntities()
+	local t_stratPoints = {};
+	
+	for i=0,(count-1) do
+		local entityid = World_GetEntity( i );
+		if (Entity_IsVictoryPoint(entityid) == true and countvp) or (Entity_IsStrategicPoint( entityid ) ) then
+			table.insert(t_stratPoints, entityid);
+		end
+	end
+	
+	return t_stratPoints;
+
+end
+
+function World_FindAllEntitiesOfType( ebp )
+
+	local count = World_GetNumEntities()
+	local t_objects = {};
+	
+	for i=0,(count-1) do
+		local entityid = World_GetEntity( i );
+		if Entity_GetBlueprint(entityid) == ebp then
+			table.insert(t_objects, entityid);
+		end
+	end
+	
+	return t_objects;
+
+end
+
+function Player_FindAllEntitiesOfType( ebp )
+
+	local t_foundtypes = {};
+
+	Player_GetAll( player1 );
+	for i = 1, EGroup_Count(eg_allentities ) do
+		local e = EGroup_GetSpawnedEntityAt(eg_allentities, i);
+		if Entity_GetBlueprint(e) == ebp  then
+			table.insert(t_foundtypes, e);
+		end
+	end
+	
+	return t_foundtypes;
+
+end
+
+--? @shortdesc: End the game, but with a delay so we can show other important information
+--? @result Void
+--? @args Bool win, Real delay
+function Game_EndDelay( win, delay )
+	local _delaycall = function()			-- Create local function to call
+		Game_EndSP( win ); 					-- End SP in a victory or defeat
+		Rule_RemoveAll();					-- Stop all calls
+	end	
+	Rule_AddOneShot(_delaycall, delay);		-- Kick off the delay
+end

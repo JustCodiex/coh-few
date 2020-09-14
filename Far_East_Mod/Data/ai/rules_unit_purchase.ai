@@ -1,0 +1,574 @@
+--------------------------------------------------------------
+-- Rules For The Purchasing Of Units
+--
+--
+
+--------------------------------------------------------------
+-- Special Unit Demand Rules
+
+s_allied_munition_units = 
+{
+	-- NAME, MUNITION RATE, MUNITION FLOAT, ANTICLASS(HEAVY_VEHICLE, INFANTRY, LIGHT_VEHICLE, MEDIUM_VEHICLE, STRUCTURE)
+	[BP_GetID(SBP.ALLIES.GREYHOUND)] = {50, 200, {0.5, 8, 3, 4, 0.5} },
+	[BP_GetID(SBP.ALLIES.RIFLEMEN)] = {30, 200, {0.5, 5, 3, 0.5 , 0.5} }, -- ratings averaged across 3 global upgrades so they're diluted
+					[BP_GetID(SBP.ALLIES.GUOZDD)] = {30, 200, {0.5, 5, 3, 0.5 , 0.5} },
+	[BP_GetID(SBP.ALLIES.RECRUIT_LIANLUOGUAN)] = {40, 250, {0, 4, 2, 0.5, 1} },
+	[BP_GetID(SBP.ALLIES.SHERMAN)] = {40, 240, {6, 8, 6, 6, 6} },
+	[BP_GetID(SBP.ALLIES.RANGER)] = {40, 230, {1, 6, 6, 2, 0.2} },
+	[BP_GetID(SBP.ALLIES.BOYS)] = {50, 240, {1, 6, 6, 2, 0.2} },
+	[BP_GetID(SBP.ALLIES.PARATROOPER)] = {40, 260, {4, 5, 5, 6, 3} },
+	[BP_GetID(SBP.ALLIES.ENGINEER)] = {40, 220, {0.5, 1, 0.5, 0.5, 3} },
+	[BP_GetID(SBP.ALLIES.ZHUANGDING)] = {40, 220, {0.5, 1, 0.5, 0.5, 3} },
+	[BP_GetID(SBP.ALLIES.HEAVYMG)] = {30, 220, {1, 0, 2, 0.5, 0} },
+                    [BP_GetID(SBP.ALLIES.GUOMEI_TEAM)] = {40, 220, {2, 1, 2, 5, 3} },
+                    [BP_GetID(SBP.ALLIES.RECRUIT_8RA_ZHENGWEI)] = {40, 220, {2, 1, 2, 5, 3} },
+                    [BP_GetID(SBP.ALLIES.RECRUIT_CAVALRY)] = {40, 220, {2, 1, 2, 5, 3} },
+                    [BP_GetID(SBP.ALLIES.RECRUIT_8RA_GUERILLA)] = {30, 220, {2, 1, 2, 5, 3} },
+                    [BP_GetID(SBP.ALLIES.RECRUIT_DONKEY_BOMB)] = {40, 220, {2, 1, 2, 5, 3} },
+                    [BP_GetID(SBP.ALLIES.M1918_TEAM)] = {40, 200, {2, 2, 5, 6, 4} },
+                    [BP_GetID(SBP.ALLIES.RECRUIT_DUZHANDUI)] = {30, 230, {1, 1, 2, 0.5, 1} },
+                    [BP_GetID(SBP.ALLIES.KAR_TEAM)] = {40, 230, {0.5, 1, 1, 0.5, 0} },
+	[BP_GetID(SBP.ALLIES.PAK_35)] = {40, 220, {2, 0, 2, 6, 0} },
+	[BP_GetID(SBP.ALLIES.TYPE1)] = {40, 240, {2, 1, 2, 8, 1} },
+}
+
+
+s_allied_cw_munition_units = 
+{
+	-- NAME, MUNITION RATE, MUNITION FLOAT, ANTICLASS(HEAVY_VEHICLE, INFANTRY, LIGHT_VEHICLE, MEDIUM_VEHICLE, STRUCTURE)
+	[BP_GetID(SBP.CW.SAPPER)] = {10, 160, {8, 0, 4, 8, 0} },
+	[BP_GetID(SBP.CW.TOMMIES)] = {30, 220, {2, 2, 2, 2, 2} },
+}
+
+s_axis_pe_munition_units = 
+{
+	-- NAME, MUNITION RATE, MUNITION FLOAT, ANTICLASS(HEAVY_VEHICLE, INFANTRY, LIGHT_VEHICLE, MEDIUM_VEHICLE, STRUCTURE)
+	[BP_GetID(SBP.ELITE.PANZERGRENADIER)] = {30, 220, {4, 4, 4, 4, 4} },
+	[BP_GetID(SBP.ELITE.FALLSCHIRMJAGER)] = {30, 220, {0, 4, 4, 0, 0} },
+}
+
+
+s_axis_munition_units = 
+{
+	-- NAME, MUNITION RATE, MUNITION FLOAT, ANTICLASS(HEAVY_VEHICLE, INFANTRY, LIGHT_VEHICLE, MEDIUM_VEHICLE, STRUCTURE)
+	[BP_GetID(SBP.AXIS.OFFICER)] = {45, 450, {7, 7, 9, 0.5, 9} },
+	[BP_GetID(SBP.AXIS.GRENADIER)] = {30, 200, {5, 5, 7, 6, 4} },
+	[BP_GetID(SBP.AXIS.HALFTRACK)] = {60, 450, {6, 5, 9, 0.5, 5} },
+	[BP_GetID(SBP.AXIS.PIONEER)] = {40, 200, {0.5, 1, 0.5, 0.5, 3} },
+	[BP_GetID(SBP.AXIS.STORMTROOPER)] = {40, 250, {8, 6, 11, 2, 7} }, -- bundled grenade factored in
+	[BP_GetID(SBP.AXIS.VOLKSGRENADIER)] = {40, 200, {1, 1.5, 5, 1, 5} },	
+	[BP_GetID(SBP.AXIS.PUMA)] = {40, 200, {4, 6, 10, 4, 2} },
+	[BP_GetID(SBP.AXIS.T9)] = {40, 200, {2, 0, 2, 6, 0} },
+	[BP_GetID(SBP.AXIS.PAK_38)] = {40, 200, {1, 1, 2, 4, 1} },
+}
+
+
+----------------------------------------------------------------
+-- The purchase limits dictate the maximum amount of certain units to build
+----------------------------------------------------------------
+
+allied_purchase_limits = {
+	[BP_GetID(SBP.ALLIES.HALFTRACK)] = 0, -- disable the halftrack since there is no aitactic to use them properly
+	[BP_GetID(SBP.ALLIES.JEEP)] = 1,
+	[BP_GetID(SBP.ALLIES.SNIPER)] = 3,
+	[BP_GetID(SBP.ALLIES.MORTAR)] = 1,
+	[BP_GetID(SBP.ALLIES.HEAVYMG)] = 2,
+	-- limit artillery to 2
+}
+
+
+allied_cw_purchase_limits = {
+	[BP_GetID(SBP.CW.BREN_CARRIER)] = 0, -- the ai won't build bren carriers.  not sure why
+	[BP_GetID(SBP.CW.STUART)] = 2,
+}
+
+axis_pe_purchase_limits = {
+	[BP_GetID(SBP.ELITE.HALFTRACK_251)] = 2,
+	[BP_GetID(SBP.ELITE.HALFTRACK_VAMPIRE)] = 0, -- the panzer elite will not build vampire trucks
+	[BP_GetID(SBP.ELITE.BERGETIGER)] = 0, -- i don't even know what this unit is!
+	[BP_GetID(SBP.ELITE.KETTENRAD)] = 2, -- maybe this should be 1?
+}
+
+axis_purchase_limits = {
+	[BP_GetID(SBP.AXIS.MOTORCYCLE)] = 1,
+	[BP_GetID(SBP.AXIS.HALFTRACK)] = 0, -- axis doesn't build the halftrack
+	[BP_GetID(SBP.AXIS.SNIPER)] = 3,
+	[BP_GetID(SBP.AXIS.MORTAR)] = 1,
+	[BP_GetID(SBP.AXIS.NEBELWERFER)] = 0, -- no nebelwerfers for the axis
+	[BP_GetID(SBP.AXIS.OFFICER)] = 0, -- no officers for the axis
+	[BP_GetID(SBP.AXIS.HEAVYMG)] = 2,
+	-- mountain gun 1
+}
+
+import( 'Mod/mod_ai_data.ai' )
+
+function GetPlayerSquadCount(player, sbplist)
+
+		local count = 0
+		-- function to check if one squad is in the list
+		local IsTargetSquad = function(gid, idx, sid)
+			for n = 1, table.getn(sbplist) do
+				if Squad_GetBlueprint(sid) == sbplist[n] then
+					count = count +1
+					return false
+				end
+			end
+			return false
+		end
+		
+		-- count all buildings in players egroup
+		SGroup_ForEach( Player_GetSquads( player ), IsTargetSquad )
+		
+		return count
+end
+
+function SniperDemand()
+	
+	if ( AI_IsMODCoHO() == true ) then
+	
+		hmg_table = {
+			SBP.AXIS.HEAVYMG,
+			SBP.ALLIES.HEAVYMG,
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/soldiers_heroic/sniper_squad_special_ops" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/soldiers_heroic/sniper_squad_survival" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/soldiers_heroic/sniper_eagle_eye" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/soldiers_heroic/sniper_field_specialist" ),
+		}
+	
+	else
+	
+		hmg_table = {
+		SBP.AXIS.HEAVYMG,
+		SBP.ALLIES.HEAVYMG
+		}
+
+	end
+	
+	local num_hmgs = 0
+
+	local pcount = World_GetPlayerCount()
+	for i=1,pcount do 
+		local player = World_GetPlayerAt( i )
+		if (Player_IsAlive(player)) then
+			if (Player_GetTeam(player) ~= s_self_team) then
+				num_hmgs = num_hmgs + GetPlayerSquadCount( player, hmg_table )
+			end
+		end
+	end
+	
+	-- dont care if enemy have no HMG
+	if ( num_hmgs == 0 ) then
+		return 0
+	end
+	
+	strategy_unit_purchase.trace(string.format("   *Enemy has %d HMG. Increase sniper demand by %.1f", num_hmgs, (num_hmgs-1)*2 ) )
+
+	return (num_hmgs-1)*2 -- increase sniper demand for each HMG that the enemy has
+	
+end
+
+function LightVehicleDemand()
+	
+	if ( AI_IsMODCoHO() == true ) then
+	
+		sniper_table = {
+			SBP.AXIS.SNIPER,
+			SBP.ALLIES.SNIPER,
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/soldiers_heroic/sniper_squad_special_ops" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/soldiers_heroic/sniper_squad_survival" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/soldiers_heroic/sniper_eagle_eye" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/soldiers_heroic/sniper_field_specialist" ),
+		}
+
+		light_vehicle_table = {
+			SBP.AXIS.MOTORCYCLE,
+			SBP.ALLIES.JEEP,
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/vehicles_heroic/jeep_assault" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/vehicles_heroic/jeep_forward_observation_squad" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Allies/vehicles_heroic/jeep_skilled" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/vehicles_heroic/motorcycle_accomplished" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/vehicles_heroic/motorcycle_fritz_squad" ),
+			BP_GetSquadBlueprint( "SBPs/Races/Axis/vehicles_heroic/motorcycle_squad_grenadier" ),
+		}
+	else
+			sniper_table = {
+			SBP.AXIS.SNIPER,
+			SBP.ALLIES.SNIPER,
+		}
+
+		light_vehicle_table = {
+			SBP.AXIS.MOTORCYCLE,
+			SBP.ALLIES.JEEP,
+		}
+
+	end
+	
+	local num_snipers = 0
+	local num_light_vehicle = 0
+	local pcount = World_GetPlayerCount()
+	for i=1,pcount do 
+		local player = World_GetPlayerAt( i )
+		if (Player_IsAlive(player)) then
+			if (Player_GetTeam(player) ~= s_self_team) then
+				num_snipers = num_snipers + GetPlayerSquadCount( player, sniper_table )
+			else
+				num_light_vehicle = num_light_vehicle + GetPlayerSquadCount( player, light_vehicle_table )
+			end
+		end
+	end
+	
+	strategy_unit_purchase.trace(string.format("   *Special light vehicle demand calculation. [Allied light vehicles: %d] [Enemy snipers: %d]", num_light_vehicle, num_snipers ) )
+
+	if ( num_snipers <= num_light_vehicle ) then
+		strategy_unit_purchase.trace(string.format("   *there are not enough snipers for the light vehicles to hunt" ) )
+		return DEMAND_NeverBuild -- there are not enough snipers for the light vehicles to hunt
+	else
+		return -num_light_vehicle*2 -- decrease demand for each additional light vehicle
+	end
+	
+end
+
+function MortarDemand()
+	
+	defend_structure_table = {
+		EBP.ALLIES.MG_NEST,
+		EBP.ALLIES.MG_NEST_1,
+		EBP.SYNC_WEAPON.HOWITZER,
+		EBP.AXIS.BUNKER,
+		EBP.SYNC_WEAPON.FLAK_88,
+		EBP.CW.MG_NEST,
+		EBP.CW.HOWITZER_NEST,
+		EBP.CW.ANTITANK_NEST,
+		EBP.CW.MORTAR_NEST
+	}
+
+	local num_structures = 0
+	local pcount = World_GetPlayerCount()
+	for i=1,pcount do 
+		local player = World_GetPlayerAt( i )
+		if (Player_IsAlive(player)) then
+			if (Player_GetTeam(player) ~= s_self_team) then
+				num_structures = num_structures + Player_GetBuildingsCountOnly( player, defend_structure_table )
+			end
+		end
+	end
+	
+	return num_structures * 1.5
+	
+end
+
+function EngineerPioneerDemand( )
+
+	-- should also do engineer demand (if we want tech/defences we should make sure
+	-- we have some engineers to build this stuff)
+	local totalEngineers = UtilPBG_CountTotal( s_engineer )
+	
+	-- do not focus on engineers if base is under attack
+	if (cache.threat_at_base < 2 ) then
+		if ( cache.percentage_pts_captured > 50 ) then
+			-- TODO: add exceptions (could see how many engineer tasks are requested to determine demand)
+			if (totalEngineers < s_personality.min_engineers_after_50_owned) then
+				strategy_unit_purchase.trace("    *Engineer Demand HIGH returning 5000")
+				return 5000
+			end
+		else
+			if (totalEngineers < s_personality.min_engineers_below_50_owned) then
+				strategy_unit_purchase.trace("    *Engineer Demand HIGH returning 5000")
+				return 5000
+			end
+		end
+	end
+	
+	local max_engineers = s_personality.max_engineers
+	if (cache.num_allies > 0) then
+		max_engineers = s_personality.max_engineers_with_teammates
+	end
+	
+	strategy_unit_purchase.trace("    *EngineerDemand-MaxEngineersAllowed:"..max_engineers.." Total:"..totalEngineers)
+	if (totalEngineers >= max_engineers) then
+		return DEMAND_NeverBuild
+	end
+	
+	return 0
+end
+
+function Allied_SpecialUnitDemand( unitPBG, currentDemand )
+	
+	if (unitPBG == s_engineer) then
+		return EngineerPioneerDemand()
+	end
+	
+	if (unitPBG == SBP.ALLIES.MORTAR) then
+		return MortarDemand()
+	end
+	
+	if (unitPBG == SBP.ALLIES.JEEP) then
+		return LightVehicleDemand()
+	end
+	
+	if (unitPBG == SBP.ALLIES.SNIPER) then
+		return SniperDemand()
+	end
+	
+	local pbgid = BP_GetID( unitPBG )
+	
+	local munition_rate = AIResource_GetCurrentResourceRate( s_selfplayer ).munition
+	local cur_munition = AIResource_GetCurrentResources( s_selfplayer ).munition
+	
+	local mun_unit = s_allied_munition_units[ pbgid ]
+	if (mun_unit) then
+		
+		if (munition_rate > mun_unit[1] or cur_munition > mun_unit[2]) then
+					
+			if (mun_unit[3]) then
+				local anti_class = {[0]=mun_unit[3][1],[1]=mun_unit[3][2],[2]=mun_unit[3][3],[3]=mun_unit[3][4],[4]=mun_unit[3][5]}
+				local demand_increase = SquadAntiClassDemandFromRating( anti_class )
+				strategy_unit_purchase.trace("munition-demand-bonus:"..demand_increase)
+				return demand_increase
+			end
+		end
+	end
+	
+	if (SBP.ALLIES.PERSHING == unitPBG) then
+		
+		if (munition_rate < 25) then
+			return 100
+		end
+	
+	end
+	
+	-- howitzer/flak88 - build these when what? They don't have anticlass ratings so we need to add some in here
+	
+	-- if we have lots of this particular unit we can adjust its demand, possibly do a multiplier on it
+	return 0
+	
+end
+
+function Axis_SpecialUnitDemand( unitPBG, currentDemand )
+	
+	local demand_increase = 0
+	
+	local pbgid = BP_GetID( unitPBG )
+	local mun_unit = s_axis_munition_units[ pbgid ]
+	if (mun_unit) then
+		if (AIResource_GetCurrentResourceRate( s_selfplayer ).munition > mun_unit[1] or
+			AIResource_GetCurrentResources( s_selfplayer ).munition > mun_unit[2]) then
+			local anti_class = {[0]=mun_unit[3][1],[1]=mun_unit[3][2],[2]=mun_unit[3][3],[3]=mun_unit[3][4],[4]=mun_unit[3][5]}
+			demand_increase = SquadAntiClassDemandFromRating( anti_class )
+			strategy_unit_purchase.trace("munition-demand-bonus:"..demand_increase)
+		end
+	end
+	
+	if (unitPBG == s_engineer) then
+		return EngineerPioneerDemand() + demand_increase
+	
+	elseif (unitPBG == SBP.AXIS.MORTAR) then
+		return MortarDemand()
+	
+	elseif (unitPBG == SBP.AXIS.MOTORCYCLE) then
+		return LightVehicleDemand()
+	
+	elseif (unitPBG == SBP.AXIS.SNIPER) then
+		return SniperDemand()
+	
+	elseif (unitPBG == SBP.AXIS.GOLIATH) then
+		
+		-- always make sure there are at least 3 support units on your side before building a goliath
+		if (cache.military_non_engineer_count < 3) then
+			return DEMAND_NeverBuild
+		end
+	
+		
+		local count = UtilPBG_CountTotal( unitPBG )
+		aitrace("GOLIATH COUNT:"..count)
+		if (count>0) then
+			-- hard limit of 3-4
+			if (count>3) then
+				return DEMAND_NeverBuild
+			end
+			-- decrease demand by X for each additional goliath so we reduce the number of these units at the same time
+			return -count*100
+		end
+	
+	elseif (unitPBG == SBP.AXIS.HALFTRACK) then
+	
+		-- do we have or are we thinking about phase3?
+		local upg_count = UtilPBG_CountAliveOrProduced( UPG.AXIS.PHASE3 )
+		if (upg_count == 0) then
+			return DEMAND_NeverBuild
+		end
+		
+	end
+		-- nebelwerfer - build these when what? They don't have anticlass ratings so we need to add some in here
+
+		
+	-- if we have lots of this particular unit we can adjust its demand, possibly do a multiplier on it
+	return demand_increase
+
+end
+
+--------------------------------------------------------------
+-- Special Ability/Unit Demand Rules
+
+function Allied_SpecialUnitAbilityDemand( abilityPBG, currentDemand )
+	
+	if (abilityPBG == ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP) then
+		return 50 -- should be based on something, instead of being additive (possibly if we have lots of the map?)
+	end
+	
+	if (abilityPBG == ABILITY.COMMANDER_TREE.ALLIES.RECRUIT_PARADROP_AT) then
+		return 50 -- should be based on something, instead of being additive (possibly if we have lots of the map?)
+	end	
+	
+	return 0
+end
+
+function Axis_SpecialUnitAbilityDemand( unitPBG, currentDemand )
+	return 0
+end
+
+
+-------------- new races -------------
+
+
+function AlliedCW_SpecialUnitDemand( unitPBG, currentDemand )
+	
+	if (unitPBG == s_engineer) then
+		return EngineerPioneerDemand()
+	end
+	
+	local pbgid = BP_GetID( unitPBG )
+	
+	local munition_rate = AIResource_GetCurrentResourceRate( s_selfplayer ).munition
+	local cur_munition = AIResource_GetCurrentResources( s_selfplayer ).munition
+	
+	local mun_unit = s_allied_cw_munition_units[ pbgid ]
+	if (mun_unit) then
+		
+		if (munition_rate > mun_unit[1] or cur_munition > mun_unit[2]) then
+					
+			if (mun_unit[3]) then
+				local anti_class = {[0]=mun_unit[3][1],[1]=mun_unit[3][2],[2]=mun_unit[3][3],[3]=mun_unit[3][4],[4]=mun_unit[3][5]}
+				local demand_increase = SquadAntiClassDemandFromRating( anti_class )
+				strategy_unit_purchase.trace("munition-demand-bonus:"..demand_increase)
+				return demand_increase
+			end
+		end
+	end
+	
+	if (unitPBG == SBP.CW.LIEUTENANT ) then
+		local NumLt = UtilPBG_CountAliveOrProduced( unitPBG )
+		if NumLt < 1 then
+			return 10
+		
+		elseif NumLt == 1 then
+			return 2
+			
+		elseif NumLt == 2 then
+			return 0
+			
+		end
+	
+	elseif (unitPBG == SBP.CW.CAPTAIN ) then
+		local NumSap = UtilPBG_CountAliveOrProduced( SBP.CW.SAPPER )
+		if UtilPBG_CountAliveOrProduced( SBP.CW.ARMOUR_HQ ) >= 1 then
+			return 0
+		
+		elseif NumSap < 1 then
+			return 5
+		
+		elseif NumSap == 1 then
+			return 15
+			
+		elseif NumSap >= 2 then
+			return 30
+			
+		end
+		
+	elseif (unitPBG == SBP.CW.SAPPER ) then
+		local NumSelf = UtilPBG_CountAliveOrProduced( unitPBG )
+		local NumCapt = UtilPBG_CountAliveOrProduced( SBP.CW.CAPTAIN )
+		if NumSelf < 1 then
+			return 10
+		
+		elseif NumSelf >= 1 and NumCapt <= 0 then
+			return 5
+			
+		elseif NumSelf >= 1 and NumCapt >= 1 then
+			return 0
+		end
+	
+	elseif (unitPBG == SBP.CW.INFANTRY_HQ ) then
+	
+		-- always want an inf hq
+		return 15
+	
+	elseif (unitPBG == SBP.CW.ARMOUR_HQ ) then
+	
+		-- always want an armoured hq - possibly delay this
+		return 15
+		
+	elseif (unitPBG == SBP.CW.HQ_REINFORCEMENT ) then
+	
+		-- always want reinforcement HQs
+		return 15
+		
+	end	
+
+	return 0
+	
+end
+
+function AxisPE_SpecialUnitDemand( unitPBG, currentDemand )
+	
+	local demand_increase = 0
+	
+	local pbgid = BP_GetID( unitPBG )
+	local mun_unit = s_axis_pe_munition_units[ pbgid ]
+	if (mun_unit) then
+		if (AIResource_GetCurrentResourceRate( s_selfplayer ).munition > mun_unit[1] or
+			AIResource_GetCurrentResources( s_selfplayer ).munition > mun_unit[2]) then
+			local anti_class = {[0]=mun_unit[3][1],[1]=mun_unit[3][2],[2]=mun_unit[3][3],[3]=mun_unit[3][4],[4]=mun_unit[3][5]}
+			demand_increase = SquadAntiClassDemandFromRating( anti_class )
+			strategy_unit_purchase.trace("munition-demand-bonus:"..demand_increase)
+		end
+	end
+	
+	if (unitPBG == s_engineer) then
+		return EngineerPioneerDemand() + demand_increase
+	end
+	
+	if (unitPBG == SBP.ELITE.HALFTRACK_VAMPIRE) then
+		return DEMAND_NeverBuild
+	end
+	-- TODO: add more type checking
+	
+	return demand_increase
+
+end
+
+
+--------------------------------------------------------------
+-- Special Ability/Unit Demand Rules
+
+function AlliedCW_SpecialUnitAbilityDemand( abilityPBG, currentDemand )
+	
+	if (abilityPBG == ABILITY.COMMANDER_TREE.CW.GLIDER_COMMANDOS ) then
+		return 50 
+	end
+	
+	if (abilityPBG == ABILITY.COMMANDER_TREE.CW.GLIDER_TETRARCH ) then
+		return 50 
+	end	
+	
+	if (abilityPBG == ABILITY.CW.HQ_REINFORCE ) then
+		return 50 
+	end	
+	
+	return 0
+	
+end
+
+function AxisPE_SpecialUnitAbilityDemand( unitPBG, currentDemand )
+	return 0
+end

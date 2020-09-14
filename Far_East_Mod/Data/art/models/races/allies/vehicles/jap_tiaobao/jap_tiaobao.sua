@@ -1,0 +1,20 @@
+simbox =  
+{
+	maintain_contour = true,
+	offset =  
+	{
+		0.14339,
+		0.80000,
+		-0.24174,
+	},
+	scale =  
+	{
+		1.73430,
+		1.20000,
+		1.64244,
+	},
+}
+simbox_states =  
+{
+}
+

@@ -1,0 +1,1212 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- Mission Name
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+
+import("ScarUtil.scar")
+import("WCUtil.scar")
+import("Panzerkrieg_VP_Actions.scar")
+import("Panzerkrieg_Objective_Data.scar")
+import("Panzerkrieg_Sound_Data.scar")
+import("PanzerKrieg_Tunables_and_Globals.scar")
+import("Panzerkrieg_Player_Data.scar")
+import("WinConditions/VPTickerWin-Annihilate.scar")
+
+
+-------------------------------------------------------------------------
+
+-- [[ SETUP ]]
+
+-------------------------------------------------------------------------
+
+
+function OnGameSetup()
+	
+	-- This will prevent empty player start locations from generating a strategic point
+	World_EnableReplacementObjectForEmptyPlayers(false)
+	
+end
+
+
+-------------------------------------------------------------------------
+
+-- [[ ONINIT ]]
+
+-------------------------------------------------------------------------
+
+
+function OnInit()
+
+	-- start the game black so that we can fade into the gameplay
+	Game_FadeToBlack(true, 0)
+
+	TW_Objective_Data()
+
+	TW_GlobalVariables()
+
+	TW_Rules()
+	
+	TW_PlayerData()
+	
+	TW_ResourceRates()
+	
+	TW_MapAssets()
+	
+	Rule_AddOneShot(TW_DisableUI, 1)	
+	
+	--Remove any COHO Commander Tree Abilities a player may have
+	Util_UMSAbilityRemove()
+	
+	TW_CameraStart()
+	
+	TW_ObjectiveRegister()
+	
+	TW_SetCommanderTree()
+	
+	TW_AddPlayerAbilities()
+	
+	TW_PopulatePlayerTeams()
+	
+	TankWars_Custom_OnInit()
+	
+	--[[ SETUP SOUND ]]
+	TW_PrecacheSound()
+	
+end
+
+Scar_AddInit(OnInit)
+
+
+function TW_DisableUI()
+	--[[UI_BindingSetEnabled("company_commander", false)
+	UI_BindingSetEnabled("manpower", false)
+	UI_BindingSetEnabled("manpower_rate", false)
+	UI_BindingSetEnabled("manpower_img", false)
+	UI_BindingSetEnabled("munition", false)
+	UI_BindingSetEnabled("munition_rate", false)
+	UI_BindingSetEnabled("munition_img", false)]]
+	UI_BindingSetEnabled("fuel", false)
+	UI_BindingSetEnabled("fuel_rate", false)
+	UI_BindingSetEnabled("fuel_img", false)
+	-- results in the popcap reading 99/99
+	UI_BindingSetEnabled("squadcap", false)
+	Rule_RemoveMe()
+end
+
+function TW_Rules()
+	-- This is a special rule that will remove itself once all players have selected a tank
+	Rule_Add(TrackTankChoice)
+	
+	-- This rule runs through all players and applies the functions in ruleList.player to each player
+	Rule_Add(PlayerRules)
+	
+end
+
+
+function TW_ObjectiveRegister()
+
+	g_CheckAnnihilate = false
+	
+	for k, v in pairs(objectiveData) do
+		Objective_Register(v)
+	end
+
+	Objective_Start(objectiveData.objective, false)
+	Objective_StartTimer(objectiveData.objective, COUNT_DOWN, 2)
+	Objective_Show(objectiveData.objective, false)
+	
+	Objective_Start(objectiveData.obj_airstrip_strafe, false)
+	Objective_Show(objectiveData.obj_airstrip_strafe, false)
+	
+	Objective_Start(objectiveData.obj_airstrip_bomb, false)
+	Objective_Show(objectiveData.obj_airstrip_bomb, false)
+
+end
+
+
+function TW_ResourceRates()
+
+	for i = 1 , World_GetPlayerCount() do
+		
+		local player = World_GetPlayerAt(i)
+		
+		Player_SetPopCapOverride(player, 20)
+		
+		for k, v in pairs(t_Resources) do
+			local rate = v.rate or 0
+			local start = v.start or 0
+			local resource = v.resource
+			
+			if resource ~= nil then
+				
+				Modify_PlayerResourceRate(player, resource, rate/480, MUT_Addition)
+				Player_SetResource(player, resource, start)
+				
+			else
+				Util_PrintObject(v)
+				bug("ERROR, Invalid Resource data in t_Resources")
+				
+			end
+		end
+		
+		--This removes the always-on ability granting the player their default manpower generation
+		Player_SetAbilityAvailability(player, BP_GetAbilityBlueprint("abilities/resource_manpower_player_default.lua"), ITEM_REMOVED)
+	end
+end
+
+
+function TW_MapAssets()
+	
+	-- Make sure we know which Entry Point belongs to which player
+	for k, v in pairs(t_TWplayerData) do
+		for k2, v2 in pairs(t_entrypoints) do
+			if v.player == Util_GetPlayerOwner(v2) then
+				v.entrypoint = v2
+			end
+		end
+		-- Note: Assumption being made that the AI players will always be in the game, if that changes this will break
+		
+		-- This figures out where respawned tanks should move to for each respective side
+		if Player_GetTeam(v.player) == Player_GetTeam(Util_GetPlayerOwner(eg_AlliesControlPoint)) then
+			v.respawn_moveto = EGroup_GetPosition(eg_AlliesControlPoint)
+			
+		elseif Player_GetTeam(v.player) == Player_GetTeam(Util_GetPlayerOwner(eg_AxisControlPoint)) then
+			v.respawn_moveto = EGroup_GetPosition(eg_AxisControlPoint)
+		end
+		
+	end
+	
+	AI_EnableAll(false)
+	
+	-- This will pick up all buildings with EGroup names of "eg_CenterSpawn#", # being a progressive value starting from 1
+	local tableOfSpawners = EGroup_GetSequence("eg_CenterSpawn")
+	for k, v in pairs( tableOfSpawners ) do
+		local squad = SGroup_CreateIfNotFound( string.format("TW_MapAssets_Center_Spawn_%d", k) )
+		table.insert(victoryPoints.center.squads, k, squad)
+		table.insert(victoryPoints.center.spawner, k, v)
+	end
+	
+	-- Looks at the Resource Data to see if there are any resource nodes on the map we should add to a table
+	PopulateResourcePointData()
+end
+
+
+function PopulateResourcePointData()
+	for k, resource in pairs(t_Resources) do
+		if type(resource.point) == "table" then
+			if type(resource.point.blueprints) == "table" then
+				resource.point.egroupList = { }
+				resource.point.currentowner = { }
+				
+				local totalEntities = World_GetNumEntities()
+				-- World_GetNumEntities starts at 1 (lua style) but World_GetEntity starts at 0 (C++ style), thus the odd i = 0 and totalEntities-1
+				for i = 0, totalEntities-1, 1 do
+					for k2, resourceBlueprint in pairs(resource.point.blueprints) do
+						local worldBPName = BP_GetName(Entity_GetBlueprint(World_GetEntity(i)))
+						local resourceBPName = BP_GetName(resourceBlueprint)
+						if worldBPName == resourceBPName then						
+							resource.point.egroupList[i] = EGroup_CreateIfNotFound(string.format("resource_%d_point_%d", resource.resource, i))
+							EGroup_Add(resource.point.egroupList[i], World_GetEntity(i))
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function TW_CameraStart()
+
+	-- fade the camera from black to correctly present the player the mission
+	Rule_AddOneShot(TW_FadeFromBlack, 1)
+
+	for k, v in pairs(t_TWplayerData) do
+		if TW_IsAllies(v.player) then
+			if Game_GetLocalPlayer() == v.player then
+				Camera_MoveToPosition(EGroup_GetPosition(eg_AlliesControlPoint))
+			end
+		end
+		
+		if TW_IsAxis(v.player) then
+			if Game_GetLocalPlayer() == v.player then
+				Camera_MoveToPosition(EGroup_GetPosition(eg_AxisControlPoint))
+			end
+		end
+	end
+	
+	
+end
+
+function TW_FadeFromBlack()
+	
+	Game_FadeToBlack(false, 1)
+
+end
+
+
+function TW_SetCommanderTree()
+	for k, player in pairs(t_TWplayerData) do
+		for k2, commander in pairs(player.commanders) do
+			UI_SwapDisplayedCommanderTree(player.player, commander.tree, commander.uislot)
+		end
+	-- This allows players to start at a level greater than 0
+		local commandPoints = Player_GetResource(player.player, RT_Command)
+		if player.level > commandPoints then
+			Player_AddResource(player.player, RT_Command, player.level)
+			-- Reset the player level, TrackCommanderLevel will take the Command Points, play the appropriate actions, then re-apply the right player.level
+			player.level = 0
+		end
+	end
+end
+
+
+function TW_AddPlayerAbilities()
+	-- Add all abilities required by Victory Points, but remove them from view to be unlocked by the Victory Point later
+	for k, player in pairs(t_TWplayerData) do
+		for k2, point in pairs(victoryPoints) do
+			if type(point.abilities) == "table" then
+				
+				AddPlayerVPAbilities(player, point.abilities)
+					
+				if TW_IsAllies(player.player) and type(point.abilities.allies) == "table" then
+					AddPlayerVPAbilities(player, point.abilities.allies)
+				end
+				
+				if TW_IsAxis(player.player) and type(point.abilities.axis) == "table" then
+					AddPlayerVPAbilities(player, point.abilities.axis)
+				end
+			end
+		end
+	end
+end
+
+
+function TW_PopulatePlayerTeams()
+	local skirmish = false
+	for k, player in pairs(t_TWplayerData) do
+		player.teamList = { }
+		for k2, teamPlayer in pairs(t_TWplayerData) do
+			if player.team == teamPlayer.team and Player_IsHuman(teamPlayer.player) then
+				table.insert(player.teamList, teamPlayer.player)
+			end
+		end
+		if player.teamList[1] == nil and not Player_IsHuman(player.player) and World_GetPlayerCount() <= 3 then
+			table.insert(player.teamList, player.player)
+			UIWarning_Show(10000523)
+			skirmish = true
+			print("Tank Wars now operating in Skirmish mode")
+		end
+	end
+
+	if skirmish then Rule_AddIntervalEx(TW_SkirmishWarning, 10, 3) end
+end
+
+-- remind the player
+function TW_SkirmishWarning()
+	UIWarning_Show(10000523)
+end
+
+function TW_PrecacheSound()
+
+	-- set up the global sound cache to prevent improper audio from conflicting
+	-- with custom Intel speech.
+	Sound_SetGlobalControlSource("GameType", SOUND_SOURCE.PANZERKRIEG)
+
+	SoundPrecacheRecursive(soundData, "speech")
+end
+-------------------------------------------------------------------------
+
+-- End of OnInit Function calls (directly...)
+
+-------------------------------------------------------------------------
+
+function TrackTankChoice()
+	local totalPlayers = 0
+	local tanksChosen = 0
+
+	for k, data in pairs(t_TWplayerData) do
+		-- We only care about Human players, AI players can't choose a tank
+		if Player_IsHuman(data.player) then
+			totalPlayers = totalPlayers+1
+			if (not data.tankselected) then
+				if data.player == Game_GetLocalPlayer() then
+					if not UI_IsCommanderTreeShown() then
+						UI_DisplayCommanderTreeSelect()
+					end
+				end
+				
+				for k2, tank in pairs(data.tanktype) do
+					if Player_HasUpgrade(data.player, tank.upgrade) then
+						data.tankselected = true
+						data.tank = tank
+						data.tankvalue = tank.value or 0
+						SpawnTank(data)
+					end
+				end
+			else
+				tanksChosen = tanksChosen + 1
+			end
+		end
+	end
+	
+	if totalPlayers == tanksChosen then
+		Rule_RemoveMe()
+	end
+end
+
+
+function PlayerRules()
+	for k, player in pairs(t_TWplayerData) do
+		if Player_IsAlive(player.player) 
+		and Player_IsHuman(player.player) 
+		and type(ruleList.player) == "table" then
+			
+			for k2, playerRule in pairs(ruleList.player) do
+				if type(playerRule) == "function" then
+					
+					playerRule(player)
+				end
+			end
+			
+		elseif not Player_IsHuman(player.player) 
+		and type(ruleList.ai) == "table" then
+			
+			for k2, aiRule in pairs(ruleList.ai) do
+				if type(aiRule) == "function" then
+					
+					aiRule(player)
+				end
+			end
+		end
+	end
+end
+
+
+function TrackTankAlive(player)
+	if player.tankselected then
+		player.sgroup = Player_GetSquads(player.player)
+		SGroup_Filter(player.sgroup, player.tank.blueprint, FILTER_KEEP)
+		
+		if player.alive and SGroup_IsEmpty(player.sgroup) then
+			TankDeadActions(player)
+			player.alive = false
+			
+		elseif not player.alive and not SGroup_IsEmpty(player.sgroup) then
+			TankAliveActions(player)
+			player.alive = true
+		end
+	end
+end
+
+function TrackTankHealth(player)
+	if player.tankselected then
+		if not player.alive or SGroup_IsEmpty(player.sgroup) then
+			-- do nothing
+		elseif player.hintTimer == nil then
+			if SGroup_GetAvgHealth(player.sgroup) <= .5
+			and player.player == Game_GetLocalPlayer() then
+				player.healthHint = HintPoint_Add(player.sgroup, true, 10000524)
+				player.hintTimer = math.floor( World_GetGameTime())
+				Timer_Start(player.hintTimer, 10)
+				HintRepairFacility(player)
+			else
+				-- do nothing
+			end
+		end
+	end
+	if player.hintTimer ~= nil and player.healthHint ~= false and Timer_GetRemaining(player.hintTimer) == 0 then
+		HintPoint_Remove(player.healthHint)
+		player.healthHint = false
+	end
+end
+
+function HintRepairFacility(player)
+	if EGroup_IsEmpty(player.repair) == false then
+		if player.player == Game_GetLocalPlayer() and player.repairHint == nil then
+			player.repairHint = HintPoint_Add(player.repair, true, 10000525)
+			UI_CreateMinimapBlip(EGroup_GetPosition(player.repair), 60, BT_ObjectiveMedal) 
+		end
+    end
+end 
+
+function TankAliveActions(player)
+
+	-- Stop showing the Death Respawn timer
+	if player.player == Game_GetLocalPlayer() then
+		Objective_Show(objectiveData.objective, false)
+	end
+
+	for k, action in pairs(tankActions.alive) do
+		if type(action) == "function" then
+			action(player)
+		end
+	end
+end
+
+
+function TankDeadActions(player)
+
+	for k, action in pairs(tankActions.dead) do
+		if type(action) == "function" then
+			action(player)
+		end
+	end
+end
+
+
+function CommanderLevelUpActions(player, levels)
+
+	for k, action in pairs(levelUpActions) do
+		if type(action) == "function" then
+			action(player, levels)
+		end
+	end
+end
+
+
+function DeathTimerDisplay(player)
+
+	local respawnDelay = player.tank.respawnDelay or 15
+
+	if Game_GetLocalPlayer() == player.player then
+		if SGroup_Count(player.attacker) > 0 then
+			local LastAttacker = Util_GetPlayerOwner(player.attacker)
+			player.attackstring = Loc_FormatText(10000516, Player_GetDisplayName(LastAttacker))
+			UIWarning_Show(player.attackstring)
+		end
+		Objective_Show(objectiveData.objective, true)
+		Objective_StartTimer(objectiveData.objective, COUNT_DOWN, respawnDelay)
+	end
+	
+	Timer_Start(player.timer, respawnDelay)
+end 
+
+
+function DecrementVPoints(player)
+
+	local l_tankpenalty = player.tankvalue
+	
+	local l_teamnumber = Player_GetTeam(player.player) + 1
+	
+	-- adjust tickers to account for death
+	if VPTickerData.team_data[l_teamnumber].tickers > l_tankpenalty then
+		-- ticker data
+		VPTickerData.team_data[l_teamnumber].tickers = VPTickerData.team_data[l_teamnumber].tickers - l_tankpenalty
+	elseif VPTickerData.team_data[l_teamnumber].tickers <= (l_tankpenalty) then
+		-- ticker data
+		VPTickerData.team_data[l_teamnumber].tickers = 0
+		VPTicker_UpdateTickers()
+		-- set win, make sure its the right team
+		World_SetTeamWin(Team_GetEnemyTeam(Player_GetTeam(player.player)), "VPTickerWin-Annihilate" )
+		Rule_RemoveAll()
+		World_SetGameOver( )
+	end
+
+end
+
+function TrackKills(player)
+	player.kills = Stats_VehiclesKilled(player.player)
+	
+	if Game_GetLocalPlayer() == player.player then
+		UI_SetDisplayIngameScore(true, false)
+		UI_SetScoreSingle(10000515, Loc_ConvertNumber(player.kills))
+	end
+end
+
+function TrackKiller(player)
+	if SGroup_CountSpawned(player.sgroup) > 0 then
+		player.lastposition = SGroup_GetPosition(player.sgroup)
+		SGroup_Clear(player.attacker)
+		SGroup_GetLastAttacker(player.sgroup, player.attacker)
+	end
+end
+
+
+function RespawnDelayOnDeath(player)
+
+	local Respawn = function()
+		if player.player ~= nil and Player_IsAlive(player.player) then
+			if Timer_Exists(player.timer) then
+				if Timer_GetRemaining(player.timer) > 0 and player.lockout == false then
+					player.lockout = true
+					
+				elseif Timer_GetRemaining(player.timer) <= 0 and player.lockout == true then
+					
+					SpawnTank(player)
+					
+					Timer_End(player.timer)
+					player.lockout = false
+					Rule_RemoveMe()
+				end
+			end
+		else
+			
+			Rule_RemoveMe()
+		end
+	end
+	
+	Rule_AddInterval(Respawn, 1)
+end
+
+
+function DeathKicker(player)
+	local value = Loc_ConvertNumber(player.tankvalue)
+	local text = Loc_FormatText(10000519, value)
+	for k, v in pairs(t_TWplayerData) do
+		if v.player == Game_GetLocalPlayer() then
+			UI_CreateColouredPositionKickerMessage(v.player, player.lastposition, text, 255, 255, 255, 255)
+		end
+	end
+end
+
+
+function ExperienceKicker(player, position, value)
+	local value = Loc_ConvertNumber(value)
+	local text = Loc_FormatText(10000522, value)
+	for k, v in pairs(t_TWplayerData) do
+		if v.player == Game_GetLocalPlayer() then
+			UI_CreateColouredPositionKickerMessage(v.player, position, text, 141, 223, 18, 255)
+		end
+	end
+end
+
+
+function DeathSpeech(player)
+
+	local killerPlayer
+	if not SGroup_IsEmpty(player.attacker) then
+		killerPlayer = Util_GetPlayerOwner(player.attacker)
+	end
+	
+	local killerPathRoot
+	local victimPathRoot = player.tank.sound	
+	if (killerPlayer ~= nil) and (type(killerPlayer.tank) == "table") then
+		for k, v in pairs(t_TWplayerData) do
+			if killerPlayer == v.player then
+				killerPlayer = v
+				killerPathRoot = killerPlayer.tank.sound
+				killerPlayer.streak = killerPlayer.streak + 1
+			end
+		end
+	end
+	
+	local pathRoot = DeathSpeechFindPath(killerPathRoot, victimPathRoot)
+	
+	if type(pathRoot) == "table" then
+		for k, v in pairs(t_TWplayerData) do
+			if v.player == Game_GetLocalPlayer() then
+				PlayTankWarsSpeech(v, pathRoot)
+			end
+		end
+	else
+		bug("DeathSpeech pathRoot was "..type(pathRoot)..", there is likely some bad data in the Sound_Data file. No Speech played.")
+	end
+	
+end
+
+
+function DeathSpeechFindPath(killerPathRoot, victimPathRoot)
+	if type(victimPathRoot) == "table" then
+		if type(killerPathRoot) == "table" then
+			if killerPathRoot.streak[killerPlayer.streak] ~= nil then
+				
+				return killerPathRoot.streak[killerPlayer.streak]
+				
+			elseif killerPlayer.streak > soundDataDefaults.tanks.dominateStart then
+				
+				local validateNum = killerPlayer.streak - soundDataDefaults.tanks.dominateStart
+				
+				if valideNum % soundDataDefaults.tanks.dominateRepeat == 0 then
+					
+					return killerPathRoot.streak[soundDataDefaults.tanks.dominateStart]
+				end
+				
+			else --No streak speech, play some generic speech
+				
+				if killerPathRoot.generic ~= nil then
+					local pathRoot = killerPathRoot.generic.kill or victimPathRoot.generic.killed
+					
+					if (World_GetRand(1, 2) >= 2) and (victimPathRoot.generic.killed ~= nil) then
+						pathRoot = victimPathRoot.generic.killed
+					end
+					
+					return pathRoot
+					
+				else
+					print("Killer Path Root:")
+					Util_PrintObject(killerPathRoot)
+					print("Victim Path Root:")
+					Util_PrintObject(victimPathRoot)
+					bug("Could not find DeathSpeech to play, see logs")
+					return nil
+					
+				end
+			end
+		else
+			return victimPathRoot.generic.killed
+		end
+	else
+		return nil
+	end
+end
+
+
+function ResetSpeechKillStreak(player)
+	player.streak = 0
+end
+
+
+-- This function is called by the ability that spawns the infantry
+function TankWarsConvertInfantry()
+	for k, v in pairs(t_TWplayerData) do
+		if Player_IsHuman(v.player) then
+			-- If we don't know who the AI player is for this human player, figure it out!
+			if v.ai_player == nil then
+				v.ai_player = FigureOutNPCForPlayer(v)
+			end
+			
+			-- Grabbing all human player squads and filtering out any of the main tanks
+			local infantry_units = SGroup_CreateIfNotFound("infantry_units")
+			infantry_units = Player_GetSquads(v.player)
+			
+			-- If the player has selected his tank we want to filter that out of units to be converted
+			if v.tankselected then
+				SGroup_Filter(infantry_units, v.tank.blueprint, FILTER_REMOVE)
+			end
+			
+			-- Changing player Ownership
+			SGroup_SetPlayerOwner(infantry_units, v.ai_player)
+			SGroup_Clear(infantry_units)
+		end
+	end
+	-- add the rule to watch the AI popcap
+	if Rule_Exists(TankWars_AIPopCapWatcher) == false then
+		Rule_AddInterval(TankWars_AIPopCapWatcher, 1)
+	end
+end
+
+function TankWars_AIPopCapWatcher()
+	for k, v in pairs(t_TWplayerData) do
+		if Player_IsHuman(v.player) then
+			-- If we don't know who the AI player is for this human player, figure it out!
+			if v.ai_player == nil then
+				v.ai_player = FigureOutNPCForPlayer(v)
+			end
+			local popcap = Player_GetCurrentPopulation(v.ai_player, CT_Personnel)
+			-- if the friendly AI has more than 60 popcap, lock the human popcap
+			if popcap > 60 then
+				Player_SetPopCapOverride(v.player, 0)
+			else
+				Player_SetPopCapOverride(v.player, 20)
+			end
+		end
+	end
+end
+
+
+function TrackCommanderLevel(player)
+	local commandPoints = Player_GetResource(player.player, RT_Command)
+	if player.levelMarker < commandPoints then
+		local levelDifference = commandPoints - player.levelMarker
+		player.level = player.level + levelDifference
+		player.levelMarker = commandPoints
+		CommanderLevelUpActions(player, levelDifference)
+		
+	elseif player.levelMarker > commandPoints then
+		player.levelMarker = commandPoints
+	end
+end
+
+
+function TankWarsRewardFuel(player, levels)
+	-- Rewards the player 1 fuel for each level earned in this frame
+	Player_AddResource(player.player, RT_Fuel, levels)			
+end
+
+
+function TrackVictoryPoints(player)
+	for k, point in pairs(victoryPoints) do
+		if scartype(point.egroup) == ST_EGROUP then
+			if Player_OwnsEGroup(player.player, point.egroup) and point.currentowner == nil then
+				point.currentowner = player
+				TriggerVPActions(player, point, true)
+				
+			elseif point.currentowner ~= nil and World_OwnsEGroup(point.egroup, ANY) then
+				TriggerVPActions(point.currentowner, point, false)
+				point.currentowner = nil
+			end
+		else
+			bug("Victory Point "..point.name.." does not have a valid EGroup."..
+			"\nEnsure the EGroup name in the SCAR file matches the EGroup name of the entity placed on the map for the Victory Point."..
+			"\nRemoving "..point.name.." from the victoryPoints table."
+			)
+			victoryPoints[k] = nil
+		end
+	end
+end
+
+
+function TrackResourcePoints(player)
+	for k, resource in pairs(t_Resources) do
+		if type(resource.point) == "table" then
+			if type(resource.point.egroupList) == "table" then
+				for resourceKey, resourceEGroup in pairs(resource.point.egroupList) do
+					if scartype(resourceEGroup) == ST_EGROUP then
+						if Player_OwnsEGroup(player.player, resourceEGroup) and resource.point.currentowner[resourceKey] == nil then
+							resource.point.currentowner[resourceKey] = player
+							TriggerVPActions(player, resource.point, true)
+							
+						elseif resource.point.currentowner[resourceKey] ~= nil and World_OwnsEGroup(resourceEGroup, ANY) then
+							TriggerVPActions(resource.point.currentowner[resourceKey], resource.point, false)
+							resource.point.currentowner[resourceKey] = nil
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function CheckAnnihilateWin(player)
+	local aliveTeamMembers = 0
+	for k, teamPlayer in pairs(player.teamList) do
+		if Player_IsAlive(teamPlayer) then
+			aliveTeamMembers = aliveTeamMembers + 1
+		end
+	end
+	
+	if aliveTeamMembers <= 0 then
+		for k, enemyPlayer in pairs(t_TWplayerData) do
+			if player.team ~= enemyPlayer.team then
+				World_SetPlayerWin(enemyPlayer.player, "ZANNIHILATE")
+				Rule_RemoveAll()
+			end
+		end
+	end
+end
+
+
+function ApplyTankExperienceValue(player)
+	Util_ApplyModifier(player.sgroup, "modifiers\\cost_manpower_modifier.lua", player.level*player.tankLevelMultiplier, MUT_MultiplyAdd, true)
+end
+
+
+function RuleCenterRespawn(player, point)
+	
+	point.pass = 1
+	point.maxPass = table.getn(point.spawner)
+	point.spawnTimer = "center_squad_spawn_timer"
+	
+	local Rule = function()
+		
+		if point.owner ~= nil then
+			SpawnCenterSquads(player, point, true)
+		end
+		
+		if point.owner == nil then
+			Rule_RemoveMe()
+		end
+	end
+	Rule_AddInterval(Rule, 1)
+end
+
+
+function SpawnCenterSquads(player, point, spawn)
+
+	if spawn ~= false then
+		
+		if point.pass <= point.maxPass then
+			
+			for k, spawner in pairs(point.spawner) do
+				if point.pass == k then
+					
+					if EGroup_IsEmpty(spawner) then
+						table.remove(point.spawner[k])
+						table.remove(point.squads[k])
+					elseif SGroup_CountSpawned(point.squads[k]) == 0 then
+						Util_CreateSquads(point.owner, point.squads[k], player.soldier, spawner)
+						Timer_Start(point.spawnTimer, point.spawnDelayTime)
+					end
+				end
+			end
+			
+			if Timer_GetRemaining(point.spawnTimer) <= 0 then
+				point.pass = point.pass+1
+			end
+		end
+	end
+	
+	if spawn == false then
+		
+		-- SGroup_ForEach pushes in 3 parameters to the function
+		-- This annonymous function lets us filter out the parameter we need
+		local SquadDestroy = function( groupid, itemindex, itemid )
+			Squad_Destroy(itemid)
+		end
+			
+		for k, squad in pairs(point.squads) do
+			if SGroup_CountSpawned(squad) > 0 then
+				SGroup_ForEach(squad, SquadDestroy)
+			end
+			
+			EGroup_SetWorldOwned(point.spawner[k])
+		end
+	end
+end
+
+
+function FigureOutNPCForPlayer(player)
+	for k, v in pairs(t_TWplayerData) do
+		if Player_IsAlive(v.player) and Player_IsHuman(v.player) == false and player.team == v.team then
+			return v.player
+		end
+	end
+	-- if it fails to find a suitable player ID
+	return false
+end
+
+
+
+function TW_IsAllies(player)
+	if Player_GetRaceName(player) == TRACE_ALLIES or Player_GetRaceName(player) == TRACE_ALLIES_COMMONWEALTH then
+		return true
+	elseif Player_GetRaceName(player) == TRACE_AXIS or Player_GetRaceName(player) == TRACE_AXIS_PANZER_ELITE then
+		return false
+	else
+		bug("Tank Wars Team Check doesn't identify any race that isn't in Opposing Fronts, please update script")
+		return false
+	end
+end 
+
+
+function TW_IsAxis(player)
+	if Player_GetRaceName(player) == TRACE_AXIS or Player_GetRaceName(player) == TRACE_AXIS_PANZER_ELITE then
+		return true
+	elseif Player_GetRaceName(player) == TRACE_ALLIES or Player_GetRaceName(player) == TRACE_ALLIES_COMMONWEALTH then
+		return false
+	else
+		bug("Tank Wars Team Check doesn't identify any race that isn't in Opposing Fronts, please update script")
+		return false
+	end
+end
+
+
+function SpawnTank(player)
+	if player.entrypoint == nil or EGroup_IsEmpty(player.entrypoint) then
+		--Excessive first test of the warning system
+		bug("Tank Wars SpawnTank found an empty EGroup for Player "..player.index..
+		"\nTankWars was looking for an Entrypoint. What it found was an "..type(player.entrypoint)..
+		"\nWorking around for now, but this needs to be tracked down and fixed"
+		)
+		
+		for k, v in pairs(t_entrypoints) do
+			if player.player == Util_GetPlayerOwner(v) then
+				player.entrypoint = v
+			end
+		end
+		
+		if player.entrypoint == nil or EGroup_IsEmpty(player.entrypoint) then
+			bug("Tank Wars SpawnTank attempted to correct empty EGroup and couldn't!"..
+			"\nEntrypoint is now a "..type(player.entrypoint)..
+			"\nTaking extreme measures, assigning ally's entrypoint to player"
+			)
+			for k, v in pairs(t_TWplayerData) do
+				if player.team == v.team and (v.entrypoint ~= nil and not EGroup_IsEmpty(v.entrypoint)) then
+					player.entrypoint = v.entrypoint
+				end
+				
+				if player.entrypoint == nil or EGroup_IsEmpty(player.entrypoint) then
+					fatal("Player "..player.index.." has nowhere to spawn his tank. This needs to be fixed"..
+					"\nEntrypoint is still a "..type(player.entrypoint)
+					)
+				end
+			end
+		end
+		
+	end
+
+	
+	local spawnPosition = EGroup_GetPosition(player.entrypoint)
+	local spawnedSquad = Squad_CreateAndSpawnToward(player.tank.blueprint, player.player, 1, spawnPosition, Util_ScarPos(0, 0)) -- point the player to the center
+	Squad_SetInvulnerable(spawnedSquad, true, 3)
+	local spawnedSGroup = SGroup_CreateIfNotFound(string.format("spawn_tank_player_%d", player.index))
+	SGroup_Add(spawnedSGroup, spawnedSquad)
+	-- move 15m in front of yourself and stop
+	Cmd_Move(spawnedSGroup, spawnedSGroup, false, nil, nil, OFFSET_FRONT, 15)
+	SGroup_Clear(spawnedSGroup)
+end
+
+
+function AddPlayerVPAbilities(player, abilityList)
+	for k, ability in pairs(abilityList) do
+		if ability.ability ~= nil then
+			Player_AddAbility(player.player, ability.ability)
+			Player_SetAbilityAvailability(player.player, ability.ability, ITEM_REMOVED)
+		end
+	end
+end
+
+
+function PlayTankWarsSpeech(player, speechPath)
+	if type(speechPath) == "table" then
+		if type(speechPath.speech) == "string" then
+			Sound_Play2D(speechPath.speech)
+		elseif TW_IsAllies(player.player) and type(speechPath.allies) == "table" then
+			if type(speechPath.allies.speech) == "string" then
+				Sound_Play2D(speechPath.allies.speech)
+			else
+				bug("Expected a string to play sound, not a "..type(speechPath.allies.speech))
+			end
+		elseif TW_IsAxis(player.player) and type(speechPath.axis) == "table" then
+			if type(speechPath.axis.speech) == "string" then
+				Sound_Play2D(speechPath.axis.speech)
+			else
+				bug("Expected a string to play sound, not a "..type(speechPath.axis.speech))
+			end
+		end
+	else
+		Util_PrintObject(speechPath)
+		bug("Invalid sound data was passed in to play speech. See logs for what was passed in.")
+	end
+end
+
+
+function TriggerSpecialInfantryAbilities(player)
+	for k, specialAbility in pairs(specialInfantryAbilities) do
+		SpecialSquadsUpdatePlayer(player, specialAbility)
+		
+		for squadKey, squad in pairs(player.specialSquads) do
+			if (type(squad) == "table") and (not SGroup_IsEmpty(squad.sgroup)) then
+				if (not Squad_IsMoving(squad.squad)) and (not Squad_IsDoingAbility(squad.squad, specialAbility.ability)) then
+					local target = FindSpecialAbilityTarget(squad.sgroup, squad.team, specialAbility)
+					
+					if target ~= nil then
+						Cmd_Ability(squad.sgroup, specialAbility.ability, target)
+					end
+				elseif Misc_IsCommandLineOptionSet("dev") == true then
+					-- brw 02/06/09 -- disabling this call because it is creating a ridiculous amount of
+					-- logging in the script file, and in fact the message being spammed is incorrect.
+					-- message is that the squad is using its ability or it is moving.
+--~ 					bug("Special Squad Trigger Abilities tried to trigger on an Empty SGroup, this should not happen!"..
+--~ 						"\n"..SGroup_GetName(squad.sgroup).." was empty"
+--~ 					)
+				end
+			elseif Misc_IsCommandLineOptionSet("dev") == true then
+				-- brw 02/06/09 -- disabling this call because it is creating a ridiculous amount of info in the log file.
+--~ 				Util_PrintObject(player.specialSquads)
+--~ 				print("Entry "..squadKey.."should not be in the above information")
+--~ 				bug("Please see Logs. Special Ability attempted to trigger on a dead squad.")
+			end
+		end
+	end
+end
+
+
+function SpecialSquadsUpdatePlayer(player, specialAbility)
+	local playerSquads = Player_GetSquads(player.player)
+	
+	local _SpecialSquadUpdater = function(gid, idx, sid)
+		if Squad_GetBlueprint(sid) == specialAbility.infantry[player.team] then
+			if player.specialSquads[sid.id] == nil then
+				player.specialSquads[sid.id] = {
+					team = player.team,
+					sgroup = SGroup_CreateIfNotFound(string.format("special_squad_%d_player_%d", sid.id, player.index)),
+					squad = sid,
+				}
+				SGroup_Add(player.specialSquads[sid.id].sgroup, player.specialSquads[sid.id].squad)
+				if SGroup_IsEmpty(player.specialSquads[sid.id].sgroup) then
+					player.specialSquads[sid.id] = nil
+				end
+			elseif SGroup_IsEmpty(player.specialSquads[sid.id].sgroup) then
+				player.specialSquads[sid.id] = nil
+			end
+		end
+	end
+	
+	SGroup_ForEach(playerSquads, _SpecialSquadUpdater)
+end
+ 
+
+function FindSpecialAbilityTarget(casterSGroup, team, specialAbility)
+	local potentialTargets = { }
+	for k, targetPlayer in pairs(t_TWplayerData) do
+		if team ~= targetPlayer.team then
+			if not SGroup_IsEmpty(targetPlayer.sgroup) and not SGroup_IsEmpty(casterSGroup) then
+				local range = Prox_SGroupSGroup(casterSGroup, targetPlayer.sgroup, PROX_CENTER)
+				
+				potentialTargets[k] = { 
+					range = range,
+					sgroup = targetPlayer.sgroup,
+				}
+			end
+		end
+	end
+	
+	local shortestRange = specialAbility.minDistance
+	local shortestSGroup
+	for k, target in pairs(potentialTargets) do
+		if target.range < shortestRange then
+			shortestRange = target.range
+			shortestSGroup = target.sgroup
+		end
+	end
+	
+	if scartype(shortestSGroup) == ST_SGROUP then
+		return shortestSGroup
+	else
+		return nil
+	end
+end
+
+
+function SetSquadLevelDecorator(player)
+	UI_SetSGroupSpecialLevel(player.sgroup, player.level)
+end
+
+
+function CameraFollowTank(player)
+	if player.player == Game_GetLocalPlayer() then
+		Camera_FollowSGroup(player.sgroup)
+	end
+end
+
+
+function SelectTankForPlayer(player)
+	if player.player == Game_GetLocalPlayer() then
+		local _doSelect = function(gid, idx, sid)
+			Misc_SelectSquad(sid, true)
+		end
+		
+		SGroup_ForEach(player.sgroup, _doSelect)
+	end
+end
+
+
+function SetTankAsDefaultControlGroup(player)
+	if player.player == Game_GetLocalPlayer() then
+		local _doSetControlGroup = function(gid, idx, sid)
+			Misc_SetSquadControlGroup(sid, 1)
+		end
+		
+		SGroup_ForEach(player.sgroup, _doSetControlGroup)
+	end
+end
+
+function AddAction(target, action)
+	local stack = {}
+	
+	_addAction = function(target, action)
+		for k, v in pairs(target) do
+			if v == "action list" then
+				table.insert(target, action)
+			end
+			
+			if type(v) == "table" then
+				local canDo = true
+				for k2, stackpile in pairs(stack) do
+					
+					if stackpile == v then
+						canDo = false
+						break
+					end
+				end
+				
+				if canDo then
+					table.insert(stack, v)
+					_addAction(v, action)
+				end
+			end
+		end
+	end
+	
+	_addAction(target, action)
+end
+
+
+function RemoveAction(target, action)
+	local stack = {}
+	
+	_removeAction = function(target, action)
+		for k, v in pairs(target) do
+			if v == "action list" then
+				for k2, v2 in pairs(target) do
+					if v2 == action then
+						table.remove(target, k2)
+					end
+				end
+			end
+			
+			if type(v) == "table" then
+				local canDo = true
+				for k2, stackpile in pairs(stack) do
+					
+					if stackpile == v then
+						canDo = false
+						break
+					end
+				end
+				
+				if canDo then
+					table.insert(stack, v)
+					__removeAction(v, action)
+				end
+			end
+		end
+	end
+	
+	_removeAction(target, action)
+end
+
+
+function SoundPrecacheRecursive(tablePath, keyValidation)
+	local stack = {}
+	
+	_soundPrecacheRecursive = function(path, pathKey)
+		if type(path) == "string" then
+			if pathKey == keyValidation then
+				Sound_PreCacheSound(path)
+			end
+			
+		elseif type(path) == "table" then
+			for newPathKey, newPath in pairs(path) do
+				local canDo = true
+				for k2, stackpile in pairs(stack) do
+					
+					if newPath == stackpile then
+						canDo = false
+						break
+					end
+				end
+				
+				if canDo then
+					table.insert(stack, newPath)
+					_soundPrecacheRecursive(newPath, newPathKey)
+				end
+				
+			end
+		end
+	end
+	
+	if type(tablePath) == "table" then
+		_soundPrecacheRecursive(tablePath)
+	end
+end
+
+
+-- Developer test function
+function VPNeutral()
+	for k, v in pairs(t_TWplayerData) do
+		for k2, point in pairs(victoryPoints) do
+			if Player_OwnsEGroup(v.player, point.egroup) then
+				EGroup_SetStrategicPointNeutral(point.egroup)
+			end
+		end
+	end
+end
+

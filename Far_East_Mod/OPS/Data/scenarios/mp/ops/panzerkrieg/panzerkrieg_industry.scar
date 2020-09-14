@@ -1,0 +1,354 @@
+--[[---------------------
+
+Panzerkrieg Game Mode
+
+------------------------]]
+
+-- This Template.scar file exists for you to use as your own map's unique Tankwars .scar file
+-- Copy this file and rename it as Your_Map_Name.scar for your own TankWars Game Mode
+
+-- DO NOT MODIFY ANY OF THESE IMPORT FILES FOR A CUSTOM TANKWARS VERSION
+-- These files are globally used by all TankWars Gamestyle maps
+-- Anything you see in these files can be modified within your unique .scar file to customize your TankWars map
+-- To reinforce: Customize within this file, not in the imports
+
+-- Generally you're not going to need to look at this file, this is the meat of the TankWars logic
+import("Panzerkrieg_Script_Base.scar")
+-- We use this file to create the Player Data, take a look for examples of what you can customize
+-- Panzerkrieg_Player_Data.scar
+-- We use this file to create the various tuning values in Panzerkrieg, take a look for examples of what you can customize
+-- Panzerkrieg_Tunables_and_Globals.scar
+
+-- All of the data in those files is in a table, for technical jargon on tables in lua you can visit: http://lua-users.org/wiki/TablesTutorial
+-- You do not need to know how to write script to create your own custom Panzerkrieg map, but if you want that extra-level of customization to
+-- your map (outside of the map itself) and you aren't familiar with the LUA language we use you can find the NEW TO LUA PANZERKRIEG TUTORIAL
+-- at the bottom of this document.
+
+
+--[[ REQUIRED MAP ASSETS
+
+THINGS YOU NEED ON YOUR MAP FOR THE PANZERKRIEG GAME MODE TO WORK
+
+.OPTIONS FILE
+- You will need to copy over the TankWars .options file to define the AI players
+- This .options file also defines the map as a "Custom" map with the custom loading screen
+- You may change the total number of players available on the map from this .options file
+-- For the Panzerkrieg script you are required to have 1 AI player for each team
+
+MAP ENTRY POINTS
+- Every player needs an map_entry_point entity. Each player needs one of these points assigned to them.
+- Everyone entry point needs to be in it's own Entity Group and follow the naming convention of: eg_Entry1, eg_Entry2, etc.
+-- Naming convention must be in sequence, starting from 1 and ending at the # of your last player
+
+STARTING POSITIONS
+- Every player needs a starting_position_sp entity. Each player needs one of these entities assigned to them.
+- These starting positions do not need an egroup
+
+CONTROL POINTS
+- Both factions require their own control point, the control point defines their starting territory.
+- The entity we use for control points is sp_invisible_control_structure
+- Player assignment for these points needs to be a player always in the game...
+-- Each faction should have an AI player, and that player will always be in the game (cannot leave) - this is who it should be assigned to
+- Each control point will need to be in their own Entity Group, the following naming convention is required:
+-- eg_AlliesControlPoint
+-- eg_AxisControlPoint
+
+BASE DEFENSES
+- Both factions require their own base defenses, defenses have the same requirements as Control Points
+- The entity we use for the Defense is ebps\environment\art_ambient\objects\defenses\ums_tankwars_pantherturm
+- Each defense will need to be in their own Entity Group, the following naming convention is required:
+-- eg_AlliesDefense
+-- eg_AxisDefense
+- Each defense will need to be assigned a player owner, preferably the AI Player owner (as the AI cannot leave mid-game)
+
+MORTAR BUNKER
+- Right now the primary action of the Mortar Bunker victory point is to give the team who captured the territory the Mortar Bunker
+- The entity we use for the Mortar Bunker is ebps\environment\art_ambient\objects\defenses\concrete\ums_mortar_bunker_tank_wars
+- The mortar bunker will need to be placed in an Entity Group called:
+-- eg_MortarBunker
+-- Not neccessary if you plan on removing the Mortar Bunker Victory Point
+
+VICTORY POINTS
+- For the script to recognize the Victory Points they need to be in an Entity Group
+- If you want to add or remove a Victory Point on the map ensure the data for that Victory Point is removed (you can do that in Custom Data below)
+- Victory Points you want to use will need an Entity Group name (both on map, and in the Custom Data)
+- Current Victory Points require these Entity Group names:
+-- eg_center_point
+-- eg_repair_point
+-- eg_airstrip_point
+-- eg_manpower_point
+-- eg_bunker_point
+- IMPORTANT, if you change the egroup names, or remove victory points you need to remove that point from data in this file
+-- EXAMPLE:
+---	To change the egroup name of a point: 
+	t_vps.center.egroup = eg_MyCustomCenterVictoryPoint
+
+CENTER SPAWN LOCATIONS (NOTE, DISABLED BY DEFAULT. To enable see TankWars_Custom_Data below)
+- Right now the primary action of the Center Victory Point is to spawn units in specified buildings for a team that captures the point
+- You can have any number of these buildings as you want, but each building will need its own Entity Group
+- Naming Requirements: eg_CenterSpawn1, eg_CenterSpawn2, etc.
+-- Naming convention must be in sequence, starting from 1 and ending at the # of your last building
+-- The script will still run if you have no buildings, but if you have a "Center" point nothing will happen without these EGroups
+
+
+--]]
+
+
+--[[ --------------------------------------------------------
+
+-------------------------CUSTOM DATA-------------------------
+
+-------------------------------------------------------------]]
+
+
+function TankWars_Custom_Data()
+
+	-- The Panzerkrieg Industrial map does not use the repair point to grant repair pioneers at the Pantherturm
+	-- If you enable this point ensure your Base Defenses have a repair_station_ext
+	-- If you don't know what that means just use the Base Defense recommended in the REQUIRED MAP ASSETS
+	victoryPoints.repair = nil
+	
+	-- The Panzerkrieg Industrial map had different EGroup names, to find the entity we need to update that information
+	victoryPoints.bunker.egroup = eg_VP1
+	victoryPoints.manpower.egroup = eg_VP2
+	victoryPoints.airstrip.egroup = eg_VP3
+	
+	-- The Panzerkrieg Industrial does not use the center point, you can use any building that allows garrisoning as a spawning point if you want to enable this
+	-- Ensure to keep the naming convention on the EGroups for these buildings consistant with the REQUIRED MAP ASSETS instructions
+	victoryPoints.center = nil
+
+--[[
+
+	-- My map lets you use a lot of abilities with Munitions!
+	t_Resources.munitions.rate = 100
+	
+	-- My map doesn't use Manpower anymore
+	t_Resources.manpower.rate = 0
+	t_Resources.manpower.start = 0
+	
+	-- My map only has 2 Victory Points, I removed the Bunker victory point
+	victoryPoints.bunker = nil
+	
+	-- To Add or Remove Actions from an action list you can use the AddAction or RemoveAction functions
+	--Example: AddAction(Target, ActionName)
+	
+	-- I think the Victory Defenders in the center point are too powerful, I'm going to remove them
+	RemoveAction(victoryPoints.center, SpawnVictoryDefender)
+	
+	-- I made a new Action that I've added to this script, I want it to run when the repair point is captured
+	AddAction(victoryPoints.repair, MySuperCoolVPAction)
+	
+	-- OR I've decided that I want to add MySuperCoolVPAction to every single Victory Point
+	AddAction(victoryPoints, MySuperCoolVPAction)
+	
+	-- Yep, it's that simple. The AddAction or RemoveAction functions will take care of everything.
+
+--]]
+
+end
+
+
+function TankWars_Custom_Player_Data()
+	for k, allPlayers in pairs(t_TWplayerData) do
+		
+--[[sample of Custom Player Data
+		
+		-- All the tanks on my map start at level 2!
+		allPlayers.level = 2
+		
+--]]
+	end
+end
+
+
+function TankWars_Custom_Allied_Data(alliedPlayer)
+
+--[[ sample of Custom Allied Data (be sure to update Player_Data with a reference to this)
+
+	-- This is the EBP I want to use for my Allied Super Unit!
+	alliedPlayer.racial_superUnit = BP_GetEntityBlueprint("string/path/of_super_unit.here")
+
+--]]
+
+end
+
+
+function TankWars_Custom_Axis_Data(axisPlayer)
+
+--[[ sample of Custom Allied Data (be sure to update Player_Data with a reference to this)
+
+	-- This is the EBP I want to use for my Axis Super Unit!
+	axisPlayer.racial_superUnit = BP_GetEntityBlueprint("string/path/of_super_unit.here")
+
+--]]
+
+end
+
+
+function TankWars_Custom_OnInit()
+
+-- Below you can enter custom generic functions you would like to call when the map is loaded
+
+--[[
+
+	-- I wanted my fancy new function to be a rule that is run every second
+	Rule_AddInterval( MyFancyTankWarsFunction, 1 )
+	
+--]]	
+
+end
+
+
+--[[
+
+GENERIC FUNCTIONS
+
+--]]
+
+-- Below you can define custom generic functions
+
+
+--[[ Custom Generic Function example
+
+-- I want to give the players bonus experience (action points) for every 30 seconds they keep their tank alive
+-- Also I should be told to stop using so many magic numbers! That can be added to the Panzerkrieg Data!
+
+function MyFancyTankWarsFunction()
+
+	for k, v in pairs(t_TWplayerData) do
+		if v.alive then
+			
+			if v.expBonusTimer = nil or not Timer_Exists(v.expBonusTimer) then
+				v.expBonusTimer = string.format("exp_bonus_timer_%d", k)
+				Timer_Start(v.expBonusTimer, 30)
+			end
+			
+			if Timer_GetRemaining(v.expBonusTimer) <= 0 then
+				Player_AddResource(v.player, RT_Action, 30)
+				Timer_End(v.expBonusTimer)
+			end
+		else
+			
+			if Timer_Exists(v.expBonusTimer) then
+				Timer_End(v.expBonusTimer)
+			end
+			
+		end
+	end
+end
+--]]
+
+--[[
+
+VICTORY POINT ACTIONS
+
+Victory Point actions get passed in specific parameters, these are:
+
+player - This is a table that has all the player data of whoever captured the point
+point - This is a table of all the data for the point that was captured
+apply - This Boolean if true means the point was captured, if false it was un-captured and actions should be reverted (if necessary)
+
+--]]
+
+-- Below you can define custom Victory Point Actions
+
+
+
+--[[ Custom Victory Point Action
+
+function MySuperCoolVPAction(player, point, apply)
+	
+	if apply then
+		local isThisMe = Player_GetDisplayName(player.player)
+		
+		if Player_GetDisplayName(isThisMe[1]) == "ME" then
+			print("I'M SO AWESOME FOR CAPTURING THE "..point.name.." VICTORY POINT!")
+		end
+		
+	elseif not apply then
+		
+		if Player_GetDisplayName(isThisMe[1]) ~= "ME" then
+			print("HAHA SUCKER, YOU LOST THE "..point.name.." VICTORY POINT!")
+		end
+	end
+
+end
+
+--]]
+
+--[[
+
+NEW TO LUA PANZERKRIEG TUTORIAL
+
+First thing you will need to know is why I can write plain text here and not have it crash the script. 
+This is what's called a comment in the script, and I can define a whole block of comments by encasing the text in the... 	--]]
+
+--[[ ]]-- 
+
+--[[ you see above and below all of these comments.
+
+If you are using an Editor that supports LUA syntax you will be able to tell right away what is a comment and what is not.
+-- Double dashes like this indicate a single line that is commented
+
+
+When you see words separated by periods.like.this we are accessing data within a table. Here we will define an example table:
+
+exampleTable = { }
+
+That table has nothing in it, what we've done with those empty curly brackets has told the game that exampleTable is a table (with nothing in it)
+Here is a table with something in it:
+
+exampleTable = {
+	manpower = { },
+	munitions = { },
+	fuel = { },
+}
+
+What we've done is added 3 new tables (with nothing in them) to exampleTable. One thing you will note are the commas at the end of every line,
+commas are we seperate table entries in Lua. The format is up to you, but this is a nice easy-to-read format for defining your tables. 
+You can now access the "manpower" table with exampleTable.manpower, the following is now valid:
+
+exampleTable.manpower.rate = 20
+
+We have just defined a "rate" within the manpower table, if a value has already been defined we can access the same way, for example:
+
+exampleTable = {
+	manpower = {
+		rate = 20,
+		start = 0,
+	},
+	munitions = { },
+	fuel = { },
+}
+
+Now manpower has a default rate of 20 in our exampleTable, we can still access and change it by doing...
+
+exampleTable.manpower.rate = 40
+
+Looking within Panzerkrieg_Tunables_and_Globals.scar you will find all of the data that you can change within tables. You can modify anything you would like
+by accessing the value the same way we just accessed the exampleTable's manpower rate.
+
+You can also remove things you no longer want to use. If you do not want to use a victory point on your map it's as simple as defining it as nil
+
+victoryPoints.manpower = nil
+
+Or perhaps like like the manpower bonus from the point, but you don't like the abilities on the table, now you need to run a function to remove
+the ability manager action from the point, this will prevent players from obtaining the abilities on the point when the point is captured.
+
+The function format is:
+functionName(parameter, anotherparameter)
+
+The parameter type (Number, Table, String, function, etc.) and the amount of parameters are determined by the function that is being called.
+Parameters must be passed in the order the function is expecting to receive them.
+In this case the specific function format for RemoveAction is
+RemoveAction(targetObject, action)
+or for our specific purpose
+RemoveAction(victoryPoints.manpower, VictoryPointAbilityManager)
+
+That will remove the Abilities from the Manpower point.
+
+By following the tables of data available in Panzerkrieg_Tunables_and_Globals.scar, Panzerkrieg_Player_Data.scar, and the examples provided in this Template file 
+you should have all of the information you need to customize your own Panzerkrieg map.
+
+If you want to get crazy and start making your own functions that would require LUA Programming and Scripting knowledge which should be freely accessible on the web.
+--]]

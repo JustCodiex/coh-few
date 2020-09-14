@@ -1,0 +1,16 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+
+
+    "..\\vehicles\\ka98_sniper\\ka98_sniper",
+
+
+	-- Main Mesh
+    "..\\vehicles\\efman\\efman",
+	"..\\props\\binoculars",
+	"..\\vehicles\\tou9\\tou9",
+}
+

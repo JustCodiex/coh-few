@@ -1,0 +1,10 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree4.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+
+        "..\\vehicles\\dao_ren\\dao_ren",
+   "..\\vehicles\\guojun05\\guojun05",
+}
+

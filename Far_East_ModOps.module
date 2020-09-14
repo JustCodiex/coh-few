@@ -1,0 +1,74 @@
+;; //////////////////////////////////////////////////////////////////
+;; File    : Far_East_ModOps.module
+;; Desc    : Far_East_ModOps Mod descriptor file.
+;; 
+;; (c) 2008 Relic Entertainment Inc.
+;; 
+
+[global]
+
+Parent = Far_East_Mod
+UIName = $1080
+Description = Company of Heroes
+DllName = WW2Mod
+ModVersion = 1.0
+ModFolder = Far_East_Mod\OPS\Data
+LocFolder = Far_East_Mod\Locale
+
+[game]
+PlayerDropBehavior = kill
+
+[preview:common]
+folder = CoH\OPS\DataPreview
+
+[attrib:common]
+folder = Far_East_Mod\OPS\DataAttrib
+archive.01 = Far_East_Mod\OPS\Archives\FEOPS_Attrib
+archive.02 = CoH\Ops\Archives\OPSAttribArchive
+
+[attrib:ingame]
+folder = Far_East_Mod\OPS\DataAttrib
+archive.01 = Far_East_Mod\Archives\FEMOD_Attrib
+archive.02 = Far_East_Mod\OPS\Archives\FEOPS_Attrib
+archive.03 = CoH\Ops\Archives\OPSAttribArchive
+
+[data:common]
+folder = Far_East_Mod\OPS\Data
+archive.01 = Far_East_Mod\OPS\Archives\FEOPS_Data
+archive.02 = CoH\Ops\Archives\OPSData
+
+[locale:chineseenglish]
+folder.01 = CoH\Ops\Locale\ChineseEnglish
+
+[locale:chinesetrad]
+folder.01 = CoH\Ops\Locale\ChineseTrad
+
+[locale:czech]
+folder.01 = CoH\Ops\Locale\Czech
+
+[locale:english]
+folder.01 = CoH\Ops\Locale\English
+
+[locale:french]
+folder.01 = CoH\Ops\Locale\French
+
+[locale:german]
+folder.01 = CoH\Ops\Locale\German
+
+[locale:italian]
+folder.01 = CoH\Ops\Locale\Italian
+
+[locale:japanese]
+folder.01 = CoH\Ops\Locale\Japanese
+
+[locale:korean]
+folder.01 = CoH\Ops\Locale\Korean
+
+[locale:polish]
+folder.01 = CoH\Ops\Locale\Polish
+
+[locale:russian]
+folder.01 = CoH\Ops\Locale\Russian
+
+[locale:spanish]
+folder.01 = CoH\Ops\Locale\Spanish

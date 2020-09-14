@@ -1,0 +1,394 @@
+soundDataDefaults = {
+
+}
+
+
+soundData = {
+	
+	speech_alliespath = "Speech/MP/Allies/INT/Operations/invasion/",
+	speech_axispath = "Speech/MP/Axis/GAN/Operations/invasion/",
+	
+	
+	boss = {
+		
+		one = {
+			
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_bow_Gen005_sc_l",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_bow_gen005_sc_l",
+			},
+		},
+		two = {
+			
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_bow_Gen004_sc_l",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_bow_gen004_sc_l",
+			},
+		},
+		three = {
+			
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_bow_Gen003_sc_l",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_bow_gen003_sc_l",
+			},
+		},
+		four = {
+			
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_bow_Gen002_sc_l",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_bow_gen002_sc_l",
+			},
+		},
+		
+		five = {
+			
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_bow_Gen001_sc_l",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_bow_gen001_sc_l",
+			},
+		},
+		
+	},
+	
+	
+	building = {
+		
+		bank = {
+		
+			captured = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_cpc_genban_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_cpc_genban_sc_s",
+				},
+			},
+			
+			underattack = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_bankat_sc_s",
+						
+					
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_bankat_sc_s",
+						
+					
+				},
+			},
+			
+			destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_bankdt_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_bankdt_sc_s",
+				},
+			},
+			
+		},
+		
+		manor = {
+		
+			captured = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_cpc_genmno_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_cpc_genmno_sc_s",
+				},
+			},
+			
+			underattack = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_manora_sc_s",
+						
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_manora_sc_s",
+						
+				},
+			},
+			
+			destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_manord_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_manord_sc_s",
+				},
+			},
+			
+		},
+		
+		garage = {
+		
+			captured = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_cpc_gengag_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_cpc_gengag_sc_s",
+				},
+			},
+			
+			underattack = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_garaga_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_garaga_sc_s",
+				},
+			},
+			
+			destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_garagd_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_garagd_sc_s",
+				},
+			},
+			
+		},
+		
+		church = {
+		
+			captured = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_cpc_gencch_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_cpc_gencch_sc_s",
+				},
+			},
+			
+			underattack = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_chrcha_sc_s",
+					
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_chrcha_sc_s",
+					
+				},
+			},
+			
+			destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_chrchd_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_chrchd_sc_s",
+				},
+			},
+			
+		},
+		
+		HQ = {
+		
+			underattack = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_baseat_sc_s",
+					
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_baseat_sc_s",
+					
+				},
+				
+			},
+			
+			lowhealth ={
+			
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_baseat_li_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_baseat_li_s",
+				},
+			
+			},
+			
+			destroyed = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ufw_basedt_sc_s",
+					
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ufw_basedt_sc_s",
+						
+				},
+			
+			},
+		},
+	},
+	
+	enemyapproach = {
+	
+		infantry = {
+		
+			north = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_infnor_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_infnor_sc_s",
+				},
+			},
+			
+			south = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_infsot_sc_s", --? no infantry version available?
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_infsot_sc_s",
+				},
+			},
+			
+			east = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_infest_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_infest_sc_s",
+				},
+			},
+			
+			west = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_infwst_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_infwst_sc_s",
+				},
+			},
+		},
+		
+		armor = {
+		
+			north = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_armnor_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_armnor_sc_s",
+				},
+			},
+			
+			south = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_armsot_sc_s", --? no infantry version available?
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_armsot_sc_s",
+				},
+			},
+			
+			east = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_armest_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_armest_sc_s",
+				},
+			},
+			
+			west = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_armwst_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_armwst_sc_s",
+				},
+			},
+		},
+		
+		lightarmor = {
+		
+			north = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_vehnor_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_vehnor_sc_s",
+				},
+			},
+			
+			south = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_vehsot_sc_s", --? no infantry version available?
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_vehsot_sc_s",
+				},
+			},
+			
+			east = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_vehest_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_vehest_sc_s",
+				},
+			},
+			
+			west = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_ems_vehwst_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_ems_vehwst_sc_s",
+				},
+			},
+		},
+	},
+	
+	miscwarning = {
+	
+		
+		mortar = {
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_wrn_mtrgen_sc_s",
+					
+				
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_wrn_mtrgen_sc_s",
+					
+				
+			},
+		},
+		
+		
+		rocket = {
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_wrn_artgen_sc_s",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_wrn_artgen_sc_s",
+			},
+		},
+		
+		
+		artillery = {
+			allies = {
+				speech = "Speech/MP/Allies/INT/Operations/invasion/lb_int_wrn_artgen_sc_s",
+			},
+			axis = {
+				speech = "Speech/MP/Axis/GAN/Operations/invasion/xb_gan_wrn_artgen_sc_s",
+			},
+		},
+		
+	},
+}

@@ -1,0 +1,209 @@
+
+-- list of buildorders that can be used by the allied personalities
+
+allied_buildorder = {
+
+	-- this build-order isn't optimal for Allies, but will add some flavor and randomness, even for Hard/Expert.
+	{
+		name = "Early Barracks Then GUOZDD",	
+		fuel_mult = 2.0,
+		vp_mult = 0.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.HEAVYMG, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+		}
+	},
+
+	-- this build-order builds the minimum recommended number of Engineers before building a Barracks
+	{
+		name = "Min Engineers and Barracks with GUOZDD",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+		}
+	},	
+	
+	-- this build-order builds the minimum recommended number of Engineers before building a Barracks then GUOZDD
+	{
+		name = "Min Engineers and Barracks with GUOZDD",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1, bs_style = BS_Secure },
+		}
+	},	
+	
+	-- this build-order produces several engineers, a Barracks, then Infantry Rifleman Squad
+	{
+		name = "Lyon-Size Optimal GUOZDD",
+		vp_mult = 0.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1 , bs_style = BS_Secure},
+		}
+	},
+	
+	-- this build-order produces several engineers, a Barracks, then GUOZDD
+	{
+		name = "Lyon-Size Optimal GUOZDD",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1, bs_style = BS_Secure },
+		}
+	},
+	
+	-- this build-order produces the maximum recommended number of engineers. this is also ideal for a VP rush. Infantry GUOZDD Version.
+	{
+		name = "Max Engie Barracks aka VP Rush 1.0 plus GUOZDD",
+		vp_mult = 1.5, -- set VP demand to 2.0, but only in VP games
+		list = {
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+		}
+	},
+	
+	-- this build-order produces the maximum recommended number of engineers. this is also ideal for a VP rush. GUOZDD Version
+	{
+		name = "Max Engie Barracks aka VP Rush 1.0 plus GUOZDD",
+		vp_mult = 1.5, -- set VP demand to 2.0, but only in VP games
+		list = {
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+		}
+	},
+	
+	-- this build-order produces the maximum recommended number of engineers. this is also ideal for a VP rush. Infantry GUOZDD Version.
+	{
+		name = "Max Engie Barracks aka VP Rush 2.0 plus GUOZDD",
+		vp_mult = 1.5, -- set VP demand to 2.0, but only in VP games
+		list = {
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+		}
+	},
+	
+	-- this build-order produces the maximum recommended number of engineers. this is also ideal for a VP rush. GUOZDD Version
+	{
+		name = "Max Engie Barracks aka VP Rush 2.0 plus GUOZDD",
+		vp_mult = 1.5,
+		list = {
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1 , bs_style = BS_Secure},
+		}
+	},
+	
+	-- The odd time you'll see a large group of GUOZDDs
+	{
+		name = "GUOZDD Junkie",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 2 },
+		}
+	},
+
+	--Huge build order, not sure if working correctly.
+	{
+		name = "Silly fast tanks?",
+		fuel_mult = 2.5,
+		mt_mult = 0.5,
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1 , bs_style = BS_Secure},
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1 , bs_style = BS_Secure},
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"building", EBP.ALLIES.TANK_DEPOT, maxlimit = 1, bs_style = BS_OuterBase },
+		}
+	},
+	
+	{
+		name = "Couple of Mortar",
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.MORTAR, maxlimit = 3 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.HEAVYMG, maxlimit = 3 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.MORTAR, maxlimit = 3 },
+		},
+	},
+	
+	-- Attach this Build Order to Army Plan File "..."
+	{
+		name = "Greyhound Fighting!!",
+		fuel_mult = 2.5,
+		mt_mult = 0.5,
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.ENGINEER, maxlimit = 4 },
+			{"building", EBP.ALLIES.OBSERVATION_POST, maxlimit = 1 , bs_style = BS_Secure},
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.GUOZDD, maxlimit = 1 },
+			{"building", EBP.ALLIES.MOTORPOOL, maxlimit = 1, bs_style = BS_OuterBase },		
+		},
+	},
+
+	-- The odd time you'll see a large group of BOYS
+	{
+		name = "BOYS ATTACK",
+		fuel_mult = 2.5,
+		mt_mult = 0.5,
+		vp_mult = 0.5,
+		list = {
+			{"building", EBP.ALLIES.BARRACKS, maxlimit = 1, bs_style = BS_OuterBase },
+			{"building", EBP.ALLIES.ARMORY, maxlimit = 1, bs_style = BS_OuterBase },
+			{"building", EBP.ALLIES.MOTORPOOL, maxlimit = 1, bs_style = BS_OuterBase },
+			{"produce", PITEM_Spawn, SBP.ALLIES.BOYS, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.BOYS, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.BOYS, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.BOYS, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.BOYS, maxlimit = 6 },
+			{"produce", PITEM_Spawn, SBP.ALLIES.BOYS, maxlimit = 6 },
+		}
+	},
+}
+
+--~ End of Allies

@@ -1,0 +1,7 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"Weapons\\Luger",
+
+    "..\\..\\allies\\vehicles\\jap95wang\\jap95wang",
+}

@@ -1,0 +1,173 @@
+
+_md = {};
+_mds = {};
+_mdsua = {};
+
+function Mission_CreateDefenceSequence( attacker, defender, t, instant )
+
+	if instant == nil then instant = true end
+
+	if t.units ~= nil and instant then
+		_spawnObjects( defender, t.units, t.id );
+		--t.units = nil; -- We can now forget about the stuff we don't need
+	end
+	
+	_md[t.id] = t;
+	_md[t.id].isActive = true;
+	_md[t.id].isStarted = instant;
+	_md[t.id].attacker = attacker;
+	_md[t.id].defender = defender;
+	
+	print("Created defence sequence " .. t.id);
+	
+	if instant then
+		print("Starting defence sequence " .. t.id);
+		if not Rule_Exists(_updateConditions) then
+			Rule_AddInterval(_updateConditions, 10);
+		end
+	end
+	
+end
+
+function Mission_DefenceSequenceIsActive(k)
+	return _md[k].isActive;
+end
+
+function Mission_DefenceSequenceDeactivate(k)
+	_md[k].isActive = false;
+end
+
+function Mission_TryRevertAssembly(k)
+	for id, position in pairs(_mdsua[k]) do
+		if Squad_IsValid(id) then
+			Cmd_Move( SGroup_FromSquad(Squad_FromWorldID(id)), position );
+		end
+	end
+	_mdsua[k] = {};
+end
+
+_assembleDefence = function(sgroupid, itemindex, squadID)
+	local tpos = Marker_GetPosition(g_currentAssemblePlan.mkr_to_assemble_at);
+	if World_DistancePointToPoint( Squad_GetPosition(squadID), tpos ) > g_currentAssemblePlan.radius then
+		if g_currentAssemblePlan.try_find_cover then
+			local targetPos = Squad_FindCover( squadID, tpos, g_currentAssemblePlan.radius );
+			if targetPos ~= tpos then
+				_mdsua[g_currentAssemblePlan.tID][Squad_GetGameID(squadID)] = Squad_GetPosition(squadID);
+				Cmd_Move( SGroup_FromSquad(squadID), targetPos );
+			end
+		else
+			local targetPos = Util_GetRandomPosition( tpos, g_currentAssemblePlan.radius );
+			_mdsua[g_currentAssemblePlan.tID][Squad_GetGameID(squadID)] = Squad_GetPosition(squadID);
+			Cmd_Move( SGroup_FromSquad(squadID), targetPos );
+		end
+	end
+end
+
+_updateConditions = function()
+	for k, v in pairs(_md) do
+		if Mission_DefenceSequenceIsActive(k) then
+			if (_md[k].conditions.retreat_when_captured ~= nil) then
+				local lost_count = 0;
+				for i = 1, #_md[k].conditions.retreat_when_captured.points do
+					if EGroup_IsCapturedByPlayer( _md[k].conditions.retreat_when_captured.points[i], _md[k].attacker, ALL ) then
+						lost_count = lost_count + 1;
+					end
+				end
+				if (lost_count == #_md[k].conditions.retreat_when_captured.points) then
+					Mission_DefenceSequenceDeactivate(k);
+					if (SGroup_Count(_mds[k].group) > 0) then
+						Cmd_Retreat( _mds[k].group, _md[k].conditions.retreat_when_captured.retreat_to.target_marker, _md[k].conditions.retreat_when_captured.retreat_to.delete_marker );
+					end
+				end
+			elseif (_md[k].conditions.under_attack ~= nil) then
+				if SGroup_IsUnderAttackByPlayer( _mds[k].group, _md[k].attacker, 1 ) then
+					if _md[k].conditions.under_attack.plan == "assemble" then
+						g_currentAssemblePlan = _md[k].conditions.under_attack.assmble_plan;
+						g_currentAssemblePlan.tID = k;
+						_mdsua[k] = {};
+						SGroup_ForEachEx( _mds[k].group, _assembleDefence, true, false );
+					end
+					_md[k].conditions.under_attack.triggered = true;
+				else
+					if _md[k].conditions.under_attack.triggered then
+						Mission_TryRevertAssembly(k);						-- Go back to original location
+						_md[k].conditions.under_attack.triggered = false; 
+					end
+				end
+			end
+			-- do other conditions
+		end
+	end
+end
+
+_updateSquads = function()
+	local _currentKey = "";
+	local _loopSquads = function(sgroupid, itemindex, squadID)
+		if not Squad_HasActiveCommand(squadID) then
+			if Squad_IsUnderAttack( squadID, 2.5 ) then
+				if _mds[_currentKey].targetted_abilities ~= nil then
+					if Timer_Exists(_mds[_currentKey].targetted_cooldown) then
+						if Timer_GetRemaining( _mds[_currentKey].targetted_cooldown ) <= 0 then
+							local sg_temp = SGroup_CreateIfNotFound("sg_temp_target_pos");
+							Squad_GetLastAttacker( squadID, sg_temp );
+							if (SGroup_Count(sg_temp) > 0) then
+								local target_pos = SGroup_GetPosition(sg_temp);
+								SGroup_Clear(sg_temp);
+								if (World_DistancePointToPoint( Squad_GetPosition(squadID), target_pos ) <= _mds[_currentKey].targetted_abilities.range) then
+									Cmd_Ability( SGroup_FromSquad(squadID), _mds[_currentKey].targetted_abilities.abp, target_pos, nil, true, false ); 
+									Timer_Start( _mds[_currentKey].targetted_cooldown, 30 );
+									return true; -- do not loop through the rest
+								end
+							end
+						end
+					else -- add extra delay
+						Timer_Start( _mds[_currentKey].targetted_cooldown, 5 );
+						-- do other stuff?
+					end
+				else
+					-- do other stuff?
+				end
+			else
+				-- do other stuff?
+			end
+		end
+	end
+	for k, v in pairs(_mds) do
+		_currentKey = k;
+		if Mission_DefenceSequenceIsActive(k) then
+			if (SGroup_Count(v.group) > 0) then
+				SGroup_ForEachEx( v.group, _loopSquads, true, false );
+			else
+				Mission_DefenceSequenceDeactivate(k);
+			end
+		end
+	end
+end
+
+_spawnObjects = function(defender_player, spawn_table, defence_id)
+	
+	for i = 1, #spawn_table do		
+		t_data = {
+			id = defence_id,
+			group = spawn_table[i].group,
+			targetted_abilities = spawn_table[i].targetted_ability,
+			targetted_cooldown = defence_id .."_target_cooldown"
+		};		
+		for j = 1, #spawn_table[i].spawn do			
+			if spawn_table[i].spawn[j].mkr ~= nil then
+				Util_CreateSquads( defender_player, spawn_table[i].group, spawn_table[i].spawn[j].blueprint, spawn_table[i].spawn[j].mkr, nil, 1, spawn_table[i].spawn[j].loadout);
+			else
+				print("Failed to spawn squad at element ID " ..tostring(j) .." in defence sequence '" ..defence_id .."' (INVALID_mdR)");
+			end			
+		end
+		if spawn_table[i].vulnerable_modifier ~= nil then
+			Modify_Vulnerability( spawn_table[i].group, spawn_table[i].vulnerable_modifier );
+		end
+		_mds[defence_id] = t_data;
+	end
+	
+	if not Rule_Exists(_updateSquads) then
+		Rule_AddInterval(_updateSquads, 2.5);
+	end
+	
+end

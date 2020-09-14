@@ -1,0 +1,23 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "donkey_spine2",
+		subtype = "",
+		transform_m00 = -1,
+		transform_m01 = 0.00000,
+		transform_m02 = 0.00000,
+		transform_m10 = 0.00000,
+		transform_m11 = -0.98846,
+		transform_m12 = 0.15149,
+		transform_m20 = 0.00000,
+		transform_m21 = 0.15149,
+		transform_m22 = 0.98846,
+		transform_m30 = 0.00000,
+		transform_m31 = 1.11707,
+		transform_m32 = 0.01289,
+		type = "",
+	},
+}

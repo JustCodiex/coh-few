@@ -1,0 +1,14 @@
+model =
+{
+	"sand_wood_bunker",
+}
+
+simvis_attributes =
+{
+	CanCastLocalAmbientOcclusion = 1,
+	LocalAmbientOcclusionScale = 1.4
+}
+simvis_attributes_strings =
+{
+	DefaultLocalAmbientOcclusionTexture = "Art/LAO_Masks/vehicle_default.tga"
+}

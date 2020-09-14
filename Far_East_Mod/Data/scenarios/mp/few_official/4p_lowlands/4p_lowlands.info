@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "[FE] Swamplands (4)",
+	scenariodescription = "$60987",
+	maxplayers = 4,
+	date = "08/07/2017 16:21",
+	scenarioabbrname = "",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		416,
+		256,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

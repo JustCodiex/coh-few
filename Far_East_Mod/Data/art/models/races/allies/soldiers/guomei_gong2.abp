@@ -1,0 +1,18 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons in Use
+   "..\\..\\allies\\soldiers\\weapons\\m1a1_thompson",
+	"Weapons\\New_Carbine",
+	"Weapons\\Flamethrower",
+
+
+	-- Main Mesh
+    "..\\vehicles\\guozhanche\\guozhanche",
+	"RiflemanGear\\RiflemanGear",
+	"..\\Soldiers\\tank_crew\\tanker_helmet",
+
+}
+

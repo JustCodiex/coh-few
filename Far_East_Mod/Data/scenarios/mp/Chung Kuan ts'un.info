@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$19210561",
+	scenariodescription = "$19210562",
+	maxplayers = 2,
+	date = "14/11/2016 11:06 AM",
+	scenarioabbrname = "",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		192,
+		320,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

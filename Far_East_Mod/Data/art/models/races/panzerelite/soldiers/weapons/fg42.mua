@@ -1,0 +1,43 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "marker_shells",
+		subtype = "",
+		transform_m00 = -0.56603,
+		transform_m01 = 0.81910,
+		transform_m02 = 0.09318,
+		transform_m10 = 0.80815,
+		transform_m11 = 0.57365,
+		transform_m12 = -0.13352,
+		transform_m20 = -0.16282,
+		transform_m21 = -0.00027,
+		transform_m22 = -0.98666,
+		transform_m30 = 0.03333,
+		transform_m31 = 0.36732,
+		transform_m32 = 0.96363,
+		type = "",
+	},
+	Marker001 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "marker_fg42_barrel_end",
+		subtype = "",
+		transform_m00 = 0.00010,
+		transform_m01 = -1,
+		transform_m02 = 0.00010,
+		transform_m10 = -0.01182,
+		transform_m11 = 0.00010,
+		transform_m12 = 0.99993,
+		transform_m20 = -0.99993,
+		transform_m21 = -0.00011,
+		transform_m22 = -0.01182,
+		transform_m30 = -0.00021,
+		transform_m31 = 0.34287,
+		transform_m32 = 1.84848,
+		type = "",
+	},
+}

@@ -1,0 +1,36 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+	marker1 = Marker_FromName("marker1","basic_marker")
+	marker2 = Marker_FromName("marker2","basic_marker")
+	mkr_173 = Marker_FromName("mkr_173","custom_marker")
+	mkr_174 = Marker_FromName("mkr_174","custom_marker")
+	mkr_175 = Marker_FromName("mkr_175","custom_marker")
+	mkr_176 = Marker_FromName("mkr_176","custom_marker")
+	mkr_177 = Marker_FromName("mkr_177","custom_marker")
+	mkr_178 = Marker_FromName("mkr_178","custom_marker")
+	mkr_179 = Marker_FromName("mkr_179","custom_marker")
+	mkr_180 = Marker_FromName("mkr_180","custom_marker")
+	mkr_181 = Marker_FromName("mkr_181","custom_marker")
+	mkr_182 = Marker_FromName("mkr_182","custom_marker")
+	mkr_183 = Marker_FromName("mkr_183","custom_marker")
+	mkr_184 = Marker_FromName("mkr_184","custom_marker")
+	mkr_185 = Marker_FromName("mkr_185","custom_marker")
+	mkr_186 = Marker_FromName("mkr_186","custom_marker")
+	mkr_187 = Marker_FromName("mkr_187","custom_marker")
+	mkr_188 = Marker_FromName("mkr_188","custom_marker")
+	mkr_189 = Marker_FromName("mkr_189","custom_marker")
+	mkr_190 = Marker_FromName("mkr_190","custom_marker")
+	mkr_191 = Marker_FromName("mkr_191","custom_marker")
+	mkr_192 = Marker_FromName("mkr_192","custom_marker")
+	mkr_193 = Marker_FromName("mkr_193","custom_marker")
+
+	-- [[ Squad Groups ]]
+	sg_bunkeraacrew1 = SGroup_CreateIfNotFound("sg_bunkeraacrew1")
+
+	-- [[ Entity Groups ]]
+	CenterJunction_Corner = EGroup_CreateIfNotFound("CenterJunction_Corner")
+	eg_searchlight4 = EGroup_CreateIfNotFound("eg_searchlight4")
+	eg_searchlight5 = EGroup_CreateIfNotFound("eg_searchlight5")
+
+end

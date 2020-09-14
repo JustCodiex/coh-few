@@ -1,0 +1,15 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+	mkr_1 = Marker_FromName("mkr_1","custom_marker")
+	mkr_2 = Marker_FromName("mkr_2","custom_marker")
+	mkr_3 = Marker_FromName("mkr_3","custom_marker")
+	mkr_4 = Marker_FromName("mkr_4","custom_marker")
+	mkr_5 = Marker_FromName("mkr_5","custom_marker")
+	mkr_6 = Marker_FromName("mkr_6","custom_marker")
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+
+end

@@ -1,0 +1,12 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree4.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+
+
+    "..\\vehicles\\guo_dao\\guo_dao",
+	
+	-- Main Mesh
+    "..\\vehicles\\guojun04\\guojun04",
+}

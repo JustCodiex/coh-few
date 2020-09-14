@@ -1,0 +1,27 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+	eg_AlliesControlPoint = EGroup_CreateIfNotFound("eg_AlliesControlPoint")
+	eg_AlliesDefense = EGroup_CreateIfNotFound("eg_AlliesDefense")
+	eg_AxisControlPoint = EGroup_CreateIfNotFound("eg_AxisControlPoint")
+	eg_AxisDefense = EGroup_CreateIfNotFound("eg_AxisDefense")
+	eg_Entry1 = EGroup_CreateIfNotFound("eg_Entry1")
+	eg_Entry2 = EGroup_CreateIfNotFound("eg_Entry2")
+	eg_Entry3 = EGroup_CreateIfNotFound("eg_Entry3")
+	eg_Entry4 = EGroup_CreateIfNotFound("eg_Entry4")
+	eg_Entry5 = EGroup_CreateIfNotFound("eg_Entry5")
+	eg_Entry6 = EGroup_CreateIfNotFound("eg_Entry6")
+	eg_Entry7 = EGroup_CreateIfNotFound("eg_Entry7")
+	eg_Entry8 = EGroup_CreateIfNotFound("eg_Entry8")
+	eg_MortarBunker = EGroup_CreateIfNotFound("eg_MortarBunker")
+	eg_repair_allies = EGroup_CreateIfNotFound("eg_repair_allies")
+	eg_repair_axis = EGroup_CreateIfNotFound("eg_repair_axis")
+	eg_VP1 = EGroup_CreateIfNotFound("eg_VP1")
+	eg_VP2 = EGroup_CreateIfNotFound("eg_VP2")
+	eg_VP3 = EGroup_CreateIfNotFound("eg_VP3")
+
+end

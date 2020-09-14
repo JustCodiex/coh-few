@@ -1,0 +1,358 @@
+import("ScarUtil.scar")
+
+s_delaytime_after_loss = 5 -- amount of seconds that will go by before triggering game end
+s_team_death_time = {}
+
+--? @shortdesc If only one team is alive, players on that team win.  Returns true if one team left.
+--? @args String win_condition
+--? @result Boolean
+function WC_CheckOneTeamLeft( win_condition )
+	local count = World_GetPlayerCount()
+	if count >= 1 then
+		local team_first = -1
+		local player_alive
+		
+		for i = 1, count do
+			local player = World_GetPlayerAt(i)
+			
+			if Player_IsAlive(player) then
+				if team_first == -1 then
+					player_alive = player;
+					team_first = Player_GetTeam( player )
+				else
+					local team = Player_GetTeam( player )
+					if( team ~= team_first ) then
+						return;
+					end
+				end
+			end
+		end
+		if player_alive ~= nil then
+			if g_achievements_enabled then
+				fe_gameover(Player_GetTeam(player_alive), Player_GetTeam(Player_FindFirstEnemyPlayer(player_alive)), "annihilate");
+			end
+			World_SetPlayerWin( player_alive, win_condition)
+		end
+	end
+	World_SetGameOver()
+end
+
+function WC_RemoveUnusedObjects()
+
+	-- if this flag exists this means that VP game conditions have been loaded and this function should be skipped
+	if (g_VPConditionsLoaded == nil or g_VPConditionsLoaded == false) then
+		
+		-- get all the VP points
+		local count = World_GetNumEntities()
+		
+		print(count)
+		
+		for i=0,(count-1) do
+			local entityid = World_GetEntity( i )
+			
+			if (Entity_IsVictoryPoint(entityid)==true) then
+				Entity_Destroy( entityid )
+			end
+		end
+	end
+	
+	TimeRule_RemoveMe()
+end
+
+
+_Annihilate = 
+{
+	g_NumSquads = 999999
+}
+
+-- the Allied stuff
+
+_Annihilate["allies"] = 
+{
+	EBPS = 
+	{
+		EBP.ALLIES.HQ,
+		EBP.ALLIES.HQ2,
+		EBP.ALLIES.HQ3,
+		EBP.ALLIES.HQ4,
+		EBP.ALLIES.HQ5,
+		EBP.ALLIES.HQ6,
+		EBP.ALLIES.HQ7,
+		EBP.ALLIES.HQ8,
+		EBP.ALLIES.BARRACKS,
+		EBP.ALLIES.ARMORY,
+		EBP.ALLIES.MOTORPOOL,
+		EBP.ALLIES.TANK_DEPOT,
+		EBP.ALLIES.QUARTER_MASTER,
+		EBP.ALLIES.TRIAGE,
+		EBP.ALLIES.MG_NEST,
+	},
+	SBPS = {},
+	AMBIENT = UPG.ALLIES.CONVERT_AMBIENT_BUILDING,
+}
+-- the Axis stuff
+_Annihilate["axis"] = 
+{
+	EBPS = 
+	{
+		EBP.AXIS.HQ,
+		EBP.AXIS.HQ2,
+		EBP.AXIS.HQ3,
+		EBP.AXIS.HQ4,
+		EBP.AXIS.HQ5,
+		EBP.AXIS.HQ6,
+		EBP.AXIS.HQ7,
+		EBP.AXIS.HQ8,		
+		EBP.AXIS.QUARTERS,
+		EBP.AXIS.BARRACKS,
+		EBP.AXIS.ARMORY,
+		EBP.AXIS.COMMAND,
+		EBP.AXIS.KAMPFKRAFT,
+		EBP.AXIS.BUNKER,
+		BP_GetEntityBlueprint("ebps/races/axis/buildings/axis_bunker_starting_position.lua"),
+	},
+	SBPS = {},
+	AMBIENT = UPG.AXIS.CONVERT_AMBIENT_BUILDING
+}
+
+-- the Panzer Elite stuff
+
+_Annihilate["axis_panzer_elite"] = 
+{
+	EBPS = 
+	{
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_2.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_3.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_4.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_5.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_6.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_7.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/buildings/hq_8.lua"),
+		BP_GetEntityBlueprint("ebps/races/axis_panzer_elite/vehicles/flakvierling38_quad20mm_aagun_starting.lua"),
+		EBP.ELITE.PANZERJAGER,
+		EBP.ELITE.LOGISTIK,
+		EBP.ELITE.KAMPFGRUPPE,
+		EBP.ELITE.PANZER_ARTILLERIE,
+	},
+	SBPS = 
+	{
+		BP_GetSquadBlueprint("sbps/races/axis_panzer_elite/vehicles/flak38_quad20mm_aagun_squad_starting_position.lua"),
+	},
+	AMBIENT = UPG.ELITE.CONVERT_AMBIENT_BUILDING,
+}
+
+-- the Commonwealth stuff
+
+_Annihilate["allies_commonwealth"] = 
+{
+	EBPS =
+	{
+		EBP.CW.ANTITANK_NEST,
+		BP_GetEntityBlueprint("ebps/races/allies_commonwealth/buildings/bofors_gun_nest.lua"),		
+		EBP.CW.HOWITZER_NEST,
+		EBP.CW.MG_NEST,
+		EBP.CW.MORTAR_NEST,
+		BP_GetEntityBlueprint("ebps/races/allies_commonwealth/buildings/glider.lua"),
+		BP_GetEntityBlueprint("ebps/races/allies_commonwealth/buildings/glider_hq.lua"),
+		BP_GetEntityBlueprint("ebps/races/allies_commonwealth/buildings/glider_tetrarch.lua"),
+	},
+	SBPS =
+	{
+		SBP.CW.HQ,
+		SBP.CW.HQ_REINFORCEMENT,
+		SBP.CW.ARMOUR_HQ,
+		SBP.CW.INFANTRY_HQ
+	},
+	AMBIENT = UPG.CW.CONVERT_AMBIENT_BUILDING,
+}
+
+function WC_CheckEndGame()
+	-- if this flag is set then we care about annihilate
+	if (g_CheckAnnihilate ~= nil and g_CheckAnnihilate == true) then
+	
+		-- initialize team data
+		local _anniTeamStatus = {}
+		local _teamCount = {}
+		local _teamAITakeoverCount = {} -- stores the number of AI take-over players per team (AIs that have taken over for dropped humans)
+		local _teamHumanCount = {} -- stores the number of human players per team 
+		
+		-- foreach player, count the number of remaining buildings that we're interested in
+		local player_count = World_GetPlayerCount()
+		for i = 1, player_count do
+			local player = World_GetPlayerAt(i)
+			local team = Player_GetTeam( player )
+			local race = Player_GetRaceName(player)
+			
+			-- delay init
+			if _teamCount[team] == nil then
+				_teamCount[team] = 1
+			else
+				_teamCount[team] = _teamCount[team] + 1
+			end
+			
+			if _teamAITakeoverCount[team] == nil then
+				_teamAITakeoverCount[team] = 0
+			end
+			
+			if _teamHumanCount[team] == nil then
+				_teamHumanCount[team] = 0
+			end
+			
+			local AIplayerInitType = Player_GetAIType( player )
+			
+			-- possible types: 
+				--AII_None
+				--AII_Normal, 
+				--AII_LocalHumanTakeover, 
+				--AII_RemoteAITakeover, 
+				--AII_RemoteHumanTakeover
+			if AIplayerInitType == AII_RemoteHumanTakeover then	
+			
+				_teamAITakeoverCount[team] = _teamAITakeoverCount[team] + 1
+				
+			elseif AIplayerInitType == 0 then
+			
+				_teamHumanCount[team] = _teamHumanCount[team] + 1
+			end
+			
+			--is the player alive
+			if Player_IsAlive(player) then
+				
+				-- go through all the entities that the player owns and keep the ones we care about
+				local interestingBuildings = 0
+				local interestingSquads = 0
+				
+				local _FilterSquads = function(gid, idx, sid)
+					local sidBP = Squad_GetBlueprint(sid)
+					
+--					print("checking player "..i.." of race "..race.." of squad " .. BP_GetName(sidBP))
+					
+					local keep = false
+
+					for k,v in pairs(_Annihilate[race].SBPS) do
+						if v == sidBP then
+							keep = true;
+							break
+						end
+					end			
+					
+					if keep then
+						--print("player "..i.." of race "..race.." has a " .. BP_GetName(sidBP))
+						interestingSquads = interestingSquads + 1
+					end					
+					
+				end
+
+				local _FilterEntities = function(gid, idx, eid)
+					local eidBP = Entity_GetBlueprint(eid)
+
+--					print("checking player "..i.." of race "..race.." of entity " .. BP_GetName(eidBP))
+					
+					local keep = false
+
+					-- is this an upgraded ambient building
+					if Entity_HasUpgrade(eid, _Annihilate[race].AMBIENT) then
+						-- we only care if that building is in supply
+						if World_IsInSupply( player, Entity_GetPosition(eid) ) then
+							-- yup, count that one
+							keep = true
+						end
+					else
+						-- we only care for a few types of 'buildings'
+						for k,v in pairs(_Annihilate[race].EBPS) do
+							if v == eidBP then
+								keep = true;
+								break
+							end
+						end
+					end
+
+					-- keep it?
+					if keep then
+						--print("player "..i.." of race "..race.." has a " .. BP_GetName(eidBP))
+						interestingBuildings = interestingBuildings + 1
+					end
+				end
+				
+				local numSquads = Player_GetSquadCount(player);
+				EGroup_ForEach(Player_GetEntities(player), _FilterEntities)
+				SGroup_ForEach(Player_GetSquads(player), _FilterSquads)
+
+				-- check if the player still has some buildings that we care about
+				if (interestingBuildings > 0) or (interestingSquads > 0) or (numSquads >= _Annihilate.g_NumSquads) then
+					--print("player "..i.." of race "..race.." has " .. interestingBuildings .. " buildings")
+					_anniTeamStatus[ team ] = true
+					
+				else
+					--print("player "..i.." of race "..race.." has NO interesting buildings or squads")
+					--leave the table empty
+					if (s_team_death_time[ team ]==nil) then
+						s_team_death_time[ team ] = World_GetGameTime() + s_delaytime_after_loss
+					end
+				end
+			end
+		end
+		
+		-- find teams left with only AI players that have taken over for dropped humans
+		
+
+		-- kill players from teams that have been annihilated
+		for i = 1, player_count do
+			local player = World_GetPlayerAt(i);
+			if Player_IsAlive( player ) then
+				local team = Player_GetTeam( player )
+
+				local onlyDeadHumansLeft = _teamAITakeoverCount[team] == _teamCount[team]
+				local stopMixedGame = _teamHumanCount[team] == 0 and _teamAITakeoverCount[team] > 0
+				local deathTimeOk = s_team_death_time[ team ] ~= nil and s_team_death_time[ team ] <= World_GetGameTime() 
+				
+				--print( " num aitakeovers: " .. _teamAITakeoverCount[team] )
+				--print( " num humans: " .. _teamHumanCount[team] )
+				
+				if (not _anniTeamStatus[ team ] and deathTimeOk) then
+					print("WC_CheckEndGame: Annihilate: killing a player from team: " .. team )
+					Player_Kill( player, true );			
+				elseif onlyDeadHumansLeft then
+					print("WC_CheckEndGame: Annihilate: killing a take-over AI from team: " .. team )
+					Player_Kill( player, true );		
+				elseif stopMixedGame then
+					print("WC_CheckEndGame: Annihilate: killing AI & take-over AI from team: " .. team )
+					Player_Kill( player, true );			
+				end				
+			end
+		end		
+		
+	end
+
+	-- always check if only one team left 
+	WC_CheckOneTeamLeft("ZANNIHILATE");
+end
+
+function WC_InitGameCheck()
+
+	-- sign up for death events from all players
+	local player_count = World_GetPlayerCount();
+
+	for i = 1,player_count
+	do
+		local player = World_GetPlayerAt(i);
+		EventRule_AddPlayerEvent(WC_OnPlayerKilled, player, GE_PlayerKilled)
+	end
+	
+	-- check to see if the MP map has added an override
+	if (WinConditionOverride) then
+		WinConditionOverride()
+	end
+
+	-- also add a periodic check
+	TimeRule_AddInterval(WC_CheckEndGame, 1, 0)
+end
+
+function WC_OnPlayerKilled()
+	print("WC_OnPlayerKilled")
+	WC_CheckEndGame()
+end
+
+Scar_AddInit(WC_RemoveUnusedObjects);
+Scar_AddInit(WC_InitGameCheck);

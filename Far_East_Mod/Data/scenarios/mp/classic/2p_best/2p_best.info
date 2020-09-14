@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$61500",
+	scenariodescription = "$61501",
+	maxplayers = 2,
+	date = "2/26/2009 12:55 PM",
+	scenarioabbrname = "",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		288,
+		224,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "RelicCoH",
+}
+

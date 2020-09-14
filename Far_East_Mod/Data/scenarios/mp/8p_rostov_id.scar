@@ -1,0 +1,14 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+	eg_bridge_indest = EGroup_CreateIfNotFound("eg_bridge_indest")
+	eg_spotfour = EGroup_CreateIfNotFound("eg_spotfour")
+	eg_spotone = EGroup_CreateIfNotFound("eg_spotone")
+	eg_spotthree = EGroup_CreateIfNotFound("eg_spotthree")
+	eg_spottwo = EGroup_CreateIfNotFound("eg_spottwo")
+
+end

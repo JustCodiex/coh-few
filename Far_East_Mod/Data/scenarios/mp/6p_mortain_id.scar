@@ -1,0 +1,14 @@
+function OnInitID()
+
+	-- [[ Markers ]]
+
+	-- [[ Squad Groups ]]
+
+	-- [[ Entity Groups ]]
+	LAYER_N13_01 = EGroup_CreateIfNotFound("LAYER_N13_01")
+	LAYER_N13_02 = EGroup_CreateIfNotFound("LAYER_N13_02")
+	LAYER_N14_01_Hide_FlakCam = EGroup_CreateIfNotFound("LAYER_N14_01_Hide_FlakCam")
+	LAYER_N14_01_Hide_StrafeCam = EGroup_CreateIfNotFound("LAYER_N14_01_Hide_StrafeCam")
+	LAYER_N14_01_Hide_TroopCam = EGroup_CreateIfNotFound("LAYER_N14_01_Hide_TroopCam")
+
+end

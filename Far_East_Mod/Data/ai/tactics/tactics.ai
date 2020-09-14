@@ -1,0 +1,891 @@
+-- Tactics
+
+-- how far to look back when checking if we've taken a shot or been shot at
+s_CombatHistoryTicks 	= 5 * 8
+s_LowHealthPercentage 	= 0.55
+s_LowHealthPercentageVehicle 	= 0.85
+s_NearClumpDistanceCap	= 300
+s_NearClumpDistanceCap_Small = 50
+s_ObstructionSearchRadius = 80
+
+s_demand_increment = 50
+
+--------------------------------------------------------------------------------
+-- util
+
+function is_enemy_squad(target_squad)
+	if not World_OwnsSquad(target_squad) then
+			
+		local target_player = Squad_GetPlayerOwner(target_squad)
+			
+		if Player_GetRelationship(s_self_modplayer, target_player) == R_ENEMY then
+			return true
+		end
+	end
+	
+	return false
+end
+
+function is_friendly_squad(target_squad) 
+	if not World_OwnsSquad(target_squad) then
+			
+		local target_player = Squad_GetPlayerOwner(target_squad)
+			
+		if Player_GetRelationship(s_self_modplayer, target_player) == R_ALLY then
+			return true
+		end
+	end
+	
+	return false
+end
+
+function is_enemy_entity(target_entity)
+	if not World_OwnsEntity(target_entity) then
+			
+		local target_player = Entity_GetPlayerOwner(target_entity)
+			
+		if Player_GetRelationship(s_self_modplayer, target_player) == R_ENEMY then
+			return true
+		end	
+	end
+	
+	return false
+end
+
+
+function is_friendly_entity(target_entity)
+	if not World_OwnsEntity(target_entity) then
+			
+		local target_player = Entity_GetPlayerOwner(target_entity)
+			
+		if Player_GetRelationship(s_self_modplayer, target_player) == R_ALLY then
+			return true
+		end	
+	end
+	
+	return false
+end
+
+function get_first_enemy_entity_filter(target_entities, filterPred)
+
+	local count = EGroup_CountSpawned(target_entities)
+	for i=1, count do
+		
+		local target_entity = EGroup_GetSpawnedEntityAt(target_entities, i)
+		
+		if is_enemy_entity(target_entity) then
+			if filterPred == nil or filterPred(target_entity) then
+				return target_entity
+			end
+		end
+	end
+	
+	return nil
+	
+end
+
+function get_first_friendly_entity_filter(target_entities, filterPred)
+
+	local count = EGroup_CountSpawned(target_entities)
+	for i=1, count do
+		
+		local target_entity = EGroup_GetSpawnedEntityAt(target_entities, i)
+		
+		if is_friendly_entity(target_entity) then
+			if filterPred == nil or filterPred(target_entity) then
+				return target_entity
+			end
+		end
+	end
+	
+	return nil
+	
+end
+
+
+function get_first_enemy_squad_filter(target_squads, filterPred)
+
+	local count = SGroup_CountSpawned(target_squads)
+	for i=1, count do
+		
+		local target_squad = SGroup_GetSpawnedSquadAt(target_squads, i)
+		
+		if is_enemy_squad(target_squad) then
+
+			-- check functor  --  and AIPlayer_CanSeeSquad( s_selfplayer, target_squad) 
+			if ( (filterPred == nil or filterPred(target_squad)) ) then
+				return target_squad
+			end
+		end
+	end
+	
+	return nil
+
+end
+
+
+function get_first_friendly_squad_filter(target_squads, filterPred)
+
+	local count = SGroup_CountSpawned(target_squads)
+	for i=1, count do
+		
+		local target_squad = SGroup_GetSpawnedSquadAt(target_squads, i)
+
+		if is_friendly_squad(target_squad) then
+
+			-- check functor
+			if filterPred == nil or filterPred(target_squad) then
+				return target_squad
+			end
+		end
+	end
+	
+	return nil
+
+end
+
+function get_first_enemy_entity(target_entities)
+	return get_first_enemy_entity_filter(target_entities, nil)
+end
+
+function get_first_enemy_squad(target_squads)
+	return get_first_enemy_squad_filter(target_squads, nil)
+end
+
+function get_first_enemy_squad_vehicle(target_squads)
+	return get_first_enemy_squad_filter(target_squads, SquadQuery_IsVehicle)
+end
+
+function is_not_vehicle(target_squad)
+	return not SquadQuery_IsVehicle(target_squad)
+end
+
+function have_clumps(squad)
+	return AIPlayer_GetBestClumpIdx(s_selfplayer, squad, s_NearClumpDistanceCap) >= 0
+end
+
+function have_clumps_near(squad)
+	return AIPlayer_GetBestClumpIdx(s_selfplayer, squad, s_NearClumpDistanceCap_Small) >= 0
+end
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- tactic filters
+--   return true or false
+
+function TacticFilter_TrivialAccept(squad)
+	return true
+end
+
+function PointIsInFrontOfSquad( localPos, other_squad )
+	
+	local targetHeading = Squad_GetHeading(other_squad)
+	if targetHeading.x == 0 and targetHeading.z == 0 then
+		-- crazy physics?
+		return false
+	end
+	local targetPos = Squad_GetPosition(other_squad)
+	local targetPosRef = {x=targetPos.x + targetHeading.x,z=targetPos.z + targetHeading.z}
+	local V1 = {x = targetPosRef.x - targetPos.x, z = targetPosRef.z - targetPos.z}
+	local V2 = {x = localPos.x - targetPos.x,z = localPos.z - targetPos.z}
+	local V1L = math.sqrt(V1.x*V1.x+V1.z*V1.z)
+	local V2L = math.sqrt(V2.x*V2.x+V2.z*V2.z)	
+	if V1L == 0 or V2L == 0 then
+		-- heading is screwy
+		return false
+	end
+	local cosAlpha = (V1.x * V2.x + V1.z * V2.z) / (V1L*V2L)
+	local alpha = math.acos(cosAlpha)
+	return alpha >= -1.570795 and alpha <= 1.570795 
+
+end
+
+function TacticFilter_IsSquadEngineer(squad)
+
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+	if ( sim_squad == nil ) then
+		return false
+	end
+
+	return ( Squad_GetBlueprint( sim_squad ) == s_engineer )
+end
+
+function SquadIsInFront(squad, other_squad)
+
+	return PointIsInFrontOfSquad( Squad_GetPosition(squad), other_squad )
+	
+end
+
+function TacticFilter_TankMove(squad)
+	
+	if (not s_personality.tankmove_tactic_enabled) then
+		return false
+	end
+	
+	-- no tactic if we're not actively engaged with an enemy vehicle
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+	if ( sim_squad == nil ) then
+		return false
+	end
+
+	local target_squad = SquadQuery_GetAnySquadCombatTarget( sim_squad )
+	
+	if ( target_squad == nil or not SquadQuery_IsVehicle( target_squad ) ) then
+		return false
+	end
+	
+	-- ALSO require that they not be already behind the target
+	return SquadIsInFront(sim_squad, target_squad)
+end
+
+function TacticFilter_TeamWeapon(squad)
+	
+	-- currently not doing anything
+	return false
+
+end
+
+function TacticFilter_Avoid(squad)
+	
+	-- should avoid this time?
+	if (AI_RandRange(0,1) < s_personality.ability_avoidance_percentage) then
+		local sim_squad = AISquad_ConvertToSimSquad( squad )
+		if sim_squad ~= nil then
+			return TacticFilter_HealthLow_SimSquad(sim_squad, 0.45);
+		else 
+			return true
+		end
+	end
+	
+	return false
+end
+
+sk_timeBetweenMineDrops = 60*8
+s_greyhoundmine_drop = 0
+
+function TacticFilter_GreyhoundMine(squad)
+	
+	-- use a timer to determine if we should drop another greyhound mine
+	if (s_greyhoundmine_drop < sk_timeBetweenMineDrops ) then
+		s_greyhoundmine_drop = s_greyhoundmine_drop + 1
+		return false
+	end
+	
+	s_greyhoundmine_drop = 0
+	
+	return true
+end
+
+function TacticFilter_IsBeingAttacked(squad)
+	return AISquad_HasBeenAttacked(squad, s_CombatHistoryTicks)
+end
+
+function TacticFilter_IsShooting(squad)
+	return AISquad_HasFiredWeapon(squad, s_CombatHistoryTicks)
+end
+
+function TacticFilter_IsShootingVehicle(squad)
+
+	if (not AISquad_HasFiredWeapon(squad, s_CombatHistoryTicks)) then
+		return false
+	end
+
+	local sim_squad = AISquad_ConvertToSimSquad( squad )
+	if sim_squad == nil then
+		-- abort
+		return nil
+	end
+
+	local target_squad = SquadQuery_GetAnySquadCombatTarget(sim_squad)
+	if ( target_squad == nil or not SquadQuery_IsVehicle( target_squad ) ) then
+		-- no longer targeting a tank
+		return false
+	end       
+
+	-- shooting and have a vehicle/building target
+	return true
+
+end
+
+
+function TacticFilter_InCombat(squad)
+	return TacticFilter_IsShooting(squad) or TacticFilter_IsBeingAttacked(squad)
+end
+
+
+function TacticFilter_HealthLow_SimSquad(sim_squad, threshold)
+	
+	local h = Squad_GetHealth(sim_squad)
+	local hMax = Squad_GetHealthMax(sim_squad)
+	local hP = h / hMax
+	
+	return hP < threshold
+	
+end
+
+function TacticFilter_HealthLow(squad)
+
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+	if ( sim_squad == nil ) then
+		return false
+	end
+	
+	return TacticFilter_HealthLow_SimSquad(sim_squad, s_LowHealthPercentage)
+end
+
+function TacticFilter_HealthLow_Entity(entity)
+
+	return Entity_GetHealthPercentage(entity) < s_LowHealthPercentage
+end
+
+function TacticFilter_RevertableEntity(entity)
+	return EntityQuery_IsRevertable(entity)
+end
+
+function is_low_health_vehicle(target_squad)
+	if not SquadQuery_IsVehicle(target_squad) then
+		return false
+	end
+	
+	return TacticFilter_HealthLow_SimSquad(target_squad, s_LowHealthPercentageVehicle)
+end
+--------------------------------------------------------------------------------
+-- tactic squad target filters
+--   return a squad, or nil
+
+function SquadTargetFilter_TrivialAccept(squad, target_squads)
+	return SGroup_GetSpawnedSquadAt(target_squads, 1)
+end
+
+function SquadTargetFilter_FirstEnemy(squad, target_squads)	
+	return get_first_enemy_squad(target_squads)	
+end
+
+function SquadTargetFilter_FirstEnemyVehicle(squad, target_squads)	
+	return get_first_enemy_squad_vehicle(target_squads)
+end
+
+function SquadTargetFilter_FirstEnemyNonVehicle(squad, target_squads)	
+	return get_first_enemy_squad_filter(target_squads, is_not_vehicle)
+end
+
+function SquadTargetFilter_FirstFriendlyVehicle_LowHealth(squad, target_squads)	
+	return get_first_friendly_squad_filter(target_squads, is_low_health_vehicle)
+end
+
+function SquadTargetFilter_FirstFriendlyVehicle_LowHealth_PE(squad, target_squads)	
+
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+
+	-- squad is in combat?
+	local squadincombat = Squad_IsAttacking(sim_squad, 5) or Squad_IsUnderAttack(sim_squad, 5) 
+
+	local count = SGroup_CountSpawned(target_squads)
+	for i=1, count do
+	
+		local target_squad = SGroup_GetSpawnedSquadAt(target_squads, i)
+		-- Check to see if target is a friendly vehicle with low health
+		if is_friendly_squad(target_squad) and is_low_health_vehicle(target_squad) then
+			-- Check to see if casting squad is in combat
+			if ( not squadincombat ) then 
+				return target_squad	
+			end
+			
+			-- Check to see if target squad is a Kettenrad and only repair if the Kettenrad is not being attacked
+			if ( Squad_GetBlueprint( target_squad ) == SBP.ELITE.KETTENRAD ) then
+				if not Squad_IsUnderAttack(target_squad, 5) then
+					return target_squad
+				end
+			else
+				return target_squad
+			end
+			
+		end
+	end
+	
+	return nil
+	
+end
+
+--------------------------------------------------------------------------------
+-- tactic entity target filters
+--   return an entity, or nil
+
+function EntityTargetFilter_TrivialAccept(squad, target_entities)
+	return EGroup_GetSpawnedEntityAt(target_entities, 1)
+end
+
+function EntityTargetFilter_FirstEnemy(squad, target_entities)	
+	return get_first_enemy_entity(target_entities)
+end
+
+function EntityTargetFilter_FirstEnemyStructure(squad, target_entities)	
+	return get_first_enemy_entity_filter(target_entities, EntityQuery_IsStructure)
+end
+
+function EntityTargetFilter_AcceptBarbwire(squad, target_entities)
+	
+	if (s_enemy_barbwire) then
+		return AISquad_GetClosestObstructionOfType( squad, s_ObstructionSearchRadius, s_enemy_barbwire )
+	end
+
+	return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+end
+
+function EntityTargetFilter_FirstHold(squad, target_entities)
+
+	-- dont want to load into vehicles, this works because vehicles are not passed in
+	
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+	
+	local count = EGroup_CountSpawned(target_entities)
+	for i=1, count do
+		local target_entity = EGroup_GetSpawnedEntityAt(target_entities, i)
+		
+		if Entity_CanLoadSquad(target_entity, sim_squad, true, false) then
+			return target_entity
+		end
+	end
+	
+	return nil
+end
+
+
+function TacticDemand_Hold(squad,near_e,near_s)
+	local hold_ent = EntityTargetFilter_FirstHold(squad, near_e)
+
+	if hold_ent == nil then
+		return -s_demand_increment
+	end
+	
+	-- emplacements (esp. slit trenches) are really important
+	local emplacementMultiplier = 1
+	if ( Entity_IsOfType( hold_ent, "defence_building" ) ) then
+		emplacementMultiplier = 2
+	end	
+
+	-- if we're really close to the building, up the demand significantly
+	local distSqr = World_DistanceSquaredPointToPoint(AISquad_GetAnchorPos(squad), Entity_GetPosition(hold_ent))
+	
+	local minRange = 4
+	local maxRange = misc_taskAP*misc_taskAP
+	
+	-- clamp over some range
+	if distSqr < minRange then
+		distSqr = minRange
+	end
+	if distSqr > maxRange then
+		distSqr = maxRange
+	end
+	
+	-- linearly increase demand with close distance
+	local demand_multiplier = 1 + 5 * (maxRange - distSqr) / (maxRange - minRange)
+	
+	return demand_multiplier * emplacementMultiplier * s_demand_increment 
+end
+
+function TacticDemand_HoldHMG(squad,near_e,near_s)
+	local hold_ent = EntityTargetFilter_FirstHold(squad, near_e)
+
+	if hold_ent == nil then
+		return -s_demand_increment
+	end
+	
+	-- emplacements (esp. slit trenches) are really important
+	local emplacementMultiplier = 1
+	if ( Entity_IsOfType( hold_ent, "defence_building" ) ) then
+		emplacementMultiplier = 2
+	end	
+
+	-- if we're really close to the building, up the demand significantly
+	local distSqr = World_DistanceSquaredPointToPoint(AISquad_GetAnchorPos(squad), Entity_GetPosition(hold_ent))
+	
+	local minRange = 4
+	local maxRange = misc_taskAP*misc_taskAP
+	
+	-- clamp over some range
+	if distSqr < minRange then
+		distSqr = minRange
+	end
+	if distSqr > maxRange then
+		distSqr = maxRange
+	end
+	
+	-- linearly increase demand with close distance
+	local demand_multiplier = 1 + 5 * (maxRange - distSqr) / (maxRange - minRange) + 2
+	
+	return demand_multiplier * emplacementMultiplier * s_demand_increment 
+end
+
+-- this is a special tactic that doesn't take an entitygroup to choose from
+function EntityTargetFilter_Obstruction(squad, ents)	
+
+	local sim_squad = AISquad_ConvertToSimSquad( squad )
+	if sim_squad == nil then
+		-- abort
+		return nil
+	end
+	
+	local target_squad = SquadQuery_GetAnySquadCombatTarget( sim_squad )
+	if target_squad ~= nil then
+		-- dont kil obstructions if we already have a target
+		return nil
+	end
+	
+	-- ask the obstruction system for the closest obstruction
+	-- pass in true to filter out allied obstructions (may need revisit)
+	local entity_target = AISquad_GetClosestObstruction( squad, s_ObstructionSearchRadius, false )
+	
+
+	return entity_target
+	
+end
+
+
+-- this is a special tactic that doesn't take an entitygroup to choose from
+function EntityTargetFilter_Obstruction_Wire(squad, ents)	
+	local target = EntityTargetFilter_Obstruction(squad,ents)
+	
+	if target == nil then
+		return nil
+	end
+
+	if s_enemy_barbwire == nil then
+		return nil
+	end
+	
+	if Entity_GetBlueprint( target ) ~= s_enemy_barbwire then
+		return nil
+	end
+
+	return target
+end
+
+function EntityTargetFilter_FirstFriendlyStructure_LowHealth(squad, target_entities)	
+	return get_first_friendly_entity_filter(target_entities, TacticFilter_HealthLow_Entity)
+end
+
+function EntityTargetFilter_FirstRepairableStructure(squad, target_entities)	
+	
+	-- look for special repairables 
+	local count = EGroup_CountSpawned(target_entities)
+	for i=1, count do
+		local target_entity = EGroup_GetSpawnedEntityAt(target_entities, i)
+		
+		if is_friendly_entity(target_entity) then
+			if Entity_IsOfType( target_entity, "hq_wreck" ) then
+				return target_entity
+			end
+		else 
+			if not is_enemy_entity(target_entity) then
+				-- a neutral - wrecked bridges are good to go
+				if Entity_IsOfType( target_entity, "wrecked_bridge" ) then
+					return target_entity
+				end				
+			end
+		end
+	end	
+
+	-- fall back on looking for low health friendlies
+	return get_first_friendly_entity_filter(target_entities, TacticFilter_HealthLow_Entity)
+end
+
+
+function EntityTargetFilter_FindRevertableBuilding(squad, target_entities)	
+	return get_first_enemy_entity_filter(target_entities, TacticFilter_RevertableEntity )
+end
+
+function EntityTargetFilter_FirstScorchedPoint(squad, target_entities)
+
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+	local squadpos = Squad_GetPosition(sim_squad)
+
+	-- for each neutral military point, look for entities (points) that have been 'scorched'
+	local militaryPoint_count = Military_GetNeutralMilitaryPointCount(s_selfplayer)
+	for i=0, militaryPoint_count-1 do
+		
+		local militaryPoint = Military_GetNeutralMilitaryPointAt(s_selfplayer, i)
+		
+		if Military_IsMilitaryPointValid( militaryPoint ) then
+			local target_entity = Military_GetMilitaryPointEntity(militaryPoint)
+			
+			if not Modifier_IsEnabled( target_entity, "modifiers\\enable_capture_entity_modifier.lua", true ) then
+				-- scorched!, use it if it is close enough
+				local ePos = Entity_GetPosition( target_entity )
+				
+				if World_DistanceSquaredPointToPoint(squadpos, ePos) < 35*35 then
+					return target_entity
+				end
+			end
+		end
+	end
+	
+	return nil
+end
+
+--------------------------------------------------------------------------------
+-- tactic position target filters
+--   return a position, or a position with all coords set to COORD_INVALID
+--   NOTE: please don't go farther than misc_taskAP distance from the squad's anchor pos 
+--        (this will cause weird oscillations - no time to fix it properly by enforcing this)
+
+function PositionTargetFilter_TrivialAccept(squad)
+	return AISquad_GetAnchorPos(squad)
+end
+
+function PositionTacticFilter_AtHomeBase(caster)
+	return AIPlayer_GetHomePosition(s_self_modplayer)
+end
+
+function PositionTargetFilter_Cover(squad)
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+	
+	-- get the task anchor pos
+	local pos = AISquad_GetAnchorPos(squad)
+	
+	-- get the cover pos, this function returns the anchor pos if it couldn't find cover
+	local posCover = Squad_FindCoverCompareCurrent(sim_squad, AISquad_GetAnchorPos(squad), misc_taskAP, 2.5*misc_taskAP, true)
+	
+	-- if it found cover that is at least 5 m away
+	if World_DistanceSquaredPointToPoint(pos, posCover) > 25.0 then
+	
+		local oldPosThreatLevel = AISquad_ThreatLevelToSquad( s_selfplayer, squad, pos )
+		local newPosThreatLevel = AISquad_ThreatLevelToSquad( s_selfplayer, squad, posCover )
+		local threatDiff = newPosThreatLevel - oldPosThreatLevel
+		-- make sure this position is still safe (otherwise ignore it)
+		if (threatDiff < 1) then
+			
+			-- never move into someones arc of fire
+			if not AIPlayer_IsFireConePosition( s_selfplayer, posCover ) then
+				-- never move closer to any of your targets
+				if not AISquad_IsPosWithinDistOfAttackTarget(squad, posCover, 25 ) then
+					return posCover
+				end
+			end
+		end
+	end
+		
+	-- else return error
+	return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+end
+
+function PositionTargetFilter_Tank(squad)
+
+	-- get current target
+	local sim_squad = AISquad_ConvertToSimSquad( squad )
+
+	if ( sim_squad == nil ) then
+		return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+	end
+
+	local target_squad = SquadQuery_GetAnySquadCombatTarget(sim_squad)
+	
+	-- for now, only do maneuvering against other vehicle squads
+	if ( target_squad == nil or not SquadQuery_IsVehicle( target_squad ) ) then
+		return Squad_GetPosition(sim_squad)	-- pass back the current position
+	end
+
+	-- now choose a position that will get us a rear shot on our current target
+	local targetHeading = Squad_GetHeading(target_squad)
+	local targetPos = Squad_GetPosition(target_squad)
+	
+	-- some small distance away (could potentially use current distance from target)
+	local magic_mult = misc_taskAP
+
+	targetPos.x = targetPos.x - magic_mult * targetHeading.x
+	targetPos.z = targetPos.z - magic_mult * targetHeading.z
+	
+	return targetPos
+end
+
+function PositionTargetFilter_TeamWeapon(squad)
+	-- currently not doing anything
+	return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+end
+
+
+function PositionTargetFilter_ATGun(squad)
+	
+	-- if the AT gun is being shot and its not shooting at anything, possibly it should move to attack the target,
+	-- unless ofcourse its too strong, then it should retreat (which should be handled in its task)
+	
+end
+
+function PositionTargetFilter_BestClump(squad)
+
+	local i = AIPlayer_GetBestClumpIdx(s_selfplayer, squad, s_NearClumpDistanceCap)
+	
+	if i < 0 then
+		return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+	end
+
+	return AIPlayer_GetClumpPosition(s_selfplayer,i)
+end
+
+function PositionTargetFilter_BestClump_Near(squad)
+
+	local i = AIPlayer_GetBestClumpIdx(s_selfplayer, squad, s_NearClumpDistanceCap_Small)
+	
+	if i < 0 then
+		return World_Pos(COORD_INVALID, COORD_INVALID, COORD_INVALID)
+	end
+
+	return AIPlayer_GetClumpPosition(s_selfplayer,i)
+end
+
+
+--------------------------------------------------------
+-- tactic update checking
+-- these functions are used to determine if the current active tactic is still doing the right thing
+
+function TacticUpdateCheck_Tank(squad, targetPos)
+
+	local sim_squad = AISquad_ConvertToSimSquad( squad )
+
+	if ( sim_squad == nil ) then
+		return false
+	end
+
+	local target_squad = SquadQuery_GetAnySquadCombatTarget(sim_squad)
+	
+	if ( target_squad == nil or not SquadQuery_IsVehicle( target_squad ) ) then
+		-- no longer targeting a tank
+		return false
+	end	
+
+	-- if our target position is no longer behind our target tank then cancel
+	return not PointIsInFrontOfSquad( targetPos, target_squad )
+	
+end
+
+
+-- situational demand functions
+-- return 'some' demand range between 0-100 depending on state
+--------------------------------------------------------
+
+-- returns a demand based on whether or not we can find a nearby target (deals separately with entities & squads)
+function TacticDemand_NearTarget(squad, near_entities, near_squads, pred_ent, pred_squads )
+	
+	if near_entities ~= nil and pred_ent ~= nil then
+		if pred_ent(squad, near_entities) then
+			return s_demand_increment
+		end
+	end
+	
+	if near_squads ~= nil and pred_squads ~= nil then
+		if pred_squads(squad, near_squads) then
+			return s_demand_increment
+		end
+	end
+	
+	-- nothing to target
+	return -s_demand_increment
+end
+
+-- returns a demand based on a simple boolean predicate on the squad only
+function TacticDemand_Boolean(squad, pred)
+
+	if pred(squad) then
+		return s_demand_increment
+	end
+	
+	return -s_demand_increment
+end
+
+function TacticDemand_NearEnemySquad_NonVehicle(squad,near_entities,near_squads)
+	return TacticDemand_NearTarget(squad,nil,near_squads,nil,SquadTargetFilter_FirstEnemyNonVehicle)
+end
+
+function TacticDemand_NearEnemySquad_Vehicle(squad, near_entities,near_squads)
+	return TacticDemand_NearTarget(squad,nil,near_squads,nil,SquadTargetFilter_FirstEnemyVehicle)
+end
+
+function TacticDemand_NearEnemy(squad,near_entities,near_squads)
+	return TacticDemand_NearTarget(squad,near_entities,near_squads,EntityTargetFilter_FirstEnemy,SquadTargetFilter_FirstEnemy )
+end
+
+function TacticDemand_NearEnemySquad(squad,near_entities,near_squads)
+	return TacticDemand_NearTarget(squad,nil,near_squads,nil,SquadTargetFilter_FirstEnemy)
+end
+
+function TacticDemand_NearEnemyEntity(squad,near_entities,near_squads)
+	return TacticDemand_NearTarget(squad,near_entities,nil,EntityTargetFilter_FirstEnemy,nil)
+end
+
+function TacticDemand_NearEnemyStructure(squad,near_entities,near_squads)
+	return TacticDemand_NearTarget(squad,near_entities,nil,EntityTargetFilter_FirstEnemyStructure,nil)
+end
+
+function TacticDemand_NearEnemyClump(squad,near_entities,near_squads)
+	return TacticDemand_Boolean(squad, have_clumps)
+end
+
+function TacticDemand_NearEnemyClump_ShortRange(squad,near_entities,near_squads)
+	return TacticDemand_Boolean(squad, have_clumps_near)
+end
+
+function TacticDemand_BeingAttacked(squad,near_e,near_s)
+	return TacticDemand_Boolean(squad, TacticFilter_IsBeingAttacked)
+end
+
+function TacticDemand_IsShooting(squad,near_e,near_s)
+	return TacticDemand_Boolean(squad, TacticFilter_IsShooting)
+end
+
+function TacticDemand_InCombat(squad,near_e,near_s)
+	return TacticDemand_Boolean(squad, TacticFilter_InCombat)
+end
+
+function TacticDemand_LowHealth(squad,near_e,near_s)
+	return TacticDemand_Boolean(squad, TacticFilter_HealthLow)
+end
+
+function TacticDemand_LowHealth_MedicalKit(squad,near_e,near_s)
+	-- do not waste medic kit ability on cheap engineers
+	if ( TacticFilter_IsSquadEngineer(squad) ) then
+		return -s_demand_increment
+	end
+	
+	return TacticDemand_Boolean(squad, TacticFilter_HealthLow)
+end
+
+function EntityTargetFilter_PickUp(squad, target_entities)
+	
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+		
+	local count = EGroup_CountSpawned(target_entities)
+	for i=1, count do
+		local target_entity = EGroup_GetSpawnedEntityAt(target_entities, i)
+		
+		-- if you are allied player and this is a cargo-drop (check so we only pickup our own drops)
+		if ( Entity_GetBlueprint( target_entity ) == s_cargodrop and s_current_race == TRACE_ALLIES) then
+			
+			local cargo_playerid = Player_GetID( Entity_GetPlayerOwner( target_entity ) )
+			-- make sure this is ours
+			if ( cargo_playerid == s_selfplayerid) then
+				return target_entity
+			end
+		else
+			return target_entity
+		end
+		
+	end
+	
+	return nil
+end
+
+function EntityTargetFilter_CaptureTeamWeapon(squad, target_entities)
+	
+	local sim_squad = AISquad_ConvertToSimSquad(squad)
+		
+	local count = EGroup_CountSpawned(target_entities)
+	for i=1, count do
+		local target_entity = EGroup_GetSpawnedEntityAt(target_entities, i)
+		if ( Squad_CanCaptureTeamWeapon( sim_squad, target_entity ) ) then
+			return target_entity
+		end
+		
+	end
+	
+	return nil
+end

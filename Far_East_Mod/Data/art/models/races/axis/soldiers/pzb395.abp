@@ -1,0 +1,13 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+     "..\\..\\allies\\vehicles\\t38b\\t38b",
+    "..\\..\\allies\\vehicles\\japzg_fei5\\japzg_fei5",
+   "..\\..\\allies\\vehicles\\t38b\\t38b",
+   "..\\..\\allies\\vehicles\\beibao\\beibao",
+   "Weapons\\Stielgranate",
+
+
+}

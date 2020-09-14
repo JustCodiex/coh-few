@@ -1,0 +1,20 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Main Mesh
+	"..\\..\\Commonwealth\\Soldiers\\Body\\Body",
+	"..\\..\\Commonwealth\\Soldiers\\RedHawk",
+	"..\\..\\Commonwealth\\Soldiers\\Slouchhat\\Slouchhat",
+	"..\\..\\allies\\vehicles\\tou8\\tou8",
+
+	-- Allied Weapons
+	--"..\\..\\Allies\\Soldiers\\Weapons\\M3_GreaseGun",
+	--"..\\..\\Allies\\Soldiers\\Weapons\\m1903 springfield",
+	--"..\\..\\Allies\\Soldiers\\Weapons\\Flamethrower",
+
+	-- Commonwealth weapons
+	--"..\\..\\Commonwealth\\Soldiers\\Weapons\\Lee_Enfield_Mk1",
+	"..\\..\\Commonwealth\\Soldiers\\Weapons\\webley_revolver",
+}

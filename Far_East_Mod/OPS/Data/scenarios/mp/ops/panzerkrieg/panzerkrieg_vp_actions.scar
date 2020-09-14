@@ -1,0 +1,330 @@
+function TriggerVPActions(player, point, apply)
+	if type(point.actions) == "table" then
+		for k, action in pairs(point.actions) do
+			if type(action) == "function" then
+				action(player, point, apply)
+			end
+		end
+	end
+end
+
+function CenterPointAction(player, point, apply)
+
+	if apply then
+		
+		for k, v in pairs(t_TWplayerData) do
+			if Player_GetTeam(player.player) == Player_GetTeam(v.player) then
+				
+				FOW_RevealTerritory(v.player, point.sector, -1, false)
+				
+				if Player_IsHuman(v.player) == false then
+					point.owner = v.player
+					RuleCenterRespawn(v, point)
+					SpawnCenterSquads(v, point, true)
+				end
+			end
+		end
+	end
+	
+	if not apply then
+		
+		for k, v in pairs(t_TWplayerData) do
+			if Player_GetTeam(player.player) == Player_GetTeam(v.player) then
+				FOW_UnRevealTerritory(v.player, point.sector)
+			end
+		end
+		
+		SpawnCenterSquads(point.owner, point, false)
+		
+		point.owner = nil
+	end
+end
+
+
+function BunkerPointAction(player, point, apply)
+	
+	if apply then
+		
+		if eg_MortarBunker ~= nil and not EGroup_IsEmpty(eg_MortarBunker) then
+			for k, friendlyPlayer in pairs(t_TWplayerData) do
+				if Player_GetTeam(player.player) == Player_GetTeam(friendlyPlayer.player) then
+					if Player_IsHuman(friendlyPlayer.player) == false then
+						
+						EGroup_SetPlayerOwner(eg_MortarBunker, friendlyPlayer.player)
+					end
+				end
+			end
+		end
+	end
+	
+	if not apply then
+		
+		if eg_MortarBunker ~= nil and not EGroup_IsEmpty(eg_MortarBunker) then
+			
+			EGroup_SetWorldOwned(eg_MortarBunker)
+		end
+	end
+end
+
+
+function RepairPointAction(player, point, apply)
+
+	if apply then
+		
+		for k, defense in pairs(t_defenses) do
+			for k2, v in pairs(t_TWplayerData) do
+				if Player_GetTeam(player.player) == Player_GetTeam(v.player) then
+					test2 = Player_GetDisplayName(v.player)
+					
+					if Player_OwnsEGroup(v.player, defense.egroup) then
+						point.defense = defense.egroup
+						
+						Cmd_Ability(point.defense, point.repairToggle)
+					end
+				end
+			end
+		end
+	end
+	
+	if not apply then
+		
+		for k, v in pairs(t_TWplayerData) do
+			if Player_OwnsEGroup(v.player, point.defense) then				
+				
+				Cmd_Ability(point.defense, point.repairToggle)
+				
+				local repairmen = EGroup_CreateIfNotFound("repairmen")
+				repairmen = Player_GetEntities(v.player)
+				EGroup_Filter(repairmen, BP_GetEntityBlueprint("ebps/races/axis/soldiers/repair_pioneer.lua"), FILTER_KEEP)
+				EGroup_DeSpawn(repairmen)
+			end
+		end
+	end
+end
+
+
+function ManpowerPointAction(player, point, apply)
+
+	if apply then
+		
+		for k, v in pairs(t_TWplayerData) do
+			if Player_GetTeam(player.player) == Player_GetTeam(v.player) then
+				
+				Modify_PlayerResourceRate(v.player, RT_Manpower, point.rate/480, MUT_Addition)
+			end
+		end
+	end
+	
+	if not apply then
+		
+		for k, v in pairs(t_TWplayerData) do
+			if Player_GetTeam(player.player) == Player_GetTeam(v.player) then
+				
+				Modify_PlayerResourceRate(v.player, RT_Manpower, -point.rate/480, MUT_Addition)
+			end
+		end
+		
+	end
+end
+
+
+function SpawnVictoryDefender(player, point, apply, delay)
+
+	if apply then
+		-- no longer allow incremental squads
+		--player.victoryDefenders = player.victoryDefenders + 1
+		local NPC = FigureOutNPCForPlayer(player)
+		local destination = EGroup_GetPosition(point.egroup)
+		-- using this to get a unique value for each point to pass into the sgroup name
+		local num = math.floor(math.abs(destination.x))
+		local victoryDefender = SGroup_CreateIfNotFound(string.format("player%d_victory_defender_%d", player.index, num))
+		
+		if scartype(NPC) == ST_PLAYER then
+			if SGroup_IsEmpty(victoryDefender) then
+				Util_CreateSquads(NPC, victoryDefender, player.soldier, EGroup_GetPosition(player.entrypoint), destination)
+			end
+			
+			_MoveToCoverAtDestination = function()
+				if not SGroup_IsEmpty(victoryDefender) then
+					local squadDistanceFromPoint = Prox_EGroupSGroup(point.egroup, victoryDefender, PROX_CENTER)
+					if ( squadDistanceFromPoint < 8 ) then
+						local destination = EGroup_GetOffsetPosition( point.egroup, World_GetRand(1, 8), 12) 
+						local finalDestination = Squad_FindCover( SGroup_GetSpawnedSquadAt(victoryDefender, 1), destination, 10 )
+						Cmd_Move(victoryDefender, finalDestination)
+						Rule_RemoveMe()
+					end
+				else
+					bug("An "..player.team.." player has an empty Victory Defender SGroup at "..SGroup_GetName(victoryDefender))
+					Rule_RemoveMe()
+				end
+			end
+			
+			Rule_AddInterval(_MoveToCoverAtDestination, 2)
+		end
+	end
+end
+
+
+function VictoryPointRewardExperience(player, point, apply)
+	if apply then
+		if not SGroup_IsEmpty(player.sgroup) then
+			local rewardAmount = point.captureExperience or t_Resources.action.capturePointDefault or 0
+			Player_AddResource(player.player, RT_Action, rewardAmount)
+			ExperienceKicker(player, SGroup_GetPosition(player.sgroup), rewardAmount)
+		end
+	end
+end
+
+
+function VictoryPointAbilityManager(player, point, apply)
+	if apply and type(point.abilities) == "table" then
+		
+		local unlocktime = point.unlocktime or 0
+		local defaultabilities = point.defaultabilities or 0
+		local abilityList = VictoryPointFindAbilityList(player, point)
+		
+		Timer_Start(point.name, unlocktime*(table.getn(abilityList)-defaultabilities))
+		-- Initialize ability unlock data
+		for k, ability in pairs(abilityList) do
+			if ability.unlocked == nil then
+				ability.unlocked = { }
+			end
+		end
+		
+		for playerKey, player in pairs(t_TWplayerData) do
+			if player.team == point.currentowner.team then
+				if player.player == Game_GetLocalPlayer()  then
+					if abilityList[1].objective ~= nil then
+						Objective_StartTimer(abilityList[1].objective, COUNT_DOWN, unlocktime)
+						Objective_Show(abilityList[1].objective, true)
+					end
+				end
+				abilityList[1].unlocked[playerKey] = false
+				
+				local _AbilityManagerRule = function()
+					if point.currentowner ~= nil then
+						
+						VictoryPointAbilityOrganizer(player, playerKey, point, abilityList, unlocktime, defaultabilities, true)
+						
+					else
+						
+						Timer_End(point.name)
+						VictoryPointAbilityOrganizer(player, playerKey, point, abilityList, unlocktime, defaultabilities, false)
+						Rule_RemoveMe()
+					end
+					
+				end
+				
+				Rule_AddInterval(_AbilityManagerRule, 1)
+				
+			end
+		end
+	end
+end
+
+
+function VictoryPointFindAbilityList(player, point)
+	if TW_IsAllies(player.player) and point.abilities.allies ~= nil then
+		return point.abilities.allies
+	elseif TW_IsAxis(player.player) and point.abilities.axis ~= nil then
+		return point.abilities.axis
+	else
+		return point.abilities
+	end
+end
+
+
+function VictoryPointAbilityOrganizer(player, playerKey, point, abilityList, unlocktime, defaultabilities, continue)
+	if continue then
+		for abilityKey, ability in pairs(abilityList) do
+			
+			if ability.unlocked[playerKey] == false and
+			(((abilityKey - defaultabilities) <= 0) or (Timer_GetElapsed(point.name) >= (unlocktime * (abilityKey - defaultabilities))))
+			then
+				
+				Player_SetAbilityAvailability(player.player, ability.ability, ITEM_UNLOCKED)
+				
+				if player.player == Game_GetLocalPlayer() then
+					
+					if ability.sound ~= nil then
+						PlayTankWarsSpeech(player, ability.sound)
+					end
+					
+					if ability.objective ~= nil then
+						Objective_StopTimer(ability.objective)
+						Objective_Show(ability.objective, false)
+					end
+					
+					if abilityKey < table.getn(abilityList) then
+						if abilityList[abilityKey+1].objective ~= nil then
+							Objective_StartTimer(abilityList[abilityKey+1].objective, COUNT_DOWN, unlocktime)
+							Objective_Show(abilityList[abilityKey+1].objective, true)
+						end
+					end
+				end
+				
+				ability.unlocked[playerKey] = true
+				
+				if abilityKey < table.getn(abilityList) then
+					abilityList[abilityKey+1].unlocked[playerKey] = false
+				end
+			end
+		end
+		
+	elseif not continue then
+		
+		for abilityKey, ability in pairs(abilityList) do
+			ability.unlocked[playerKey] = nil
+			Player_SetAbilityAvailability(player.player, ability.ability, ITEM_REMOVED)
+			if player.player == Game_GetLocalPlayer() then
+				if ability.objective ~= nil then
+					Objective_StopTimer(ability.objective)
+					Objective_Show(ability.objective, false)
+				end
+			end
+		end
+	end
+end
+	
+	
+function VictoryPointSpeech(player, point, apply)
+	if apply then
+		for k, friendlyPlayer in pairs(t_TWplayerData) do
+			if player.team == friendlyPlayer.team then
+				local hasHistory = false
+				for k2, capturedPoint in pairs(friendlyPlayer.victoryPointHistory) do
+					if capturedPoint == point.name then
+						hasHistory = true
+					end
+				end
+				
+				if hasHistory then
+					if friendlyPlayer.player == Game_GetLocalPlayer() then
+						if point.sound.capture ~= nil then
+							PlayTankWarsSpeech(friendlyPlayer, point.sound.capture)
+						end
+					end
+					
+				elseif not hasHistory then
+					table.insert(friendlyPlayer.victoryPointHistory, point.name)
+					if friendlyPlayer.player == Game_GetLocalPlayer() then
+						if point.sound.firstcapture ~= nil then
+							PlayTankWarsSpeech(friendlyPlayer, point.sound.firstcapture)
+						end
+					end
+				end
+			end
+		end
+		
+	elseif not apply then
+		for k, friendlyPlayer in pairs(t_TWplayerData) do
+			if player.team == friendlyPlayer.team then
+				if friendlyPlayer.player == Game_GetLocalPlayer() then
+					if point.sound.lost ~= nil then
+						PlayTankWarsSpeech(friendlyPlayer, point.sound.lost)
+					end
+				end
+			end
+		end
+	end
+end

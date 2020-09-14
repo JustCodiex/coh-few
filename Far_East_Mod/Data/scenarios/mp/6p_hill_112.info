@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$19010496",
+	scenariodescription = "SP Conversion by Neroleone",
+	maxplayers = 6,
+	date = "2015/12/10 22:49",
+	scenarioabbrname = "hill 112 (6)",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		512,
+		352,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

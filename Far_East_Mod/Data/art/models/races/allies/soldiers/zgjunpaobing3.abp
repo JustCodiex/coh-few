@@ -1,0 +1,18 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+    "..\\..\\Axis\\Soldiers\\Weapons\\Kar98",
+    "..\\vehicles\\hzb\\hzb",
+
+
+	"Weapons\\Mk2 Pineapple Grenade",
+
+
+
+    "..\\vehicles\\guopaobing2\\guopaobing2",
+	"..\\..\\allies\\vehicles\\jap_tou1\\jap_tou1",
+
+}
+

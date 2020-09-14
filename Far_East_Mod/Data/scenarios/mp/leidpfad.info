@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "$19010482",
+	scenariodescription = "",
+	maxplayers = 6,
+	date = "2016/11/9 20:40",
+	scenarioabbrname = "Tai Hang (6)",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		256,
+		384,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

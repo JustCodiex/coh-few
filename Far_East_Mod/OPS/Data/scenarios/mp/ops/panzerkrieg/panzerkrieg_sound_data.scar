@@ -1,0 +1,616 @@
+soundDataDefaults = {
+	tanks = {
+		dominateStart = 7,
+		dominateRepeat = 2,
+	},
+}
+
+
+soundData = {
+	
+	tanks = {
+		
+		hellcat = {
+			
+			generic = {
+				
+				kill = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_001hct_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_001hct_sc_s",
+					},
+				},
+				
+				killed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_fnd_hctgen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_hctgen_sc_s",
+					},
+				},
+			},
+			
+			streak = { 
+				[2] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_002hct_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_002hct_sc_s",
+					},
+				},
+				[3] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_003hct_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_003hct_sc_s",
+					},
+				},
+				[4] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_004hct_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_004hct_sc_s",
+					},
+				},
+				[5] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_005hct_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_005hct_sc_s",
+					},
+				},
+				[soundDataDefaults.tanks.dominateStart] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_000hct_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_000hct_sc_s",
+					},
+				},
+			},
+		},
+		
+		sherman = {
+			
+			generic = {
+				
+				kill = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_001she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_001she_sc_s",
+					},
+				},
+				
+				killed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_fnd_shegen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_shegen_sc_s",
+					},
+				},
+			},
+			
+			streak = { 
+				[2] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_002she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_002she_sc_s",
+					},
+				},
+				[3] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_003she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_003she_sc_s",
+					},
+				},
+				[4] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_004she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_004she_sc_s",
+					},
+				},
+				[5] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_005she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_005she_sc_s",
+					},
+				},
+				[soundDataDefaults.tanks.dominateStart] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_000she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_000she_sc_s",
+					},
+				},
+			},
+		},
+		
+		churchill = {
+			
+			generic = {
+				
+				kill = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_001she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_001chh_sc_s",
+					},
+				},
+				
+				killed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_fnd_chhgen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_chhgen_sc_s",
+					},
+				},
+			},
+			
+			streak = { 
+				[2] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_002she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_002chh_sc_s",
+					},
+				},
+				[3] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_003she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_003chh_sc_s",
+					},
+				},
+				[4] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_004she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_004chh_sc_s",
+					},
+				},
+				[5] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_005she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_005chh_sc_s",
+					},
+				},
+				[soundDataDefaults.tanks.dominateStart] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_000she_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_000chh_sc_s",
+					},
+				},
+			},
+		},
+		
+		hotchkiss = {
+			
+			generic = {
+				
+				kill = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_001HGs_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_001hgs_sc_s",
+					},
+				},
+				
+				killed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_hgsgen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_fnd_hgsgen_sc_s",
+					},
+				},
+			},
+			
+			streak = { 
+				[2] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_002HGs_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_002hgs_sc_s",
+					},
+				},
+				[3] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_003HGs_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_003hgs_sc_s",
+					},
+				},
+				[4] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_004HGs_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_004hgs_sc_s",
+					},
+				},
+				[5] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_005HGs_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_005hgs_sc_s",
+					},
+				},
+				[soundDataDefaults.tanks.dominateStart] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_000HGs_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_000hgs_sc_s",
+					},
+				},
+			},
+		},
+		
+		panzer = {
+			
+			generic = {
+				
+				kill = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_001pn4_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_001pn4_sc_s",
+					},
+				},
+				
+				killed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_pn4gen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_fnd_pn4gen_sc_s",
+					},
+				},
+			},
+			
+			streak = { 
+				[2] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_002pn4_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_002pn4_sc_s",
+					},
+				},
+				[3] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_003pn4_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_003pn4_sc_s",
+					},
+				},
+				[4] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_004pn4_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_004pn4_sc_s",
+					},
+				},
+				[5] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_005pn4_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_005pn4_sc_s",
+					},
+				},
+				[soundDataDefaults.tanks.dominateStart] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_000pn4_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_000pn4_sc_s",
+					},
+				},
+			},
+		},
+		
+		panther = {
+			
+			generic = {
+				
+				kill = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_001pnt_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_001pnt_sc_s",
+					},
+				},
+				
+				killed = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_pntgen_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_fnd_pntgen_sc_s",
+					},
+				},
+			},
+			
+			streak = { 
+				[2] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_002pnt_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_002pnt_sc_s",
+					},
+				},
+				[3] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_003pnt_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_003pnt_sc_s",
+					},
+				},
+				[4] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_004pnt_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_004pnt_sc_s",
+					},
+				},
+				[5] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_005pnt_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_005pnt_sc_s",
+					},
+				},
+				[soundDataDefaults.tanks.dominateStart] = {
+					allies = {
+						speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_end_000pnt_sc_s",
+					},
+					axis = {
+						speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_end_000pnt_sc_s",
+					},
+				},
+			},
+		},
+	},
+	
+	
+	victoryPoints = { 
+		
+		center = {
+			capture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_higgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_higgen_sc_s",
+				},
+			},
+			firstcapture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_hig001_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_hig001_sc_s",
+				},
+			},
+			lost = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_lts_higgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_lts_higgen_sc_s",
+				},
+			},
+		},
+		
+		bunker = {
+			capture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_mtrgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_mtrgen_sc_s",
+				},
+			},
+			firstcapture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_mtr001_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_mtr001_sc_s",
+				},
+			},
+			lost = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_lts_mtrgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_lts_mtrgen_sc_s",
+				},
+			},
+		},
+		
+		airstrip = {
+			capture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_facgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_aipgen_sc_s",
+				},
+			},
+			firstcapture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_fac001_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_aip001_sc_s",
+				},
+			},
+			lost = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_lts_aipgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_lts_aipgen_sc_s",
+				},
+			},
+		},
+		
+		repair = {
+			capture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_rprgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_rprgen_sc_s",
+				},
+			},
+			firstcapture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_rpr001_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_rpr001_sc_s",
+				},
+			},
+			lost = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_lts_rprgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_lts_rprgen_sc_s",
+				},
+			},
+		},
+		
+		manpower = {
+			capture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_brkgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_inrgen_sc_s",
+				},
+			},
+			firstcapture = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_cpc_brk001_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_cpc_inr001_sc_s",
+				},
+			},
+			lost = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_lts_inrgen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_lts_inrgen_sc_s",
+				},
+			},
+		},
+	},
+	
+	abilities = {
+		
+		airRecon = {
+			obtained = {
+				speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_upc_recgen_sc_s",
+			},
+		},
+		
+		strafingRun = {
+			obtained = {
+				speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_upc_astgen_sc_s",
+			},
+		},
+		
+		bombingRun = {
+			obtained = {
+				speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_upc_abrgen_sc_s",
+			},
+		},
+		
+		flares = {
+			obtained = {
+				speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_par_recgen_sc_s",
+			},
+		},
+		
+		firestorm = {
+			obtained = {
+				speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_par_astgen_sc_s",
+			},
+		},
+		
+		henschel = {
+			obtained = {
+				speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_par_hakgen_sc_s",
+			},
+		},
+		
+		antiInfantryOffMap = {
+			obtained = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_upc_m42gen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_par_m42gen_sc_s",
+				},
+			},
+		},
+		
+		stealthInfantryOffMap = {
+			obtained = {
+				allies = {
+					speech = "Speech/MP/Allies/INT/Operations/TankWars/lb_int_upc_cmogen_sc_s",
+				},
+				axis = {
+					speech = "Speech/MP/Axis/GAN/Operations/TankWars/xb_gan_par_cmogen_sc_s",
+				},
+			},
+		},
+		
+	},
+}

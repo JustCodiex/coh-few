@@ -1,0 +1,29 @@
+--[[
+
+Using some simple Lua commenting incase the game loads this
+
+
+I'm guessing we're going to be modifying the AI the next couple of days, so I will begin documenting the work done to the AI, so we can have a more clear
+vision of how the AI works
+
+Files:
+
+File: default.ai
+Desc: AFAIK this file will be called no matter what, and basically starts up the AI. When reading the files, one should also keep in mind, that the AI file
+represents an AI player and not the entire AI system. So this file is "called" for each AI player in the match (Which is why processing heavy duties should be 
+avoided at all costs)
+
+InitializeAI is the function called by default in the AI file
+
+Functions:
+
+Full: Request_Production( [Player] playerID, Unkown[TGROUP_BuildOrder], [Number] priority, [Number] cmd, [SquadBluepront] pbg, [Number] hero_id )
+Src: strategy_buildorder.ai
+Notes: 	hero_id, use "DEFAULT_HERO_ID"
+		cmd:
+			PITEM_Spawn = "Spawn Unit"
+			PITEM_SquadReinforce = "Reinforce Unit"
+			PITEM_SpawnHero = "Spawn Hero" -- for an operation?
+			
+			
+]]

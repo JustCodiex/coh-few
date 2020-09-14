@@ -1,0 +1,3187 @@
+Screen =  
+{
+	version = 4,
+	native_aspect = 1.77778,
+	TooltipWidgets =  
+	{
+		type = "Group",
+		name = "grp_tooltips",
+		position =  
+		{
+			0,
+			0,
+		},
+		HitArea =  
+		{
+			 
+			{
+				type = "Rectangle",
+				size =  
+				{
+					1,
+					1,
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+			},
+		},
+		Children =  
+		{
+			 
+			{
+				visible = false,
+				type = "Group",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleGroup",
+				},
+				position =  
+				{
+					0.01014,
+					0.01370,
+				},
+				Children =  
+				{
+					 
+					{
+						type = "TextLabel",
+						name = "TooltipLabel",
+						position =  
+						{
+							0.00019,
+							0.00025,
+						},
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						text = "",
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Text",
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									multiline = false,
+									ID = 197572,
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.09762,
+							0.01600,
+						},
+					},
+				},
+				name = "TooltipBase",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Rectangle",
+							shadermode = 0,
+							colour =  
+							{
+								0,
+								0,
+								0,
+								200,
+							},
+							ID = 197534,
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+						 
+						{
+							type = "Rectangle",
+							colour =  
+							{
+								255,
+								255,
+								255,
+								150,
+							},
+							shadermode = 0,
+							rectangleType = "Border",
+							ID = 197535,
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.09800,
+					0.01650,
+				},
+			},
+		},
+		size =  
+		{
+			1,
+			1,
+		},
+	},
+	Widgets =  
+	{
+		type = "Group",
+		name = "grp_screen",
+		position =  
+		{
+			0,
+			0,
+		},
+		HitArea =  
+		{
+			 
+			{
+				type = "Rectangle",
+				size =  
+				{
+					1,
+					1,
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+			},
+		},
+		Children =  
+		{
+			 
+			{
+				type = "Group",
+				HitArea =  
+				{
+				},
+				name = "grp_PlayButton",
+				position =  
+				{
+					0.48680,
+					0.01565,
+				},
+				Children =  
+				{
+					 
+					{
+						type = "ArtLabel",
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleLabel",
+						},
+						position =  
+						{
+							-0.02278,
+							-0.02129,
+						},
+						HitArea =  
+						{
+						},
+						name = "Bar on Top_Play",
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										80,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\bar_on_top",
+									ID = 853670,
+									flipVertical = true,
+									flipHorizontal = true,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.74600,
+							0.11734,
+						},
+					},
+					 
+					{
+						type = "Button",
+						tooltip_text = "$613757",
+						text = "$613756",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									0.98000,
+									1,
+								},
+								position =  
+								{
+									0.02000,
+									0,
+								},
+							},
+						},
+						name = "btnPlayNow",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.00876,
+							0.00352,
+						},
+						style =  
+						{
+							"Relic_Online",
+							"CoH_btn_Generic",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_hover",
+									shadermode = 0,
+									colour =  
+									{
+										213,
+										200,
+										182,
+										160,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 2194678,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\bttn_set000_normal",
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_active",
+									shadermode = 0,
+									colour =  
+									{
+										214,
+										200,
+										182,
+										200,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 2194679,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\bttn_set000_active",
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_normal",
+									shadermode = 0,
+									colour =  
+									{
+										214,
+										200,
+										182,
+										120,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 2194680,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\bttn_set000_normal",
+									states =  
+									{
+										"Normal",
+										"Disabled",
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_disabled",
+									shadermode = 0,
+									colour =  
+									{
+										153,
+										153,
+										153,
+										80,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 2194681,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\bttn_set000_normal",
+									states =  
+									{
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_hover",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "impact_24",
+									position =  
+									{
+										0,
+										-0.00105,
+									},
+									ID = 2194682,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_active",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "impact_24",
+									position =  
+									{
+										0.00452,
+										0.02483,
+									},
+									ID = 2194683,
+									textColourBottom =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_disabled",
+									shadermode = 0,
+									textColourTop =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									horzAlign = "Centre",
+									position =  
+									{
+										0,
+										-0.00105,
+									},
+									ID = 2194684,
+									fontname = "impact_24",
+									textColourBottom =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									states =  
+									{
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_normal",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									horzAlign = "Centre",
+									fontname = "impact_24",
+									position =  
+									{
+										0,
+										-0.00105,
+									},
+									ID = 2194685,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Normal",
+									},
+								},
+							},
+							Sound =  
+							{
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_13",
+									event = "OnHover",
+								},
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_74",
+									event = "OnClick",
+								},
+							},
+						},
+						size =  
+						{
+							0.20434,
+							0.06709,
+						},
+					},
+					 
+					{
+						type = "ArtLabel",
+						name = "Blinking Button",
+						position =  
+						{
+							0.00098,
+							0.01913,
+						},
+						tooltip_text = "$613754",
+						HitArea =  
+						{
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "Base Shine",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										146,
+									},
+									position =  
+									{
+										0.01439,
+										0,
+									},
+									ID = 2180987,
+									size =  
+									{
+										0.23022,
+										1,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\fe_menu_black_bar_shine_2",
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "Highlight",
+									shadermode = 0,
+									position =  
+									{
+										0.01439,
+										0,
+									},
+									ID = 2190035,
+									size =  
+									{
+										0.23022,
+										0.61626,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\fe_menu_black_bar_shine_1",
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.23949,
+							0.03652,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleGroup",
+				},
+				Presentation =  
+				{
+				},
+				size =  
+				{
+					0.51320,
+					0.07652,
+				},
+			},
+			 
+			{
+				type = "Group",
+				HitArea =  
+				{
+				},
+				name = "OnlineWidgetGroup",
+				position =  
+				{
+					0.00049,
+					-0.00087,
+				},
+				Children =  
+				{
+					 
+					{
+						type = "ArtLabel",
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleLabel",
+						},
+						position =  
+						{
+							0.66482,
+							-0.00477,
+						},
+						HitArea =  
+						{
+						},
+						name = "Bar on Top",
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										123,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\bar_on_top",
+									ID = 853670,
+									flipVertical = true,
+									flipHorizontal = true,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.74600,
+							0.11734,
+						},
+					},
+					 
+					{
+						visible = false,
+						type = "Group",
+						HitArea =  
+						{
+						},
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleGroup",
+						},
+						position =  
+						{
+							0.93156,
+							0.02767,
+						},
+						Children =  
+						{
+							 
+							{
+								type = "ArtLabel",
+								style =  
+								{
+									"DefaultStyles",
+									"defStyleLabel",
+								},
+								position =  
+								{
+									0.00617,
+									0.01874,
+								},
+								HitArea =  
+								{
+								},
+								name = "DL_Progress_BG",
+								Presentation =  
+								{
+									Art =  
+									{
+										 
+										{
+											type = "Graphic",
+											nameID = "Base_icon",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												180,
+											},
+											ID = 1958621,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_base",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+									},
+								},
+								size =  
+								{
+									0.01444,
+									0.02503,
+								},
+							},
+							 
+							{
+								type = "ArtLabel",
+								style =  
+								{
+									"DefaultStyles",
+									"defStyleLabel",
+								},
+								position =  
+								{
+									0.00589,
+									0.01874,
+								},
+								HitArea =  
+								{
+								},
+								name = "DL_Progress",
+								Presentation =  
+								{
+									Art =  
+									{
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_01",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958791,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_1",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_02",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958792,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_2",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_03",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958793,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_3",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_04",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958802,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_4",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_05",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958803,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_5",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_06",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958815,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_6",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_07",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958816,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_7",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Graphic",
+											nameID = "DL_08",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												0,
+											},
+											ID = 1958817,
+											texture = "art\\ui\\textures\\textures_fe\\loading_icon_8",
+											shadermode = 0,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+									},
+								},
+								size =  
+								{
+									0.01500,
+									0.02503,
+								},
+							},
+						},
+						name = "DownloadProgressGroup",
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "Off",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										100,
+									},
+									position =  
+									{
+										0.36000,
+										0.78400,
+									},
+									ID = 2004487,
+									size =  
+									{
+										0.28000,
+										0.17500,
+									},
+									texture = "art\\ui\\textures\\drop_down_arrow",
+									states =  
+									{
+										"Normal",
+										"Disabled",
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "On",
+									shadermode = 0,
+									position =  
+									{
+										0.36000,
+										0.78400,
+									},
+									ID = 2004476,
+									size =  
+									{
+										0.28000,
+										0.17500,
+									},
+									texture = "art\\ui\\textures\\drop_down_arrow",
+									states =  
+									{
+										"Hover",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.02835,
+							0.05771,
+						},
+					},
+					 
+					{
+						type = "TextLabel",
+						text = "$613750",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						style =  
+						{
+							"Relic_Online",
+							"lb_OptionText",
+						},
+						position =  
+						{
+							0.70429,
+							0.02795,
+						},
+						name = "lblProfileName",
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Text",
+									textColourBottom =  
+									{
+										255,
+										240,
+										157,
+										200,
+									},
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										240,
+										157,
+										200,
+									},
+									horzAlign = "Centre",
+									ID = 729950,
+									fontname = "trebuchet ms bold 12",
+									dropShadow = true,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.15152,
+							0.03000,
+						},
+					},
+					 
+					{
+						visible = false,
+						type = "Button",
+						tooltip_text = "$613759",
+						text = "$613755",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									0.98000,
+									1,
+								},
+								position =  
+								{
+									0.02000,
+									0,
+								},
+							},
+						},
+						name = "btnSignIn",
+						position =  
+						{
+							0.81176,
+							0.05478,
+						},
+						tooltip_name = "TooltipLabel",
+						style =  
+						{
+							"Relic_Online",
+							"CoH_btn_Generic_small_01",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_active",
+									shadermode = 0,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313619,
+									flipVertical = true,
+									flipHorizontal = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_hover",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										199,
+									},
+									position =  
+									{
+										0.01200,
+										0.11700,
+									},
+									ID = 2179800,
+									size =  
+									{
+										0.97600,
+										0.78100,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_normal",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										220,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313621,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_1",
+									states =  
+									{
+										"Normal",
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_active",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0.00509,
+										0.00368,
+									},
+									ID = 1313626,
+									textColourBottom =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_hover",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313627,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_disabled",
+									shadermode = 0,
+									textColourTop =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									horzAlign = "Centre",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313628,
+									fontname = "trebuchet ms bold 10",
+									textColourBottom =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									states =  
+									{
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_normal",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313629,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Normal",
+									},
+								},
+							},
+							Sound =  
+							{
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_13",
+									event = "OnHover",
+								},
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_74",
+									event = "OnClick",
+								},
+							},
+						},
+						size =  
+						{
+							0.06080,
+							0.02861,
+						},
+					},
+					 
+					{
+						type = "Button",
+						tooltip_text = "$613758",
+						text = "$613753",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									0.95000,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						name = "btnSettings",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.81176,
+							0.05478,
+						},
+						style =  
+						{
+							"Relic_Online",
+							"CoH_btn_Generic_small_01",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_active",
+									shadermode = 0,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313619,
+									flipVertical = true,
+									flipHorizontal = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_hover",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										199,
+									},
+									position =  
+									{
+										0.01200,
+										0.11700,
+									},
+									ID = 2179800,
+									size =  
+									{
+										0.97600,
+										0.78100,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_normal",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										220,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313621,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_1",
+									states =  
+									{
+										"Normal",
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_active",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0.00509,
+										0.00368,
+									},
+									ID = 1313626,
+									textColourBottom =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_hover",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313627,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_disabled",
+									shadermode = 0,
+									textColourTop =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									horzAlign = "Centre",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313628,
+									fontname = "trebuchet ms bold 10",
+									textColourBottom =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									states =  
+									{
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_normal",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313629,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Normal",
+									},
+								},
+							},
+							Sound =  
+							{
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_13",
+									event = "OnHover",
+								},
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_74",
+									event = "OnClick",
+								},
+							},
+						},
+						size =  
+						{
+							0.06080,
+							0.02861,
+						},
+					},
+					 
+					{
+						type = "Button",
+						tooltip_text = "$613761",
+						text = "$613751",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									0.98000,
+									1,
+								},
+								position =  
+								{
+									0.02000,
+									0,
+								},
+							},
+						},
+						name = "btnMyStats",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.75510,
+							0.05478,
+						},
+						style =  
+						{
+							"Relic_Online",
+							"CoH_btn_Generic_small_01",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_active",
+									shadermode = 0,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313619,
+									flipVertical = true,
+									flipHorizontal = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_hover",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										199,
+									},
+									position =  
+									{
+										0.01200,
+										0.11700,
+									},
+									ID = 2179800,
+									size =  
+									{
+										0.97600,
+										0.78100,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_normal",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										220,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313621,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_1",
+									states =  
+									{
+										"Normal",
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_active",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0.00509,
+										0.00368,
+									},
+									ID = 1313626,
+									textColourBottom =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_hover",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313627,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_disabled",
+									shadermode = 0,
+									textColourTop =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									horzAlign = "Centre",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313628,
+									fontname = "trebuchet ms bold 10",
+									textColourBottom =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									states =  
+									{
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_normal",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313629,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Normal",
+									},
+								},
+							},
+							Sound =  
+							{
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_13",
+									event = "OnHover",
+								},
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_74",
+									event = "OnClick",
+								},
+							},
+						},
+						size =  
+						{
+							0.06080,
+							0.02861,
+						},
+					},
+					 
+					{
+						type = "Button",
+						tooltip_text = "$613764",
+						text = "$613762",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									0.95000,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						name = "btnMyFriendsList",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.69843,
+							0.05478,
+						},
+						style =  
+						{
+							"Relic_Online",
+							"CoH_btn_Generic_small_01",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_active",
+									shadermode = 0,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313619,
+									flipVertical = true,
+									flipHorizontal = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_hover",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										199,
+									},
+									position =  
+									{
+										0.01200,
+										0.11700,
+									},
+									ID = 2179800,
+									size =  
+									{
+										0.97600,
+										0.78100,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "bttn_normal",
+									shadermode = 0,
+									colour =  
+									{
+										255,
+										255,
+										255,
+										220,
+									},
+									position =  
+									{
+										0.01190,
+										0.11673,
+									},
+									ID = 1313621,
+									size =  
+									{
+										0.97578,
+										0.78125,
+									},
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_1",
+									states =  
+									{
+										"Normal",
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Graphic",
+									nameID = "FlashRect",
+									colour =  
+									{
+										255,
+										218,
+										87,
+										0,
+									},
+									ID = 2195213,
+									texture = "art\\ui\\textures\\textures_fe\\btn_gamertag_2",
+									shadermode = 0,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_active",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0.00509,
+										0.00368,
+									},
+									ID = 1313626,
+									textColourBottom =  
+									{
+										255,
+										250,
+										200,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Active",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_hover",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313627,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										255,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Hover",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_disabled",
+									shadermode = 0,
+									textColourTop =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									horzAlign = "Centre",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313628,
+									fontname = "trebuchet ms bold 10",
+									textColourBottom =  
+									{
+										0,
+										0,
+										0,
+										100,
+									},
+									states =  
+									{
+										"Disabled",
+									},
+								},
+								 
+								{
+									type = "Text",
+									nameID = "text_normal",
+									shadermode = 0,
+									textColourTop =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									horzAlign = "Centre",
+									fontname = "trebuchet ms bold 10",
+									position =  
+									{
+										0,
+										-0.03049,
+									},
+									ID = 1313629,
+									textColourBottom =  
+									{
+										255,
+										255,
+										255,
+										175,
+									},
+									dropShadow = true,
+									states =  
+									{
+										"Normal",
+									},
+								},
+							},
+							Sound =  
+							{
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_13",
+									event = "OnHover",
+								},
+								 
+								{
+									sample = "UI\\FRONTEND\\UI_74",
+									event = "OnClick",
+								},
+							},
+						},
+						size =  
+						{
+							0.06080,
+							0.02861,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleGroup",
+				},
+				Presentation =  
+				{
+				},
+				size =  
+				{
+					1.00000,
+					1,
+				},
+			},
+			 
+			{
+				type = "Group",
+				tooltip_text = "$613763",
+				Children =  
+				{
+					 
+					{
+						type = "ArtLabel",
+						tooltip_text = "$613765",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						name = "artRed",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.00098,
+							0.00174,
+						},
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleLabel",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									shadermode = 0,
+									texture = "art\\ui\\textures\\textures_fe\\led_status_red",
+									ID = 2194827,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.01074,
+							0.01910,
+						},
+					},
+					 
+					{
+						type = "ArtLabel",
+						tooltip_text = "$613760",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						name = "artYellow",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.00098,
+							0.00174,
+						},
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleLabel",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									shadermode = 0,
+									texture = "art\\ui\\textures\\textures_fe\\led_status_yellow",
+									ID = 2194827,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.01074,
+							0.01910,
+						},
+					},
+					 
+					{
+						type = "ArtLabel",
+						tooltip_text = "$613752",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						name = "artGreen",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.00098,
+							0.00174,
+						},
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleLabel",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									colour =  
+									{
+										224,
+										255,
+										49,
+										255,
+									},
+									shadermode = 0,
+									texture = "art\\ui\\textures\\textures_fe\\led_status_green",
+									ID = 2194827,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.01074,
+							0.01910,
+						},
+					},
+					 
+					{
+						type = "ArtLabel",
+						tooltip_text = "$613766",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						name = "artGreen_dark",
+						tooltip_name = "TooltipLabel",
+						position =  
+						{
+							0.00098,
+							0.00174,
+						},
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleLabel",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Graphic",
+									colour =  
+									{
+										255,
+										255,
+										255,
+										180,
+									},
+									shadermode = 0,
+									texture = "art\\ui\\textures\\textures_fe\\led_status_green",
+									ID = 2194827,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.01074,
+							0.01910,
+						},
+					},
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							0.84567,
+							0.84626,
+						},
+						position =  
+						{
+							0.07717,
+							0.07709,
+						},
+					},
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							0.84567,
+							0.84626,
+						},
+						position =  
+						{
+							0.07717,
+							0.07709,
+						},
+					},
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							0.84567,
+							0.84626,
+						},
+						position =  
+						{
+							0.07717,
+							0.07709,
+						},
+					},
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							0.84567,
+							0.84626,
+						},
+						position =  
+						{
+							0.07717,
+							0.07709,
+						},
+					},
+				},
+				name = "grpOnlineStatus",
+				tooltip_name = "TooltipLabel",
+				position =  
+				{
+					0.85576,
+					0.03219,
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleGroup",
+				},
+				Presentation =  
+				{
+				},
+				size =  
+				{
+					0.01270,
+					0.02257,
+				},
+			},
+			 
+			{
+				type = "Group",
+				HitArea =  
+				{
+				},
+				name = "MsgRegion",
+				position =  
+				{
+					0.70459,
+					0.89235,
+				},
+				Children =  
+				{
+					 
+					{
+						type = "Group",
+						HitArea =  
+						{
+						},
+						name = "MsgGroup",
+						position =  
+						{
+							0,
+							0.09200,
+						},
+						Children =  
+						{
+							 
+							{
+								type = "Button",
+								text = "",
+								HitArea =  
+								{
+									 
+									{
+										type = "Rectangle",
+										size =  
+										{
+											1,
+											1,
+										},
+										position =  
+										{
+											0,
+											0,
+										},
+									},
+								},
+								style =  
+								{
+									"Eli_Styles",
+									"bttn_smooth",
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+								name = "MsgButton",
+								Presentation =  
+								{
+									Art =  
+									{
+										 
+										{
+											type = "Rectangle",
+											shadermode = 0,
+											colour =  
+											{
+												0,
+												0,
+												0,
+												200,
+											},
+											ID = 729972,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Rectangle",
+											colour =  
+											{
+												255,
+												255,
+												255,
+												150,
+											},
+											shadermode = 0,
+											rectangleType = "Border",
+											ID = 729971,
+											states =  
+											{
+												"Normal",
+												"Active",
+												"Hover",
+												"Disabled",
+											},
+										},
+										 
+										{
+											type = "Text",
+											nameID = "Text_on",
+											shadermode = 0,
+											textColourTop =  
+											{
+												240,
+												239,
+												240,
+												200,
+											},
+											horzAlign = "Centre",
+											fontname = "trebuchet ms bold 12",
+											size =  
+											{
+												0.93114,
+												0.88886,
+											},
+											position =  
+											{
+												0.03443,
+												0.05557,
+											},
+											ID = 729937,
+											textColourBottom =  
+											{
+												255,
+												255,
+												255,
+												255,
+											},
+											dropShadow = true,
+											states =  
+											{
+												"Normal",
+												"Disabled",
+												"Active",
+												"Hover",
+											},
+										},
+									},
+								},
+								size =  
+								{
+									0.16800,
+									0.09441,
+								},
+							},
+						},
+						style =  
+						{
+							"DefaultStyles",
+							"defStyleGroup",
+						},
+						Presentation =  
+						{
+							Art =  
+							{
+								 
+								{
+									type = "Rectangle",
+									position =  
+									{
+										0,
+										1,
+									},
+									shadermode = 0,
+									colour =  
+									{
+										0,
+										0,
+										0,
+										165,
+									},
+									ID = 266222,
+									states =  
+									{
+										"Normal",
+										"Active",
+										"Hover",
+										"Disabled",
+									},
+								},
+							},
+						},
+						size =  
+						{
+							0.16800,
+							0.09200,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleGroup",
+				},
+				Presentation =  
+				{
+				},
+				size =  
+				{
+					0.16800,
+					0.09182,
+				},
+			},
+		},
+		size =  
+		{
+			1,
+			1,
+		},
+	},
+}
+ToolInfo =  
+{
+	version = 3,
+	WidgetInfo =  
+	{
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "grp_screen",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "grp_PlayButton",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "Bar on Top_Play",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnPlayNow",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "Blinking Button",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "OnlineWidgetGroup",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "Bar on Top",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			type = "Group",
+			name = "DownloadProgressGroup",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "DL_Progress_BG",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "DL_Progress",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "lblProfileName",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnSignIn",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnSettings",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnMyStats",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnMyFriendsList",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "grpOnlineStatus",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			type = "ArtLabel",
+			name = "artRed",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			type = "ArtLabel",
+			name = "artYellow",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			type = "ArtLabel",
+			name = "artGreen",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artGreen_dark",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "MsgRegion",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "MsgGroup",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "MsgButton",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "grp_tooltips",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "TooltipBase",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "TooltipLabel",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+	},
+	Guides =  
+	{
+		 
+		{
+			horizontal = false,
+			position = 0.13889,
+		},
+		 
+		{
+			horizontal = true,
+			position = 0.12500,
+		},
+		 
+		{
+			horizontal = true,
+			position = 0.87500,
+		},
+	},
+	ScreenInfo =  
+	{
+		LocaleRange =  
+		{
+			613750,
+			613999,
+		},
+	},
+}

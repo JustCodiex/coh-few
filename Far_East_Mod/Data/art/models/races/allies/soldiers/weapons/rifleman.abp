@@ -1,0 +1,18 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons in Use
+	--"Weapons\\M1_RIFLE",
+	--"Weapons\\M1_Carbine",
+	"..\\..\\allies\\vehicles\\hanyang\\hanyang",
+	"..\\..\\allies\\vehicles\\hzb\\hzb",
+	-- Accessories
+	"Weapons\\Mk2 Pineapple Grenade",
+	"Weapons\\Sticky_Bomb",
+
+	-- Main Mesh
+	"Rifleman\\Rifleman",
+}
+

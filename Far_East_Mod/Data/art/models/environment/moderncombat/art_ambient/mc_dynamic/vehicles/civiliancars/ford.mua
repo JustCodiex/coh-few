@@ -1,0 +1,43 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "marker_explode",
+		subtype = "",
+		transform_m00 = 1,
+		transform_m01 = 0,
+		transform_m02 = 0,
+		transform_m10 = -0,
+		transform_m11 = 1,
+		transform_m12 = 0.00000,
+		transform_m20 = 0,
+		transform_m21 = -0.00000,
+		transform_m22 = 1,
+		transform_m30 = -0.10119,
+		transform_m31 = 0.74649,
+		transform_m32 = 0.02394,
+		type = "",
+	},
+	Marker001 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "marker_engine_dmg",
+		subtype = "",
+		transform_m00 = 1,
+		transform_m01 = 0,
+		transform_m02 = 0,
+		transform_m10 = -0,
+		transform_m11 = 1,
+		transform_m12 = 0.00000,
+		transform_m20 = 0,
+		transform_m21 = -0.00000,
+		transform_m22 = 1,
+		transform_m30 = 1.44326,
+		transform_m31 = 0.74646,
+		transform_m32 = 0.01732,
+		type = "",
+	},
+}

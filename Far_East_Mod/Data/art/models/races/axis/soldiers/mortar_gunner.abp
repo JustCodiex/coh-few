@@ -1,0 +1,12 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+
+	-- Weapons
+	"Weapons\\Granatwerfer_34_sync",
+    "..\\..\\allies\\vehicles\\ty38\\ty38",
+	
+
+	-- Mesh
+    "..\\..\\allies\\vehicles\\japzg2\\japzg2",
+}

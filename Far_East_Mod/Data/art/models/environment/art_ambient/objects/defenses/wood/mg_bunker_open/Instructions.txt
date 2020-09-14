@@ -1,0 +1,13 @@
+This is made on exactly the same design as an allied mg nest.
+
+So it builds the same way, has its own variable damage.
+
+If you dont want the mg and want it just as a map asset put -- in front of 
+
+"..\\..\\..\\..\\..\\..\\races\\Common\\Weapons\\HEAVY_MACHINE_GUNS",
+"..\\..\\..\\..\\..\\..\\races\\allies\\Soldiers\\Weapons\\30Cal_M1917_Browning",
+
+in the abp, this will stop the model reading the hmg side of things.
+
+If you want the nest as the unmanned version occupyable, you will have to copy the allied unmanned mg nest rgd, and point the entity blueprint towards this emplacement. 
+You may also need to change the gunner and weapon slot item if you are using the vanilla rgd to copy from.

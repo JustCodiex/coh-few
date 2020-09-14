@@ -1,0 +1,21 @@
+-----------------------------------------------------------------------
+-- VPTicker Win Condition
+--
+-- (c) Relic Entertainment 2006
+--
+-- Programmers: Shelby Hubick, Kris Botha, Randy Lukashuk
+-----------------------------------------------------------------------
+import("ScarUtil.scar")
+import("Testmod_Surrender.scar") -- Import Surrender code -- add this line to enable the script in another mod --
+
+-- used to indicate we want annihilate to be checked
+g_CheckAnnihilate = true
+
+function OnInit()
+
+	for i=1, World_GetPlayerCount() do
+		 Player_SetPopCapOverride( World_GetPlayerAt(i), 999) 
+	end
+end
+
+Scar_AddInit(OnInit)

@@ -1,0 +1,17 @@
+model =
+{
+	"..\\..\\Common\\CompleteMotionTree.abp",
+	"..\\..\\Common\\CommonMeshes.abp",
+
+	-- Weapons in Use
+        "..\\vehicles\\98ka\\98ka",
+
+	-- Accessories
+	"Weapons\\Mk2 Pineapple Grenade",
+
+	-- Main Mesh
+
+    "..\\vehicles\\zhengguijun\\guo_green",
+	"..\\..\\Axis\\Soldiers\\gear\\bayonet",
+}
+

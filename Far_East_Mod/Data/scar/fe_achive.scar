@@ -1,0 +1,1083 @@
+fe_localplayer = nil;
+fe_race = "";
+fe_localteam = -1;
+fe_enemyteam = -1;
+fe_progress = {};
+fe_bpwatch = {};
+fe_isdevgame = false;
+fe_devteam = {};
+
+g_achievements_enabled = true;
+
+function fe_achivements_load()
+
+	g_allow_achievements = true;
+
+	assert(loadfile("lua-io.dll", "luaopen_io"))();
+	
+	fe_localplayer = Game_GetLocalPlayer();
+	fe_race = Player_GetRaceName(fe_localplayer);
+	fe_localteam = Player_GetTeam(fe_localplayer);
+	fe_enemyteam = Player_GetTeam(Player_FindFirstEnemyPlayer(fe_localplayer));
+	
+	fe_notice_me_senpai = SGroup_CreateIfNotFound("fe_notice_me_senpai");
+	
+	if (fe_race == "allies") then
+		fe_init_china();
+	elseif (fe_race == "axis") then
+		fe_init_japanese();
+	end
+	
+	fe_scores = {};
+	
+	fe_trenches = {
+		BP_GetEntityBlueprint("ebps/races/allies/buildings/slit_trench.lua"), -- Chinese Trenches
+		BP_GetEntityBlueprint("ebps/races/axis/buildings/slit_trench.lua"), -- Japanese Trenches
+	};
+	
+	fe_base_structures = {
+		EBP.ALLIES.BARRACKS, EBP.ALLIES.ARMORY, EBP.ALLIES.MOTORPOOL, EBP.ALLIES.TANK_DEPOT, EBP.ALLIES.QUARTER_MASTER, EBP.ALLIES.TRIAGE,
+		EBP.AXIS.QUARTERS, EBP.AXIS.BARRACKS, EBP.AXIS.ARMORY, EBP.AXIS.COMMAND
+	};
+	
+	fe_hmg_structures = {
+		EBP.ALLIES.MG_NEST,
+		EBP.AXIS.BUNKER
+	};
+	
+	fe_mines = {
+		EBP.ALLIES.MINES, EBP.ALLIES.MINES_RIFLEMEN,
+		EBP.AXIS.MINES,
+	};
+	
+	fe_destroyed_headquarters = {
+		EBP.ALLIES.HQ_WRECK, EBP.AXIS.HQ_WRECK,
+	};
+	
+	fe_dev_ebp = { -- Naming logic in this mod, seriously...
+		["REDHAWK"] = BP_GetEntityBlueprint("ebps/races/allies/soldiers/yangren.lua"),
+		["REDBAYONET"] = BP_GetEntityBlueprint("ebps/races/allies/soldiers/wanjia.lua"),
+	};
+	
+	fe_pinnedwatch = {};	
+	fe_minewatch = {};
+	
+	Rule_AddPlayerEvent(fe_ability_executed, fe_localplayer, GE_AbilityExecuted);
+	
+	-- update squads
+	Rule_AddInterval(fe_achievement_update_squads, 2.5);
+
+	-- update entities
+	Rule_AddInterval(fe_achievement_update_entities, 10);
+	
+	-- update players
+	Rule_AddInterval(fe_achievement_update_players, 2);
+	
+	if sp_achievement_ignore == nil or false then
+		
+		local i_humans = 0;
+		
+		for i = 1, World_GetPlayerCount() do
+			local p = World_GetPlayerAt(i);
+			if Player_IsHuman(p) then
+				i_humans = i_humans + 1;
+			end
+		end
+		
+		if (i_humans == World_GetPlayerCount()) then
+			fe_setachivement("fe_mp_first");
+		end
+		
+		local map_name = Stats_GetScenarioName(); -- For the easter egg maps
+		
+		if (map_name == "") then
+			
+		end
+		
+		fe_setupmatch();
+		
+	end
+
+end
+
+Scar_AddInit(fe_achivements_load);
+
+function fe_init_china()
+	fe_progress["sniper_kill_reached"] = false;
+	fe_progress["tank_ace"] = false;
+	fe_progress["conscript_killers"] = false;
+	fe_progress["conscript_luck"] = false;
+	fe_progress["soviet_monster"] = false;
+	fe_progress["res_float"] = false;
+	fe_progress["sichuan_killers"] = false;
+	fe_progress["made_in_china"] = {};
+	fe_progress["trump_supporters"] = {};
+	fe_progress["trump_supporters_unlocked"] = false;
+	fe_progress["manned_trenches"] = {};
+	fe_progress["manned_hulldowns"] = {};
+	fe_progress["grand_defence"] = {};
+	fe_progress["grand_defence_unlock"] = false;
+	fe_progress["secret_simcity"] = {};
+	fe_progress["secret_simcity_unlock"] = false;
+	fe_progress["mines"] = {};
+	fe_progress["mines_unlocked"] = false;
+	fe_progress["donkey_bomb"] = 0;
+	fe_progress["donkey_units"] = {};
+	fe_progress["communist_red_book"] = {};
+	fe_progress["communist_red_book_unlocked"] = false;
+	fe_progress["regulars"] = {};
+	fe_progress["expedition_do_check"] = 0;
+	fe_progress["minesweepers"] = SGroup_CreateIfNotFound("minesweepers");
+	fe_progress["minesweeper_state"] = {};
+	fe_progress["minesweeper_count"] = 0;
+	fe_progress["detected_mines"] = {};
+	fe_progress["hq_status"] = 0;
+	fe_progress["pinned_count"] = 0;
+	fe_progress["pinned_achieved"] = false;
+	fe_progress["whoops"] = false;
+	fe_progress["reinforce_data"] = {};
+	fe_progress["reinforce_do"] = true;
+	fe_bpwatch["sniper"] = { SBP.ALLIES.RECRUIT_CIVILIAN_SNIPER, SBP.ALLIES.SCOUTS, SBP.ALLIES.SNIPER }; -- add more snipers
+	fe_bpwatch["tank_ace"] = SBP.ALLIES.M4;
+	fe_bpwatch["conscripts"] = SBP.ALLIES.ZHUANGDING;
+	fe_bpwatch["t26"] = SBP.ALLIES.T26;
+	fe_bpwatch["communist_units"] = { SBP.ALLIES.COMMUNIST_INSPECTOR, SBP.ALLIES.COMMUNIST_8RA, SBP.ALLIES.COMMUNIST_8RA_GUERILLA, SBP.ALLIES.COMMUNIST_8RA_VETERANS };
+	fe_bpwatch["sichuan_inf"] = { SBP.ALLIES.SICHUAN_RIFLES, SBP.ALLIES.SICHUAN_LMG };
+	fe_bpwatch["hull_down"] = BP_GetUpgradeBlueprint("upgrade/ability_lock_out.lua");
+	fe_bpwatch["german_squads"] = SBP.ALLIES.SS_TEAM;
+	fe_bpwatch["napalm_abp"] = BP_GetAbilityBlueprint("abilities/japan_bomb_rockets.lua");
+	fe_bpwatch["mine_detector_kit"] = BP_GetUpgradeBlueprint("upgrade/allies/items/allies_squad_item_minesweeper.lua");
+	fe_bpwatch["alive_headquarters"] = {
+		EBP.ALLIES.HQ,
+		EBP.ALLIES.HQ2,
+		EBP.ALLIES.HQ3,
+		EBP.ALLIES.HQ4,
+		EBP.ALLIES.HQ5,
+		EBP.ALLIES.HQ6,
+		EBP.ALLIES.HQ7,
+		EBP.ALLIES.HQ8,	
+	};
+end
+
+function fe_init_japanese()
+	fe_progress["sniper_kill_reached"] = false;
+	fe_progress["bike_club"] = false;
+	fe_progress["res_float"] = false;
+	fe_progress["made_in_china"] = {};
+	fe_progress["ho_ni_unlocked"] = false;
+	fe_progress["manned_trenches"] = {};
+	fe_progress["grand_defence"] = {};
+	fe_progress["grand_defence_unlock"] = false;
+	fe_progress["mines"] = {};
+	fe_progress["mines_unlocked"] = false;
+	fe_progress["marines_unlocked"] = false;
+	fe_progress["napalm_bombing_run"] = 0;
+	fe_progress["tokyo_express"] = 0;
+	fe_progress["zero_recon"] = 0;
+	fe_progress["demonic_phosphor"] = 0;
+	fe_progress["demonic_phosphor_w"] = {};
+	fe_progress["mountain_gun"] = false;
+	fe_progress["puppet_master_unlocked"] = false;
+	fe_progress["puppet_insec_unlocked"] = false;
+	fe_progress["manchurian_reinforcements"] = {};
+	fe_progress["manchurian_reinforcements_unlocked"] = false;
+	fe_progress["armoured_car"] = false;
+	fe_progress["regulars"] = {};
+	fe_progress["kamikaze_watch"] = {};
+	fe_progress["chem_watch"] = {};
+	fe_progress["senpai"] = {};
+	fe_progress["senpai_count"] = 0;
+	fe_progress["tankette"] = false;
+	fe_progress["minesweepers"] = SGroup_CreateIfNotFound("minesweepers");
+	fe_progress["minesweeper_state"] = {};
+	fe_progress["minesweeper_count"] = 0;
+	fe_progress["detected_mines"] = {};
+	fe_progress["hq_status"] = 0;
+	fe_progress["pinned_count"] = 0;
+	fe_progress["pinned_achieved"] = false;
+	fe_progress["whoops"] = false;
+	fe_progress["reinforce_data"] = {};
+	fe_progress["reinforce_do"] = true;
+	fe_bpwatch["sniper"] = { SBP.AXIS.SNIPER };
+	fe_bpwatch["bike"] = SBP.AXIS.MOTORCYCLE;
+	fe_bpwatch["ho-ni"] = SBP.AXIS.TANK_DESTROYER_HO_NI;
+	fe_bpwatch["marines_bp"] = SBP.AXIS.MARINE_CORPS;
+	fe_bpwatch["napalm_abp"] = BP_GetAbilityBlueprint("abilities/japan_bomb_rockets.lua");
+	fe_bpwatch["senpai_units"] = { 
+		SBP.AXIS.COMMAND_SQUAD_NAVY,
+		SBP.AXIS.COMMAND_SQUAD_U1,
+		SBP.AXIS.COMMAND_SQUAD_U2,
+		SBP.AXIS.COMMAND_SQUAD_U3,
+	};
+	fe_bpwatch["mine_detector_kit"] = BP_GetUpgradeBlueprint("upgrade/allies/items/allies_squad_item_minesweeper_jap.lua");
+	fe_bpwatch["alive_headquarters"] = {
+		EBP.AXIS.HQ,
+		EBP.AXIS.HQ2,
+		EBP.AXIS.HQ3,
+		EBP.AXIS.HQ4,
+		EBP.AXIS.HQ5,
+		EBP.AXIS.HQ6,
+		EBP.AXIS.HQ7,
+		EBP.AXIS.HQ8,	
+	};
+end
+
+function fe_setupmatch()
+
+	local devplayers = { -- This is a really bad solution to this, but I dont think there's a way to get steam user IDs
+		"RedHawk7", 
+		"CoDiEx", 
+		"RED_Bayonet",
+		"_ATOM1K_",
+	}
+
+	local file = io.open("fewdump2.dump", "w");
+	file:write("map: " .. Stats_GetScenarioName() .."\n");
+	file:write("players:\n");
+	for i = 1, World_GetPlayerCount() do
+		local dump = World_GetPlayerAt(i);
+		local pname = Player_GetDisplayName(dump)[1];
+		local teamID = Player_GetTeam(dump);
+		file:write("p " ..tostring(i) .." t " ..tostring(teamID) .." human " ..tostring(Player_IsHuman(dump)) .." name " ..pname .."\n");
+		if Table_ContainsElement(devplayers, pname) then
+			fe_isdevgame = true;
+			table.insert(fe_devteam, {name = pname, tid = teamID});
+		end
+	end
+	file:close();
+
+end
+
+function fe_setachivement(aID)
+	local file = assert(io.open("fewdump.dump", "a"));
+	if (file ~= nil) then
+		file:write("set " .. aID .."\n");
+		file:close();
+		print("FEW: Set Achivement " ..aID);
+	else
+		-- TODO: Make it try to save the achievement some other time
+	end
+end
+
+function fe_progressachievement(aID, amount)
+	if (amount == nil) then
+		amount = "1";
+	end
+	if (aID ~= nil) then
+		local file = assert(io.open("fewdump.dump", "a"));
+		if (file ~= nil) then
+			file:write("increment " .. aID .. " " ..amount.."\n");
+			file:close();
+			print("FEW: Incremented Achivement " ..aID);
+		else
+			-- TODO: Make it try to save the achievement some other time
+		end
+	end
+end
+
+function fe_achievement_pow()
+	fe_setachivement("fe_prisoner_of_war");
+end
+
+function fe_achievement_infantry_only()
+	fe_setachivement("fe_infantry_only");
+end
+
+function fe_surrender_squad(squadID)
+	print("Squad has surrendered");
+	local teamID = Player_GetTeam(Util_GetPlayerOwner(squadID));
+	if teamID == fe_localteam then -- ID must be equal to local player, as the units that have surrendered change ownership
+		fe_progressachievement("fe_surrender", tostring(Squad_Count(squadID)));
+	end
+end
+
+function fe_ability_executed(user, ability)
+	if (ability == fe_bpwatch["napalm_abp"]) then
+		fe_progress["napalm_bombing_run"] = fe_progress["napalm_bombing_run"] + 1;
+		if fe_progress["napalm_bombing_run"] == 10 then
+			fe_setachivement("fe_napalm_bombing_run");
+		end
+	elseif (ability == ABILITY.ALLIES.DONKEY_DETONATE) then
+		fe_progress["donkey_bomb"] = fe_progress["donkey_bomb"] + 1;
+		if fe_progress["donkey_bomb"] == 10 then
+			fe_setachivement("fe_donkey_blowup");
+		end
+	elseif (ability == ABILITY.AXIS.NAVAL_BOMBARDMENT) then
+		fe_progress["tokyo_express"] = fe_progress["tokyo_express"] + 1;
+		if fe_progress["tokyo_express"] == 5 then
+			fe_setachivement("fe_tokyo_express");
+		end
+	elseif (ability == ABILITY.AXIS.ZERO_RECON) then
+		fe_progress["zero_recon"] = fe_progress["zero_recon"] + 1;
+		if fe_progress["zero_recon"] == 10 then
+			fe_setachivement("fe_zero_recon");
+		end
+	elseif (ability == ABILITY.AXIS.GRENADE_DIS_PHOSPHOR) then
+		fe_progress["demonic_phosphor"] = fe_progress["demonic_phosphor"] + 1;
+		if fe_progress["demonic_phosphor"] == 10 then
+			fe_setachivement("fe_demonic");
+		end
+	elseif (ability == ABILITY.AXIS.KAMIKAZE_ATTACK) then
+		fe_progressachievement("fe_kamikaze", "1");
+	elseif (ability == ABILITY.AXIS.CHEMICAL_BOMBARDMENT) then
+		fe_progressachievement("fe_chemistry", "1");
+	else
+		if user ~= fe_localplayer then
+			print("Executing ability: " ..BP_GetName(ability) .. " using a " ..BP_GetName(Squad_GetBlueprint(user)));
+		end
+	end
+end
+
+function fe_burned(...) --[[
+	if args == nil then
+		print("A soldier was burned, but no arguments were passed!")
+	else
+		print("A soldier was burned with " ..#args .." arguments passed!");
+	end]]
+end
+
+function fe_kamikaze_killed(...)
+	fe_progressachievement("fe_kamikaze", "1");
+end
+
+function fe_pinned(...)
+	fe_progress["pinned_count"] = fe_progress["pinned_count"] + 1;
+	if fe_progress["pinned_count"] >= 10 then
+		if not fe_progress["pinned_achieved"] then
+			fe_setachivement("fe_pinned_light");
+		end
+	end
+	fe_progressachievement("fe_pinned", "1");
+end
+
+function fe_minseweepercommand(groupid, index, squadid)
+	local squad = squadid;																									-- I hope they pass in the squad ID as the first argument
+	local gameID = Squad_GetGameID(squad); 																					-- get the squd ID
+	local cmd = Squad_GetActiveCommand(squad);																				-- Get the active squad comand
+	if fe_progress["minesweeper_state"][gameID] == nil then
+		fe_progress["minesweeper_state"][gameID] = false;
+	else
+		local isReinforcing = Squad_IsReinforcing(squadid);
+		if fe_progress["minesweeper_state"][gameID] == SQUADSTATEID_DefuseMine and cmd ~= SQUADSTATEID_DefuseMine then
+			fe_progress["minesweeper_state"][gameID] = cmd;
+			fe_progress["minesweeper_count"] = fe_progress["minesweeper_count"] + 3; -- Technically we remove 3 mines
+		else
+			fe_progress["minesweeper_state"][gameID] = cmd;
+		end
+	end
+	if fe_progress["minesweeper_count"] >= 10 then																	-- Have we defused more than 14 mines?
+		if fe_progress["minesweeper_achieved"] == nil then															-- Have we already registered this achievement?
+			fe_setachivement("fe_defuser");																			-- Set the achievement
+			fe_progress["minesweeper_achieved"] = true;																-- So we dont keep on registering this achievement (causes errors)
+		end
+	end
+end
+
+function fe_achievement_update_entities()
+	local fe_entities = Player_GetEntities(fe_localplayer);
+	local fe_same_structure = {};
+	local fe_entity_loop = function(groupid, index, entityid)
+		local ebp = Entity_GetBlueprint(entityid);
+		local gameID = Entity_GetGameID(entityid);
+		if (fe_race=="allies") then -- Chinese
+			if (ebp == EBP.ALLIES.SECRET_CAMP) then
+				if not Table_ContainsElement(fe_progress["secret_simcity"], gameID) then
+					table.insert(fe_progress["secret_simcity"], gameID);
+				end
+			end
+			if #fe_progress["secret_simcity"] >= 15 then
+				if not fe_progress["secret_simcity_unlock"] then
+					fe_setachivement("fe_simcity");
+					fe_progress["secret_simcity_unlock"] = true;
+				end
+			end
+		elseif(fe_race=="axis") then -- Japanese
+			-- Nothing yet
+		end
+		-- Common
+		if Table_ContainsElement(fe_mines, ebp) then
+			if not Table_ContainsElement(fe_progress["mines"], gameID) then
+				table.insert(fe_progress["mines"], gameID);
+			end
+			if not Table_ContainsElement(fe_minewatch, gameID) then
+				--Rule_AddEntityEvent( fe_mine_killed, entityid, GE_EntityKilled); 
+				table.insert(fe_minewatch, gameID);
+			end
+		end
+		if #fe_progress["mines"] >= 10 then
+			if not fe_progress["mines_unlocked"] then
+				fe_setachivement("fe_hidden_mines");
+				fe_progress["mines_unlocked"] = true;
+			end			
+		end
+		if Table_ContainsElement(fe_hmg_structures, ebp) then
+			if not Table_ContainsElement(fe_progress["grand_defence"], gameID) then
+				table.insert(fe_progress["grand_defence"], gameID);
+			end
+		end
+		if #fe_progress["grand_defence"] >= 10 then
+			if not fe_progress["grand_defence_unlock"] then
+				fe_setachivement("fe_grand_defence");
+				fe_progress["grand_defence_unlock"] = true;
+			end
+		end
+		local ename = BP_GetName(ebp);
+		if (fe_same_structure[ename] == nil) then
+			fe_same_structure[ename] = 1;
+		else
+			if Table_ContainsElement(fe_base_structures, ebp) then
+				if not fe_progress["whoops"] then
+					fe_setachivement("fe_whoops");
+					fe_progress["whoops"] = true; -- So we dont trigger this continually!
+				end
+			end
+		end
+		if fe_progress["hq_status"] == 0 then
+			if Table_ContainsElement(fe_destroyed_headquarters, ebp) then
+				fe_progress["hq_status"] = (-1);
+			end
+		elseif fe_progress["hq_status"] == (-1) then
+			if Table_ContainsElement(fe_bpwatch["alive_headquarters"], ebp) then
+				fe_setachivement("fe_ressurection");
+				fe_progress["hq_status"] = 0;
+			end
+		end
+	end
+	EGroup_ForEachEx(fe_entities, fe_entity_loop, true, false);
+end
+
+function fe_achievement_update_squads()
+	if fe_progress["manned_trenches"] ~= nil then
+		fe_progress["manned_trenches"] = {};
+	end	
+	if fe_progress["manned_hulldowns"] ~= nil then
+		fe_progress["manned_hulldowns"] = {};
+	end
+	local fe_squads = Player_GetSquads(fe_localplayer);
+	local fe_squad_loop = function(groupid, index, squadid)
+		local squadBP = Squad_GetBlueprint(squadid);
+		local gameID = Squad_GetGameID(squadid);
+		if (fe_race=="allies") then -- NRA Achievements
+			if not fe_progress["tank_ace"] then
+				if (squadBP == fe_bpwatch["tank_ace"]) then
+					if (Squad_GetVeterancyRank(squadid) == 3) then
+						fe_setachivement("fe_sherman_ace");
+						fe_progress["tank_ace"] = true;
+					end
+				end
+			end
+			if not fe_progress["conscript_killers"] then
+				if (squadBP == fe_bpwatch["conscripts"]) then
+					if Squad_GetTotalKillCount(squadid) >= 20 then
+						fe_setachivement("fe_conscript_killing_machine");
+						fe_progress["conscript_killers"] = true;
+					end
+				end
+			end
+			if not fe_progress["conscript_luck"] then
+				if (squadBP == fe_bpwatch["conscripts"]) then
+					if Squad_GetTotalKillCount(squadid) >= 1 then
+						fe_setachivement("fe_civ_conscripts");
+						fe_progress["conscript_luck"] = true;
+					end
+				end
+			end
+			if not fe_progress["soviet_monster"] then
+				if (squadBP == fe_bpwatch["t26"]) then
+					local total = Squad_GetTotalKillCount(squadid); -- tbh there's a smarter way of doing this achievement
+					local hv = Squad_GetKillCount(squadid, VS_HeavyArmor);
+					local lv = Squad_GetKillCount(squadid, VS_LightArmor);
+					total = total - hv - lv;
+					if total >= 30 and hv >= 5 and lv >= 5 then
+						fe_setachivement("fe_soviet_monster");
+						fe_progress["soviet_monster"] = true;
+					end
+				end
+			end
+			if not fe_progress["sichuan_killers"] then
+				if (Squad_ContainsBlueprint(squadBP, fe_bpwatch["sichuan_inf"])) then
+					if Squad_GetTotalKillCount(squadid) >= 100 then
+						fe_setachivement("fe_kung_fu");
+						fe_progress["sichuan_killers"] = true;
+					end
+				end
+			end
+			if not fe_progress["communist_red_book_unlocked"] then
+				if Squad_ContainsBlueprint(squadBP, fe_bpwatch["communist_units"]) then
+					if not Table_ContainsElement(fe_progress["communist_red_book"], gameID) then
+						table.insert(fe_progress["communist_red_book"], gameID);
+					end
+				end
+				if #fe_progress["communist_red_book"] >= 10 then
+					fe_setachivement("fe_spread_the_word");
+					fe_progress["communist_red_book_unlocked"] = true;
+				end
+			end
+			if (squadBP == fe_bpwatch["german_squads"]) then
+				if Squad_GetTotalKillCount(squadid) >= 150 then
+					fe_setachivement("fe_german_tech");
+				end
+			end
+			if (squadBP == SBP.ALLIES.DONKEY_BOMB) then
+				if not Table_ContainsElement(fe_progress["donkey_units"], gameID) then
+					Rule_AddSquadEvent(fe_ability_executed, squadid, GE_AbilityExecuted);
+					table.insert(fe_progress["donkey_units"], gameID);
+				end
+			end
+			if Squad_IsOfType(squadid, "infantry") then
+				if (squadBP == fe_bpwatch["conscripts"]) then			
+					if not Table_ContainsElement(fe_progress["trump_supporters"], gameID) then
+						table.insert(fe_progress["trump_supporters"], gameID);
+					end
+				end
+				if not fe_progress["trump_supporters_unlocked"] then
+					if (#fe_progress["trump_supporters"] >= 5) then
+						fe_setachivement("fe_make_china_great_again"); -- Even when programming Trump can be made fun of :D
+						fe_progress["trump_supporters_unlocked"] = true;
+					end
+				end
+			end
+			if Squad_IsOfType(squadid, "vehicle") then
+				if Squad_HasUpgrade( squadid, fe_bpwatch["hull_down"] ) then
+					table.insert(fe_progress["manned_hulldowns"], gameID);
+				end
+				if (#fe_progress["manned_hulldowns"] >= 3) then
+					fe_setachivement("fe_mobile_pillbox");
+				end
+			end
+		elseif (fe_race=="axis") then -- IJA Achievements
+			if not fe_progress["bike_club"] then
+				if (squadBP == fe_bpwatch["bike"]) then
+					if (Squad_GetVeterancyRank(squadid) == 3) then
+						fe_setachivement("fe_biker_club");
+						fe_progress["bike_club"] = true;
+					end
+				end
+			end
+			if not fe_progress["tankette"] then
+				if (squadBP == SBP.AXIS.TYPE94_TANKETTE) then
+					if (Squad_GetVeterancyRank(squadid) == 3) then
+						fe_setachivement("fe_tankette");
+						fe_progress["tankette"] = true;
+					end
+				end
+			end
+			if not fe_progress["armoured_car"] then
+				if (squadBP == SBP.AXIS.M25Armoured) then
+					if (Squad_GetVeterancyRank(squadid) == 3) then
+						fe_setachivement("fe_armoured_car");
+						fe_progress["armoured_car"] = true;
+					end
+				end
+			end
+			if not fe_progress["ho_ni_unlocked"] then
+				if (squadBP == fe_bpwatch["ho-ni"]) then
+					local vehicle = Squad_GetKillCount(squadid, VS_HeavyArmor) + Squad_GetKillCount(squadid, VS_LightArmor);
+					if (vehicle >= 20) then
+						fe_setachivement("fe_tank_destroyer");
+						fe_progress["ho_ni_unlocked"] = true;
+					end
+				end
+			end
+			if not fe_progress["marines_unlocked"] then
+				if (squadBP == fe_bpwatch["marines_bp"]) then
+					local totalk = Squad_GetTotalKillCount(squadid);
+					if (totalk >= 150) then
+						fe_setachivement("fe_bushido_blade");
+						fe_progress["marines_unlocked"] = true;
+					end
+				end
+			end
+			if not fe_progress["mountain_gun"] then
+				if (squadBP == SBP.AXIS.ARTYILLERY_MOUNTAIN_GUN) then
+					local totalk = Squad_GetTotalKillCount(squadid);
+					if (totalk >= 100) then
+						fe_setachivement("fe_mountain_gun");
+						fe_progress["mountain_gun"] = true;
+					end
+				end
+			end
+			if (squadBP == SBP.AXIS.GRENADE_DISCHARGER) then
+				if not Table_ContainsElement(fe_progress["demonic_phosphor_w"], gameID) then
+					Rule_AddSquadEvent(fe_ability_executed, squadid, GE_AbilityExecuted);
+					table.insert(fe_progress["demonic_phosphor_w"], gameID);
+				end
+			end
+			if (squadBP == SBP.AXIS.KAMIKAZE) then
+				if not Table_ContainsElement(fe_progress["kamikaze_watch"], gameID) then
+					--Rule_AddSquadEvent(fe_ability_executed, squadid, GE_AbilityExecuted);
+					local e = Squad_EntityAt(squadid, 0);
+					Rule_AddEntityEvent(fe_kamikaze_killed, e, GE_EntityKilled );
+					table.insert(fe_progress["kamikaze_watch"], gameID);
+				end
+			end
+			if (squadBP == SBP.AXIS.CHEMICAL_MORTAR) then
+				if not Table_ContainsElement(fe_progress["chem_watch"], gameID) then
+					Rule_AddSquadEvent(fe_ability_executed, squadid, GE_AbilityExecuted);
+					table.insert(fe_progress["chem_watch"], gameID);
+				end
+			end
+			if (squadBP == SBP.AXIS.PUPPET) then
+				if not fe_progress["puppet_master_unlocked"] then
+					if (Squad_GetVeterancyRank(squadid) == 3) then
+						fe_setachivement("fe_puppets");
+						fe_progress["puppet_master_unlocked"] = true;
+					end
+				end
+				if not fe_progress["puppet_insec_unlocked"] then
+					local totalk = Squad_GetTotalKillCount(squadid);
+					if (totalk >= 120) then
+						fe_setachivement("fe_insecurity");
+						fe_progress["puppet_insec_unlocked"] = true;
+					end
+				end
+			end
+			if not fe_progress["manchurian_reinforcements_unlocked"] then
+				if (squadBP == SBP.AXIS.KWANTUNG) then
+					if not Table_ContainsElement(fe_progress["manchurian_reinforcements"], gameID) then
+						table.insert(fe_progress["manchurian_reinforcements"], gameID);
+					end
+					if #fe_progress["manchurian_reinforcements"] >= 4 then
+						if (Squad_GetVeterancyRank(squadid) == 3) then
+							fe_setachivement("fe_machurian_tiger");
+							fe_progress["manchurian_reinforcements_unlocked"] = true;
+						end
+					end
+				end		
+			end
+		end
+		-- Common Achievements
+		if (Squad_ContainsBlueprint(squadBP, fe_bpwatch["sniper"]) == true) then
+			if (Squad_GetTotalKillCount(squadid) >= 100) then
+				if not fe_progress["sniper_kill_reached"] then
+					fe_setachivement("fe_sniper_ace");
+					fe_progress["sniper_kill_reached"] = true;
+				end
+			end
+		end
+		if (squadBP == SBP.AXIS.IJA_REGULAR or squadBP == SBP.ALLIES.GUOZDD) then
+			if not Table_ContainsElement(fe_progress["regulars"], gameID) then
+				if (fe_race=="axis") then
+					fe_progressachievement("fe_ija_regulars", "1");
+				else
+					fe_progressachievement("fe_nra_regulars", "1");
+				end
+				table.insert(fe_progress["regulars"], gameID);
+			end
+		end
+		if Squad_IsOfType(squadid, "vehicle") then
+			if not Table_ContainsElement(fe_progress["made_in_china"], gameID) then
+				table.insert(fe_progress["made_in_china"], gameID);
+			end
+		elseif Squad_IsOfType(squadid, "infantry_or_team_weapon") then
+			if fe_progress["reinforce_do"] then
+				if fe_progress["reinforce_data"][gameID] == nil then
+					fe_progress["reinforce_data"][gameID] = false;
+				else
+					local isReinforcing = Squad_IsReinforcing(squadid);
+					if fe_progress["reinforce_data"][gameID] and not isReinforcing then
+						fe_progress["reinforce_data"][gameID] = false;
+						fe_progressachievement("fe_reinforce", "1");
+					else
+						fe_progress["reinforce_data"][gameID] = isReinforcing;
+					end
+				end
+			end
+		end
+		if (fe_progress["manned_trenches"] ~= nil) then
+			if Squad_IsOfType(squadid, "infantry") then
+				if Squad_IsInHoldEntity(squadid) then
+					local eid = Squad_GetHoldEntity(squadid);
+					local ebp = Entity_GetBlueprint(eid);
+					if Table_ContainsElement(fe_trenches, ebp) then
+						table.insert(fe_progress["manned_trenches"], gameID);
+					end
+				end
+			end
+			if #fe_progress["manned_trenches"] >= 5 then
+				fe_setachivement("fe_shellshock");
+				fe_progress["manned_trenches"] = nil;
+			end
+		end
+		if Squad_HasAnyUpgrades(squadid, {fe_bpwatch["mine_detector_kit"]}) then
+			if not SGroup_ContainsSquad(fe_progress["minesweepers"], gameID) then
+				print("Found an engineer squad with minesweepers");
+				SGroup_Add(fe_progress["minesweepers"], squadid);
+				--Rule_AddSquadEvent(fe_minseweepercommand, squadid, GE_SquadCommandIssued);
+				--if not Rule_Exists(fe_achievement_update_mines) then
+				--	Rule_AddInterval(fe_achievement_update_mines, 3);
+				--end
+			end
+		end
+		if not Table_ContainsElement(fe_pinnedwatch, gameID) then
+			Rule_AddSquadEvent(fe_pinned, squadid, GE_SquadPinned);
+			table.insert(fe_pinnedwatch, gameID);
+		end
+	end
+	SGroup_ForEachEx(fe_squads, fe_squad_loop, true, false);
+	if SGroup_Count(fe_progress["minesweepers"]) > 0 then
+		SGroup_ForEachEx(fe_progress["minesweepers"], fe_minseweepercommand, true, false);
+	end
+	if (fe_progress["made_in_china"] ~= nil) then
+		if #fe_progress["made_in_china"] >= 15 then
+			if fe_progress["made_in_china_done"] == nil then
+				fe_setachivement("fe_made_in_china");
+				fe_progress["made_in_china_done"] = true;
+			end
+		end
+	end
+	if not fe_progress["res_float"] then
+		local manpower = Player_GetResource(fe_localplayer, RT_Manpower);
+		local munition = Player_GetResource(fe_localplayer, RT_Munition);
+		local fuel = Player_GetResource(fe_localplayer, RT_Fuel);
+		if (manpower >= 3000 and munition >= 700 and fuel >= 500) then
+			fe_setachivement("fe_small_loan");
+			fe_progress["res_float"] = true;
+		end
+	end
+end
+
+function fe_achievement_update_mines()
+	local fe_eg_mines = EGroup_CreateIfNotFound("fe_eg_mines");
+	local fe_mine_loop = function(groupid, index, entity)
+		local gameID = Entity_GetGameID(entity);
+		if not Entity_IsCamouflaged(entity) then
+			if not Table_ContainsElement(fe_progress["detected_mines"], gameID) then
+				table.insert(fe_progress["detected_mines"], gameID);
+			end
+		end
+	end
+	local fe_minesweeper_loop = function(groupid, index, squadid)
+		for i = 1, World_GetPlayerCount() do
+			local target = World_GetPlayerAt(i);
+			if Player_GetTeam(target) == fe_enemyteam then
+				Player_GetAllEntitiesNearMarker(target, fe_eg_mines, Squad_GetPosition(squadid), 5);
+				EGroup_Filter(fe_eg_mines, fe_mines, FILTER_KEEP);
+				if EGroup_Count(fe_eg_mines) > 0 then
+					EGroup_ForEachEx(fe_eg_mines, fe_mine_loop, true, false);
+				end
+			end
+		end
+	end
+	SGroup_ForEachEx(fe_progress["minesweepers"], fe_minesweeper_loop, true, false);
+	if #fe_progress["detected_mines"] >= 15 then
+		fe_setachivement("fe_defuser");
+		Rule_RemoveMe();
+	end
+end
+
+function fe_achievement_update_players()
+	if (fe_race=="axis") then
+		local fe_selected_squads = SGroup_CreateIfNotFound("fe_selected_squads");
+		Misc_GetSelectedSquads( fe_selected_squads, false );
+		SGroup_Filter( fe_selected_squads, fe_bpwatch["senpai_units"], FILTER_KEEP );
+		if (SGroup_Count(fe_selected_squads) > 0) then
+			if SGroup_Count(fe_notice_me_senpai) == 0 then
+				SGroup_AddGroup(fe_notice_me_senpai, fe_selected_squads);
+				fe_progress["senpai_count"] = fe_progress["senpai_count"] + 1;
+				if (fe_progress["senpai_count"] >= 50) then
+					if fe_progress["senpai_done"] == nil then
+						fe_setachivement("fe_senpai");
+						fe_progress["senpai_done"] = true;
+					end
+				end
+			end
+		else
+			SGroup_Clear(fe_notice_me_senpai);
+		end
+	elseif (fe_race=="allies") then
+		if fe_progress["expedition_do_check"] == 0 then
+			local root = Player_GetDoctrineRoot(fe_localplayer);
+			if root == UPG.COMMANDER_TREE.ALLIES.AIRBORNE then
+				fe_progress["expedition_do_check"] = 1
+			elseif root ~= nil then
+				fe_progress["expedition_do_check"] = (-1);
+			end
+		elseif fe_progress["expedition_do_check"] == 1 then
+			if Player_HasCompleteDoctrine(fe_localplayer, Player_GetDoctrineTable(fe_localplayer), 6) then
+				local found_uk = false;
+				local found_us = false;
+				local found_m4 = false;
+				local check_expedition = function(groupid, index, squadid)
+					local sbp = Squad_GetBlueprint(squadid);
+					if sbp == SBP.ALLIES.M1918_TEAM then
+						found_uk = true;
+					elseif sbp == SBP.ALLIES.GUOMEI_TEAM then
+						found_us = true;
+					elseif sbp == SBP.ALLIES.M4 then
+						found_m4 = true;
+					end
+				end
+				SGroup_ForEachEx(Player_GetSquads(fe_localplayer), check_expedition, true, false);
+				if found_uk and found_us and found_m4 then
+					fe_progress["expedition_do_check"] = (-1);
+					fe_setachivement("fe_chinese_expedition");
+				end
+			end
+		end
+	end
+end
+
+function fe_setvpscore(id_a, score_a, id_b, score_b)
+	fe_scores[id_a] = score_a;
+	fe_scores[id_b] = score_b;
+end
+
+function fe_gameover(winner, loser, gamemode)
+	
+	local b_wins = false;
+	
+	if (fe_localteam == winner) then
+		b_wins = true;
+	end
+	
+	if b_wins then
+		for i=1, World_GetPlayerCount() do
+			local tID = Player_GetTeam(World_GetPlayerAt(i));
+			if (tID ~= Player_GetTeam(fe_localplayer)) then
+				for j = 1, #fe_devteam do
+					if fe_devteam[j].tid == tID then
+						fe_setachivement("fe_dev_multiplayer"); -- beat a developer
+						break;
+					end
+				end
+			end
+		end
+	end
+	
+	if (gamemode == "annihilate") then
+		if b_wins then
+			if (fe_race == "allies") then
+				fe_setachivement("fe_nra_first_win");
+				fe_progressachievement("fe_sun_tzu", "1");
+			else
+				fe_setachivement("fe_ija_first_win");
+				fe_progressachievement("fe_emperors_choice", "1");
+			end
+		else
+			if (fe_race == "allies") then
+				fe_progressachievement("fe_njra_lose_fifteen", "1");
+			else
+				fe_progressachievement("fe_ija_lose_fifteen", "1");
+			end
+		end
+	elseif (gamemode == "vp_standard" or gamemode == "vp_pow") then
+		if b_wins then
+			if (fe_race == "allies") then
+				fe_setachivement("fe_nra_first_win");
+				fe_progressachievement("fe_sun_tzu", "1");
+			else
+				fe_setachivement("fe_ija_first_win");
+				fe_progressachievement("fe_emperors_choice", "1");
+			end
+			if (fe_scores[Player_GetTeam(fe_localplayer)] == 500) then -- So the 1000 points wont interfere
+				fe_setachivement("fe_vp_master");
+			elseif (fe_scores[Player_GetTeam(fe_localplayer)] <= 10) then -- Might never happen if the aim is 10, must therefore be less than or equal to 10
+				fe_setachivement("fe_vp_novice");
+			end
+		else
+			if (fe_race == "allies") then
+				fe_progressachievement("fe_njra_lose_fifteen", "1");
+			else
+				fe_progressachievement("fe_ija_lose_fifteen", "1");
+			end
+			if (fe_scores[Player_GetTeam(Player_FindFirstEnemyPlayer(fe_localplayer))] >= 500) then -- So the 1000 points wont interfere (this is achievable in a standard match)
+				fe_setachivement("fe_vp_rookie");
+			end
+		end
+	end
+	if g_pow_enabled then
+		if b_wins then
+			fe_achievement_pow();
+		end
+	end
+	if g_infantry_only then
+		if b_wins then
+			fe_achievement_infantry_only();
+		end
+	end
+	fe_endmatchAchievements();
+	fe_endstats(b_wins);
+end
+
+function fe_endmatchAchievements() -- squad related end unit matches
+	if (fe_race=="allies") then
+		local sichuan_infantry = Player_GetSquads(fe_localplayer);
+		SGroup_Filter(sichuan_infantry, fe_bpwatch["sichuan_inf"], FILTER_KEEP);
+		if (SGroup_Count(sichuan_infantry) >= 4) then
+			local i_vetcount = 0;
+			local vet_iterate = function(groupid, index, squadid)
+				if (Squad_GetVeterancyRank(squadid) == 3) then
+					i_vetcount = i_vetcount + 1;
+				end
+			end
+			SGroup_ForEachAllOrAny(sichuan_infantry, ALL, vet_iterate);
+			if (i_vetcount >= 4) then
+				fe_setachivement("fe_warlord");
+			end
+		end
+	end	
+	if not Player_HasAnyDoctrine(fe_localplayer) then
+		fe_setachivement("fe_independent");
+	end
+end
+
+function fe_endstats(win) -- game stats
+	local time_minute = 60;
+	local match_length = World_GetGameTime();
+	local valid_time = time_minute * 4; -- so we dont unlock certain achievements by losing
+	if (match_length <= (time_minute * 10) and match_length >= valid_time) then
+		if (fe_race == "axis") then
+			fe_setachivement("fe_ija_banzai");
+		end
+	elseif (match_length >= (time_minute * 60)) then
+		if win then
+			fe_setachivement("fe_warrior");
+		else
+			fe_setachivement("fe_defeated");
+		end
+	end
+	local kills = Stats_KillsTotal(fe_localplayer);
+	local losses = Stats_TotalSquadsLost(fe_localplayer);
+	if (losses >= (kills * 2)) then -- TODO: Convert into a ratio, so the player wont have to be precise
+		if win then
+			fe_setachivement("fe_soviet_style");
+		end
+	end
+	if (fe_race=="axis") then
+		fe_progressachievement("fe_occupation_legacy", tostring(Stats_SoldiersKilled( fe_localplayer )));
+	else
+		fe_progressachievement("fe_occupation_legacy", tostring(Stats_InfantryLost( fe_localplayer )));
+	end
+	local enemy_teamID = Player_GetTeam(Player_FindFirstEnemyPlayer(fe_localplayer));
+	local enemy_loses = 0;
+	local friendly_loses = 0;
+	for i=1, World_GetPlayerCount() do -- May need to rewrite this, in case it counts the entire team
+		local player = World_GetPlayerAt(i);
+		local team = Player_GetTeam(player);
+		if (team == enemy_teamID) then
+			enemy_loses = Stats_TotalSquadsLost(player);
+		else
+			friendly_loses = Stats_TotalSquadsLost(player);
+		end
+	end	
+	if win then
+		if (enemy_loses >= 400) then
+			fe_setachivement("fe_unstoppable_force");
+		end
+		if (friendly_loses >= 300) then
+			fe_setachivement("fe_human_wave");
+		end
+		if g_infantry_only then
+			fe_achievement_infantry_only();
+		end
+		if g_pow_enabled then
+			fe_achievement_pow();
+		end
+	end
+	if (enemy_loses == friendly_loses and enemy_loses > 0) then -- TODO: convert into percentages so the player wont have to be precise
+		fe_setachivement("fe_equal_terms");
+	end
+	if(fe_race=="axis") then
+		local destroyed_structures = Stats_StructuresKilled(fe_localplayer);
+		fe_progressachievement("fe_tear_down_the_wall", tostring(destroyed_structures));
+	end
+end
+
+function Table_ContainsElement(table, element)
+	for i=1, #table do
+		if table[i] == element then
+			return true;
+		end
+	end
+	return false;
+end
+
+-- Desc: Check if the blueprint can be found in the table
+-- Args: blueprint = blueprint of the squad; table_blueprints = the blueprints to check against
+function Squad_ContainsBlueprint(blueprint, table_blueprints)
+	for i = 1, #table_blueprints do 
+		if (table_blueprints[i] == blueprint) then
+			return true;
+		end
+	end
+	return false;
+end
+
+function Squad_HasAnyUpgrades(squad, upgradeS)
+	for i = 1, #upgradeS do
+		if Squad_HasUpgrade(squad, upgradeS[i]) then
+			return true;
+		end
+	end
+	return false;
+end
+
+-- Desc: Get the total count of kills the squad has dealth
+-- Args: squad = the squad to check
+function Squad_GetTotalKillCount(squad)
+	return Squad_GetKillCount(squad, VS_HeavyArmor) + Squad_GetKillCount(squad, VS_LightArmor) + Squad_GetKillCount(squad, VS_Infantry);
+end
+
+-- Desc: Get the type of squad ["vehicle", "team_weapon", "infantry"]
+-- Args: squad = the squad to check, tp = type to check for
+function Squad_IsOfType(squad, tp)
+	local f_e = Squad_EntityAt(squad, 0);
+	if (tp == "vehicle") then
+		return Entity_IsVehicle(f_e);
+	elseif (tp == "team_weapon") then
+		return Entity_IsSyncWeapon(f_e);
+	elseif (tp == "infantry") then
+		return (not Entity_IsVehicle(f_e) and not Entity_IsSyncWeapon(f_e));
+	elseif (tp == "infantry_or_team_weapon") then
+		return not Entity_IsVehicle(f_e);
+	end
+end
+
+-- Desc: Boolean flag telling whether or not the player has any doctrines
+-- Args: player = the player to check against
+function Player_HasAnyDoctrine(player)
+	local ca = Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.AIRBORNE);
+	local cb = Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.INFANTRY);
+	local cc = Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.ARMOR);
+	local ja = Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.DEFENSE);
+	local jb = Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.PROPAGANDA);
+	local jc = Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.BLITZKRIEG);
+	return (ca or cb or cc or ja or jb or jc);
+end
+
+function Player_GetDoctrineRoot(player)
+	if Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.AIRBORNE) then return UPG.COMMANDER_TREE.ALLIES.AIRBORNE
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.INFANTRY) then return UPG.COMMANDER_TREE.ALLIES.INFANTRY
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.ARMOR) then return UPG.COMMANDER_TREE.ALLIES.ARMOR
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.DEFENSE) then return UPG.COMMANDER_TREE.AXIS.DEFENSE
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.PROPAGANDA) then return UPG.COMMANDER_TREE.AXIS.PROPAGANDA
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.BLITZKRIEG) then return UPG.COMMANDER_TREE.AXIS.BLITZKRIEG
+	else return nil end
+end
+
+function Player_GetDoctrineTable(player)
+	if Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.AIRBORNE) then return UPG.COMMANDER_TREE.ALLIES
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.INFANTRY) then return UPG.COMMANDER_TREE.ALLIES
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.ALLIES.ARMOR) then return UPG.COMMANDER_TREE.ALLIES
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.DEFENSE) then return UPG.COMMANDER_TREE.AXIS
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.PROPAGANDA) then return UPG.COMMANDER_TREE.AXIS
+	elseif Player_HasUpgrade(player, UPG.COMMANDER_TREE.AXIS.BLITZKRIEG) then return UPG.COMMANDER_TREE.AXIS
+	else return nil end
+end
+
+function Player_HasCompleteDoctrine(player, doc, expected)
+
+	if expected == nil then expected = 6; end
+
+	local complete_count = 0
+
+	if doc == nil then return false else
+		for i = 1, # doc do
+			if Player_HasUpgrade(player, doc[i]) then complete_count = complete_count + 1; end
+		end
+	end
+	
+	return complete_count == 6;
+
+end

@@ -1,0 +1,95 @@
+model =
+{
+	---------------------
+	-- BaseMotions.abp --
+	---------------------
+	"BASE\\BaseLayout",
+	"BASE\\BaseMaterial",
+	"BASE\\BaseMotion",
+	"BASE\\BaseHead",
+	"Soldiers\\Giblets\\Giblets",
+	
+	-----------------------
+	-- CommonMotions.abp --
+	-----------------------
+	-- Common Weapon Animations
+	"Weapons\\Bazooka",
+	"Weapons\\FLAMETHROWERS",
+	"Weapons\\ladao",
+	"Weapons\\HEAVY_MACHINE_GUNS_Sync",
+	"Weapons\\MORTAR_Sync",
+	"Weapons\\Pistol",
+	"Weapons\\RIFLE",
+	"Weapons\\SUB_MACHINE_GUNS",
+	"..\\..\\Weapons\\Heavy_Machineguns_Sync",
+
+
+	------------------
+	-- Engineer.abp --
+	------------------
+	-- Engineer's Special Abilities
+	"..\\Allies\\Props\\Demolitions",	
+	"..\\Allies\\Props\\Wire_Cutters",	
+	"..\\Allies\\Props\\Mine_Detector",
+	"..\\Allies\\Props\\Blow_Torch",
+	"..\\Allies\\Props\\Shovel_digin",
+	"..\\Allies\\Props\\Sandbag",
+
+
+	"..\\Axis\\Soldiers\\Weapons\\Tellermine",
+
+	----------------------------
+	-- Allies\Paratrooper.abp --
+	----------------------------
+	"..\\Allies\\Soldiers\\Weapons\\Satchel_Charge",
+	"..\\Allies\\Props\\Parachute",
+
+	----------------------
+	-- Allies\Medic.abp --
+	----------------------
+	"..\\Allies\\Props\\Medic_Kit",	
+
+	--------------------------
+	-- Axis\CommonItems.abp --
+	--------------------------
+	--"..\\Axis\\Soldiers\\Weapons\\Panzerfaust 100",
+	"..\\allies\\vehicles\\liu\\liu",
+	"..\\allies\\vehicles\\j11\\j11",
+	--"..\\Axis\\Soldiers\\Weapons\\MG42_light",
+
+
+	--------------------------------
+	-- Resuming CommonMotions.abp --
+	--------------------------------
+
+	-- Common Team Weapon Sync files
+	"Vehicles\\ANTITANK_GUNS_Sync",
+	"Vehicles\\SyncPoint",
+	
+	-- Race-specific Team Weapon Syncs
+
+	-----------------------------
+	-- Allies\VehicleSyncs.abp --
+	-----------------------------
+	"..\\Allies\\Vehicles\\M2A1_105mm_Howitzer\\M2A1_105mm_Howitzer_Sync",
+	
+	-----------------------------------
+	-- Commonwealth\VehicleSyncs.abp --
+	-----------------------------------
+	"..\\Commonwealth\\Vehicles\\Bofor_40mm\\Bofor_40mm_Sync",
+	
+	---------------------------
+	-- Axis\VehicleSyncs.abp --
+	---------------------------
+	--"..\\Axis\\Vehicles\\88mmFlakCannon\\88mmFlakCannon_Sync",
+	"..\\Axis\\Vehicles\\Flakvierling 38 20mm\\Flakvierling_Sync",
+	"..\\Axis\\Vehicles\\Nebelwerfer\\Nebelwerfer_Sync",
+	"..\\allies\\Vehicles\\jap_75mm\\jap_75mm_sync",
+}	
+
+
+-- Intermediate ABP
+simvis_attributes =
+{
+	Intermediate_Model = 1
+}

@@ -1,0 +1,23 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "bone_flag_pole",
+		subtype = "",
+		transform_m00 = -0.08185,
+		transform_m01 = 0.15188,
+		transform_m02 = -0.98500,
+		transform_m10 = -0.20050,
+		transform_m11 = 0.96560,
+		transform_m12 = 0.16555,
+		transform_m20 = 0.97627,
+		transform_m21 = 0.21105,
+		transform_m22 = -0.04859,
+		transform_m30 = 0.00061,
+		transform_m31 = 2.41096,
+		transform_m32 = 0.45071,
+		type = "",
+	},
+}

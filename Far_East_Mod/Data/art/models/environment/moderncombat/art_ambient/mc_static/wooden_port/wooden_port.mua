@@ -1,0 +1,43 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "marker_light02",
+		subtype = "",
+		transform_m00 = 1,
+		transform_m01 = -0,
+		transform_m02 = 0,
+		transform_m10 = -0,
+		transform_m11 = -1,
+		transform_m12 = 0.00000,
+		transform_m20 = 0,
+		transform_m21 = -0.00000,
+		transform_m22 = -1,
+		transform_m30 = 2.19166,
+		transform_m31 = 6.20836,
+		transform_m32 = -3.69676,
+		type = "",
+	},
+	Marker001 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "marker_light01",
+		subtype = "",
+		transform_m00 = 1,
+		transform_m01 = -0,
+		transform_m02 = 0,
+		transform_m10 = -0,
+		transform_m11 = -1,
+		transform_m12 = 0.00000,
+		transform_m20 = 0,
+		transform_m21 = -0.00000,
+		transform_m22 = -1,
+		transform_m30 = -2.14903,
+		transform_m31 = 6.20836,
+		transform_m32 = -3.69676,
+		type = "",
+	},
+}

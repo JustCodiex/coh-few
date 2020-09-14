@@ -1,0 +1,9 @@
+model =
+{
+	"..\\hang3\\hang3",
+
+	"..\\..\\..\\axis\\vehicles\\mg_pintle\\mg_pintle", 
+        "..\\..\\..\\allies\\Vehicles\\flags\\flags",
+
+}
+

@@ -1,0 +1,3698 @@
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- UMS Push!
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+import("ScarUtil.scar")
+import("Assault_Veterancy.scar")
+import("Assault_Sound_Data.scar")
+import("Assault_Creep.scar")
+--ayoo!
+
+
+-------------------------------------------------------------------------
+
+-- [[ SETUP ]]
+
+-------------------------------------------------------------------------
+
+function OnGameSetup()
+	World_EnableReplacementObjectForEmptyPlayers(false)
+end
+
+function OnGameRestore()
+	
+
+end
+
+
+-------------------------------------------------------------------------
+
+-- [[ ONINIT ]]
+
+-------------------------------------------------------------------------
+
+function OnInit()
+	
+	--[[ PRESET GAME STATE
+	-- I don't think this can use the Preset system? -deg
+ 	MISSION_NUMBER = 9999
+	Setup_MissionPreset(MISSION_NUMBER)
+	]]
+	Game_FadeToBlack(true, 0)
+	-- adding a fix to prevent the player from opening the main menu while the screen is black
+	UI_BindingSetEnabled( "system_menu", false)
+	
+	--[[ PRESET DEBUG CONDITIONS ]]
+	Push_Debug()
+	
+	--[[ SET RESTRICTIONS ]]
+	Push_Restrictions()
+	
+	--[[ MISSION PRESETS ]]
+	Push_MissionPreset()
+ 	Push_TurretInit()
+ 	Push_CreepInit()
+ 	Push_BuildingInit()
+	
+	--[[ GAME START CHECK ]]
+	Rule_AddOneShot(Push_MissionStart, 0.25)
+	
+	--[[ SETUP SOUND ]]
+	Push_PrecacheSound()
+	
+end
+
+Scar_AddInit(OnInit)
+
+function Push_Debug()
+	
+	-- looks for the command line option [-debug]
+	if Misc_IsCommandLineOptionSet("debug") then
+		
+		g_debug = true
+		
+		-- reveal FOW
+		
+	end
+		
+end
+
+
+function Push_Restrictions()
+
+	t_PlayerIDInfo = {}
+	UI_EnableResourceTypeKicker(RT_Action, false) -- removes AP gains from being displayed
+--====================================Game Rules to start the game=====================================================
+	g_numplayer = World_GetPlayerCount()
+	
+	
+	
+	g_AlliedCreepDefined = false
+	g_AxisCreepDefined = false
+	
+	print("There are "..g_numplayer.." players in the world")
+	for i = 1 , g_numplayer do
+		
+		local player = World_GetPlayerAt(i)
+		local tempInfo = {playerID = player, isHuman = true}
+		
+		table.insert(t_PlayerIDInfo, tempInfo)
+		
+		
+		
+		--[[ This makes no sense to me!
+		Why is the table above assert things only to have them rewritten immediately below?
+		- deg ]]
+		if Player_IsHuman(player) then
+			print("player at "..i.." is human")
+			if (Player_GetRaceName(player) == TRACE_ALLIES) and g_AlliedCreepDefined == false then
+				
+				t_PlayerIDInfo[i].isHuman = true
+				
+			elseif (Player_GetRaceName(player) == TRACE_AXIS) and g_AxisCreepDefined == false then
+				
+				t_PlayerIDInfo[i].isHuman = true
+				
+			end
+		
+ 		-- checks to see if player is human, if not then give it special properties
+		elseif not Player_IsHuman(player) then
+			print("player at "..i.." is CPU")
+			if (Player_GetRaceName(player) == TRACE_ALLIES) and g_AlliedCreepDefined == false then
+				
+				g_AlliedCreepPlayer = player
+				g_AlliedCreepDefined = true
+				t_PlayerIDInfo[i].isHuman = false
+				
+			elseif (Player_GetRaceName(player) == TRACE_AXIS) and g_AxisCreepDefined == false then
+				
+				g_AxisCreepPlayer = player
+				g_AxisCreepDefined = true
+				t_PlayerIDInfo[i].isHuman = false
+				
+			end
+		end
+	end
+	
+	AI_EnableAll(false)
+	
+	numplayer = World_GetPlayerCount()
+	
+	for i = 1 , numplayer do
+		local player = World_GetPlayerAt(i)
+		
+		--AI_Enable(player, false)
+		Modify_PlayerResourceRate(player, RT_Manpower, 0)
+		Modify_PlayerResourceRate(player, RT_Fuel, 0)	
+		Modify_PlayerResourceRate(player, RT_Action, 0 )
+		Player_SetCommandAvailability(player, SCMD_Retreat, ITEM_REMOVED)
+		Player_SetResource(player, RT_Manpower, 1)
+		Player_SetResource(player, RT_Fuel, 0)
+		Player_AddResource(player, RT_Munition, 5)
+		
+		-- locking all the defensive heroes - deg 9/dec/08
+		local lockSBP = {
+			SBP.COHO.PUSH_ALLIES_COMMANDO_DEFENSIVE,
+			SBP.COHO.PUSH_ALLIES_ENGINEER_DEFENSIVE,
+			SBP.COHO.PUSH_ALLIES_HEAVY_DEFENSIVE, 
+			SBP.COHO.PUSH_ALLIES_MEDIC_DEFENSIVE, 
+			SBP.COHO.PUSH_ALLIES_RECON_DEFENSIVE, 
+			SBP.COHO.PUSH_ALLIES_SNIPER_DEFENSIVE, 
+			SBP.COHO.PUSH_ALLIES_SPOTTER_DEFENSIVE,
+			SBP.COHO.PUSH_AXIS_COMMANDO_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_ENGINEER_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_HEAVY_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_MEDIC_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_RECON_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_SCOUT_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_SNIPER_DEFENSIVE, 
+			SBP.COHO.PUSH_AXIS_SPOTTER_DEFENSIVE,
+		}
+		for i = 1, #(lockSBP) do 
+			Player_SetSquadProductionAvailability(player, lockSBP[i], ITEM_REMOVED)
+		end
+		
+	end
+
+	Util_UMSAbilityRemove()
+	Rule_Add(Push_DisableUI)
+	
+	EGroup_SetPlayerOwner(eg_Team1HQ, g_AlliedCreepPlayer)
+	EGroup_SetPlayerOwner(eg_Team2HQ, g_AxisCreepPlayer)
+	
+	Assault_FlashHeroUpgrades()
+end
+
+function Assault_FlashHeroUpgrades()
+	t_heroUPGs = {}
+	for i = 1 , g_numplayer do
+		
+		local player = World_GetPlayerAt(i)
+		table.insert(t_heroUPGs, {playerID = player})
+		
+		if Player_IsHuman(player) and player == Game_GetLocalPlayer() then
+			
+			t_heroUPGs[i].upgrades = {}
+			
+			for x = 1, 3 do 
+				local upgrade 	= BP_GetUpgradeBlueprint("upgrade/push_generic_player_armor_upgrade"..x..".lua")
+				table.insert(t_heroUPGs[i].upgrades, 1, {upg = upgrade})
+				t_heroUPGs[i].upgrades[1].hint = UI_FlashProductionButton(PITEM_SquadUpgrade, upgrade, true, BT_UI_Strong_UpgradeBtn)
+			end
+			
+			for x = 1, 3 do 
+				local upgrade 	= BP_GetUpgradeBlueprint("upgrade/push_generic_player_damage_upgrade"..x..".lua")
+				table.insert(t_heroUPGs[i].upgrades, 1, {upg = upgrade})
+				t_heroUPGs[i].upgrades[1].hint = UI_FlashProductionButton(PITEM_SquadUpgrade, upgrade, true, BT_UI_Strong_UpgradeBtn)
+			end
+			
+			for x = 1, 3 do 
+				local upgrade 	= BP_GetUpgradeBlueprint("upgrade/push_generic_grenade"..x.."_allied.lua")
+				if Player_GetRaceName(player) == TRACE_AXIS then
+					upgrade 	= BP_GetUpgradeBlueprint("upgrade/push_generic_grenade"..x..".lua")
+				end
+				table.insert(t_heroUPGs[i].upgrades, 1, {upg = upgrade})
+				t_heroUPGs[i].upgrades[1].hint = UI_FlashProductionButton(PITEM_SquadUpgrade, upgrade, true, BT_UI_Strong_UpgradeBtn)
+			end
+			
+			t_heroUPGs[i].flashing = true
+		end
+	end
+	
+	Rule_AddInterval(Assault_HeroUpgradeMonitor, 1)
+end
+
+function Assault_HeroUpgradeMonitor()
+	for k,v in pairs(t_heroUPGs) do
+		local player = v.playerID
+		if Player_IsHuman(player) and player == Game_GetLocalPlayer() then
+			if Player_GetResource(player, RT_Munition) == 0 and v.flashing == true then
+				for a,b in pairs(v.upgrades) do 
+					UI_StopFlashing(b.hint)
+				end
+				v.flashing = false
+			elseif Player_GetResource(player, RT_Munition) > 0 and v.flashing ~= true then           
+				
+				for a,b in pairs(v.upgrades) do 
+					b.hint 	= UI_FlashProductionButton(PITEM_SquadUpgrade, b.upg, true, BT_UI_Strong_UpgradeBtn)
+				end
+				
+				v.flashing = true
+			end
+		end
+	end
+end
+
+
+function Push_DisableUI()
+	UI_BindingSetEnabled("company_commander", false)
+	UI_BindingSetEnabled("manpower", false)
+	UI_BindingSetEnabled("manpower_rate", false)
+	UI_BindingSetEnabled("manpower_img", false)
+	UI_BindingSetEnabled("munition", false)
+	UI_BindingSetEnabled("munition_rate", false)
+	UI_BindingSetEnabled("munition_img", false)
+	UI_BindingSetEnabled("fuel", false)
+	UI_BindingSetEnabled("fuel_rate", false)
+	UI_BindingSetEnabled("fuel_img", false)
+	UI_BindingSetEnabled("squadcap", false)
+	Rule_RemoveMe()
+end
+-------------------------------------------------------------------------
+
+-- MISSION Preset 
+
+-------------------------------------------------------------------------
+
+function Push_MissionPreset()
+
+	g_GameOver = false
+	g_WinDelayCalled = false
+
+	sg_PlayerHero = SGroup_CreateTable("sg_PlayerHero%d", g_numplayer)
+	sg_PlayerHero2 = SGroup_CreateTable("sg_PlayerHero2%d", g_numplayer)
+	sg_AllUnitsTemp = SGroup_CreateIfNotFound("sg_AllUnitsTemp")
+	eg_AllUnitsTemp = EGroup_CreateIfNotFound("eg_AllUnitsTemp")
+	
+	eg_HQ1 = EGroup_CreateIfNotFound("eg_HQ1")
+	eg_HQ2 = EGroup_CreateIfNotFound("eg_HQ2")
+	eg_HQ3 = EGroup_CreateIfNotFound("eg_HQ3")
+	eg_HQ4 = EGroup_CreateIfNotFound("eg_HQ4")
+	eg_HQ5 = EGroup_CreateIfNotFound("eg_HQ5")
+	eg_HQ6 = EGroup_CreateIfNotFound("eg_HQ6")
+	eg_HQ7 = EGroup_CreateIfNotFound("eg_HQ7")
+	eg_HQ8 = EGroup_CreateIfNotFound("eg_HQ8")
+	
+
+	t_spawn_locations = {mkr_player1_spawn, mkr_player2_spawn, mkr_player3_spawn, mkr_player4_spawn, mkr_player5_spawn, mkr_player6_spawn, mkr_player7_spawn, mkr_player8_spawn}
+	t_HQ_locations = {
+	
+		{
+			marker = mkr_HQ1, 
+			hq = eg_HQ1,
+		
+		},
+		
+		{
+			marker = mkr_HQ2, 
+			hq = eg_HQ2,
+		
+		},
+		
+		{
+			marker = mkr_HQ3, 
+			hq = eg_HQ3,
+		
+		},
+		
+		{
+			marker = mkr_HQ4, 
+			hq = eg_HQ4,
+		
+		},
+		
+		{
+			marker = mkr_HQ5, 
+			hq = eg_HQ5,
+		
+		},
+	
+		{
+			marker = mkr_HQ6, 
+			hq = eg_HQ6,
+		
+		},
+		
+		{
+			marker = mkr_HQ7, 
+			hq = eg_HQ7,
+		
+		},
+		
+		{
+			marker = mkr_HQ8, 
+			hq = eg_HQ8,
+		
+		},
+		
+		}
+
+
+	t_hero1_upgrades = {}
+	t_hero2_upgrades = {}
+	
+	
+	t_HeroTypes = {
+		{herotype = SBP.COHO.PUSH_ALLIES_COMMANDO_DEFENSIVE, text = 10000263},
+		{herotype = SBP.COHO.PUSH_ALLIES_COMMANDO_OFFENSIVE, text = 10000264},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_ENGINEER_DEFENSIVE, text = 10000260},
+		{herotype = SBP.COHO.PUSH_ALLIES_ENGINEER_OFFENSIVE, text = 10000261},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_HEAVY_DEFENSIVE, text = 10000284},
+		{herotype = SBP.COHO.PUSH_ALLIES_HEAVY_OFFENSIVE, text = 10000285},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_MEDIC_DEFENSIVE, text = 10000266},
+		{herotype = SBP.COHO.PUSH_ALLIES_MEDIC_OFFENSIVE, text = 10000267},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_RECON_DEFENSIVE, text = 10000278},
+		{herotype = SBP.COHO.PUSH_ALLIES_RECON_OFFENSIVE, text = 10000279},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_SCOUT_DEFENSIVE, text = 10000272},
+		{herotype = SBP.COHO.PUSH_ALLIES_SCOUT_OFFENSIVE, text = 10000273},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_SNIPER_DEFENSIVE, text = 10000281},
+		{herotype = SBP.COHO.PUSH_ALLIES_SNIPER_OFFENSIVE, text = 10000282},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_SPOTTER_DEFENSIVE, text = 10000269},
+		{herotype = SBP.COHO.PUSH_ALLIES_SPOTTER_OFFENSIVE, text = 10000270},
+		
+		
+		{herotype = SBP.COHO.PUSH_AXIS_COMMANDO_DEFENSIVE, text = 10000263},
+		{herotype = SBP.COHO.PUSH_AXIS_COMMANDO_OFFENSIVE, text = 10000264},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_ENGINEER_DEFENSIVE, text = 10000320},
+		{herotype = SBP.COHO.PUSH_AXIS_ENGINEER_OFFENSIVE, text = 10000321},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_HEAVY_DEFENSIVE, text = 10000284},
+		{herotype = SBP.COHO.PUSH_AXIS_HEAVY_OFFENSIVE, text = 10000285},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_MEDIC_DEFENSIVE, text = 10000266},
+		{herotype = SBP.COHO.PUSH_AXIS_MEDIC_OFFENSIVE, text = 10000267},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_RECON_DEFENSIVE, text = 10000278},
+		{herotype = SBP.COHO.PUSH_AXIS_RECON_OFFENSIVE, text = 10000279},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_SCOUT_DEFENSIVE, text = 10000272},
+		{herotype = SBP.COHO.PUSH_AXIS_SCOUT_OFFENSIVE, text = 10000273},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_SNIPER_DEFENSIVE, text = 10000281 },
+		{herotype = SBP.COHO.PUSH_AXIS_SNIPER_OFFENSIVE, text = 10000282},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_SPOTTER_DEFENSIVE, text = 10000269},
+		{herotype = SBP.COHO.PUSH_AXIS_SPOTTER_OFFENSIVE, text = 10000270},
+		
+	}
+	
+	t_LastHeroTypes = {
+		{herotype = SBP.COHO.PUSH_ALLIES_COMMANDO_DEFENSIVE, text = 10000290},
+		{herotype = SBP.COHO.PUSH_ALLIES_COMMANDO_OFFENSIVE, text = 10000291},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_ENGINEER_DEFENSIVE, text = 10000287},
+		{herotype = SBP.COHO.PUSH_ALLIES_ENGINEER_OFFENSIVE, text = 10000288},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_HEAVY_DEFENSIVE, text = 10000311},
+		{herotype = SBP.COHO.PUSH_ALLIES_HEAVY_OFFENSIVE, text = 10000312},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_MEDIC_DEFENSIVE, text = 10000293},
+		{herotype = SBP.COHO.PUSH_ALLIES_MEDIC_OFFENSIVE, text = 10000294},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_RECON_DEFENSIVE, text = 10000305},
+		{herotype = SBP.COHO.PUSH_ALLIES_RECON_OFFENSIVE, text = 10000306},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_SCOUT_DEFENSIVE, text = 10000299},
+		{herotype = SBP.COHO.PUSH_ALLIES_SCOUT_OFFENSIVE, text = 10000300},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_SNIPER_DEFENSIVE, text = 10000308},
+		{herotype = SBP.COHO.PUSH_ALLIES_SNIPER_OFFENSIVE, text = 10000309},
+		
+		{herotype = SBP.COHO.PUSH_ALLIES_SPOTTER_DEFENSIVE, text = 10000296},
+		{herotype = SBP.COHO.PUSH_ALLIES_SPOTTER_OFFENSIVE, text = 10000297},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_COMMANDO_DEFENSIVE, text = 10000290},
+		{herotype = SBP.COHO.PUSH_AXIS_COMMANDO_OFFENSIVE, text = 10000291},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_ENGINEER_DEFENSIVE, text = 10000323},
+		{herotype = SBP.COHO.PUSH_AXIS_ENGINEER_OFFENSIVE, text = 10000324},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_HEAVY_DEFENSIVE, text = 10000311},
+		{herotype = SBP.COHO.PUSH_AXIS_HEAVY_OFFENSIVE, text = 10000312},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_MEDIC_DEFENSIVE, text = 10000293},
+		{herotype = SBP.COHO.PUSH_AXIS_MEDIC_OFFENSIVE, text = 10000294},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_RECON_DEFENSIVE, text = 10000305},
+		{herotype = SBP.COHO.PUSH_AXIS_RECON_OFFENSIVE, text = 10000306},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_SCOUT_DEFENSIVE, text = 10000299},
+		{herotype = SBP.COHO.PUSH_AXIS_SCOUT_OFFENSIVE, text = 10000300},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_SNIPER_DEFENSIVE, text = 10000308},
+		{herotype = SBP.COHO.PUSH_AXIS_SNIPER_OFFENSIVE, text = 10000309},
+		
+		{herotype = SBP.COHO.PUSH_AXIS_SPOTTER_DEFENSIVE, text = 10000296},
+		{herotype = SBP.COHO.PUSH_AXIS_SPOTTER_OFFENSIVE, text = 10000297},
+		
+	}
+	
+	
+	for q = 1, g_numplayer do
+	
+		
+		table.insert(t_hero1_upgrades, {false,false,false,false,false,false,false,false,false})
+	
+	
+	end
+	
+		for q = 1, g_numplayer do
+	
+		
+		table.insert(t_hero2_upgrades, {false,false,false,false,false,false,false,false,false})
+	
+	
+	end
+		
+		
+	--This is the table that contains the vital information for each of the players.
+	
+	t_player_information = {}
+	
+	for p = 1, g_numplayer do
+		
+		t_temp_entry = {
+			--what is the player's ID
+			PlayerID = t_PlayerIDInfo[p].playerID,
+			--Is the player a human or an AI player
+			IsHuman = t_PlayerIDInfo[p].isHuman,
+			--Current level of the hero character
+			HeroLevel = 1,
+			--Sgroup in which the hero unit is containted
+			HeroGroup = {sg_PlayerHero[p], sg_PlayerHero2[p]},
+			-- index of possible number of heroes 
+			HeroIndex = 1,
+			-- number of heroes
+			HeroNumber = 0,
+			--Egroup in which the HQ is contained
+			HQGroup = false,
+			--Has the Hero been added to his sgroup
+			GroupSet = {false, false},
+			--is the hero currently being respawned
+			IsRespawning = {false, false},
+			--how long in seconds for a hero to be respawned
+			RespawnTimer = {10, 10},
+			--Game time at which the hero last died
+			GameTimeDeath = {0, 0},
+			--Where will the Hero unit go to once spawned/respawned
+			SpawnDestination = false,
+			--sgroup SBP
+			Sbp = {false, false},
+			--what is the experience of the hero
+			Experience = {0, 0},			
+			--what is the level of the hero
+			Level = {0,0},
+			--table in which all the upgrades the hero has achieved will be stored
+			--UpgradeTable = t_hero_1_upgrades,
+			UpgradeTable = {t_hero1_upgrades[p], t_hero2_upgrades[p]}
+		}
+		
+		table.insert(t_player_information, t_temp_entry)
+		
+	end
+	
+	
+	g_NumberOfPlayers = Stats_PlayerCount()
+
+	for i = 1, g_NumberOfPlayers do
+		
+		if Player_IsHuman(World_GetPlayerAt(i)) == true then
+			
+			t_player_information[i].IsHuman = true
+			
+		else
+			
+			t_player_information[i].IsHuman = false
+			
+			
+		end
+		
+	end
+	
+
+	for k, this in pairs(t_player_information) do
+	
+		--clearing the temporary egroups and sgroups
+		EGroup_Clear(eg_AllUnitsTemp)
+		SGroup_Clear(sg_AllUnitsTemp)
+	
+		Player_GetAll(this.PlayerID, sg_AllUnitsTemp, eg_AllUnitsTemp)
+		
+		EGroup_Filter(eg_AllUnitsTemp, { BP_GetEntityBlueprint("ebps/races/allies/buildings/barracks_coho_push"), BP_GetEntityBlueprint("ebps/races/axis/buildings/basic_support_coho_push")}, FILTER_KEEP)
+		
+		-- if eg_allUnitsTemp is empty, he doesn't have an HQ
+		
+		this.HQGroup = EGroup_Create(string.format("HQGroup %d", Player_GetID(this.PlayerID)))
+		
+		EGroup_AddEGroup(this.HQGroup, eg_AllUnitsTemp)
+		
+		EGroup_SetInvulnerable(this.HQGroup, true)
+		
+		local tempclosestmarker = nil
+		local tempclosestdistance = 9999
+		
+		for j = 1, table.getn(t_spawn_locations) do
+			
+			-- Determine the player's position by where his HQ is
+			
+			--local temphqdistance = World_DistanceEGroupToPoint(eg_AllUnitsTemp, Marker_GetPosition(t_spawn_locations[j]), true) 
+			local temphqdistance = 10	
+			if temphqdistance < tempclosestdistance then
+				
+				tempclosestdistance = temphqdistance
+				
+				tempclosestmarker = t_spawn_locations[j]
+				
+			end
+			
+		end
+		
+		this.SpawnDestination = tempclosestmarker
+		
+		--Command_EntityPos(this.PlayerID, this.HQGroup,CMD_RallyPoint,Marker_GetPosition(this.SpawnDestination))
+		
+	end
+	
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+	local count = World_GetPlayerCount()
+	tsg_Player = SGroup_CreateTable("sg_Player%d", count)
+	tsg_Attacker = SGroup_CreateTable("sg_Attacker%d", count)
+	tsg_Attackee = SGroup_CreateTable("sg_Attackee%d", count)
+	tsg_GatherSquad = SGroup_CreateTable("sg_GatherSquad%d", count)
+	tsg_AttackingSquad = SGroup_CreateTable("sg_AttackingSquad%d", count)
+	tsg_ItemSgroup = SGroup_CreateTable("sg_ItemSgroup%d", count)
+	teg_Item = EGroup_CreateTable("eg_Item%d", count)
+	t_Player = {
+	
+	}
+	t_upgrade = {
+	
+	}
+	
+	t_objective = {
+	
+	}
+	
+	for i = 1, World_GetPlayerCount() do
+		
+		local player = World_GetPlayerAt(i)
+		local race = Player_GetRaceName(player)
+		local unit = nil
+		local spawnmarker
+		local enemymarker
+		local heromarker1
+		local heromarker2
+		local heromarker3
+		
+		
+		if (race == TRACE_AXIS) then
+			spawnmarker = mkr_AxisHQ
+			enemymarker = mkr_allies_tankUI
+			enemyHQ = mkr_AllyHQ
+			unit = SBP.COHO.TIGERACE_TANKWARS
+			heromarker1 = mkr_AxisArm1Hero1
+			heromarker2 = mkr_AxisArm2Hero1
+			heromarker3 = mkr_AxisArm3Hero1
+		elseif (race == TRACE_ALLIES) then
+			spawnmarker = mkr_AllyHQ
+			enemymarker = mkr_axis_tankUI
+			enemyHQ = mkr_AxisHQ
+			unit = SBP.COHO.PERSHING_TANKWARS 
+			heromarker1 = mkr_AlliedArm1Hero1
+			heromarker2 = mkr_AlliedArm2Hero1
+			heromarker3 = mkr_AlliedArm3Hero1
+		end
+		
+		local t = 
+		{
+			phase = 2, 
+			grant = 2,
+			unittype = unit,
+			isplaying = false, 
+			sgroup = tsg_Player[i],
+			attacker = tsg_Attacker[i],
+			attackee = tsg_Attackee[i],
+			gathersquad = tsg_GatherSquad[i],
+			attackingsduad = tsg_AttackingSquad[i],
+			itemsgroup = tsg_ItemSgroup[i],
+			egroup = teg_Item[i],
+			player = World_GetPlayerAt(i),
+			timer = string.format("sg_timer%d", i),
+			timer2 = string.format("sg_2timer%d", i),
+			timer3 = string.format("sg_3timer%d", i),
+			team = race,
+			isplaying = true,
+			sgrouppos = nil,
+			egrouppos = nil, 
+			upgrade = t_upgrade[i],
+			level = 1,
+			experience = 0,
+			xp = 0,
+			armorlevel = 0, 
+			damagelevel = 0, 
+			speedlevel  = 0, 
+			engineerweaponlevel = 0, 
+			commandoweaponlevel = 0, 
+			heavyweaponlevel = 0, 
+			medicweaponlevel = 0, 
+			scoutweaponlevel = 0, 
+			sniperweaponlevel = 0, 
+			spotterweaponlevel = 0,
+			reconweaponlevel = 0,
+			grenadelevel = 0,
+			timecounter = 20,
+			heroping1 = heromarker1,
+			heroping2 = heromarker2,
+			heroping3 = heromarker3,
+			threatID = ThreatArrow_CreateGroup(),
+			friendID = false,
+			enemy = enemymarker,
+			spawn = spawnmarker,
+			heronamed = false,
+			lasthero = false,
+			lastheronamed = false,
+			lastheroobjectiveon = false,
+			heroactivation = false,
+			nametag = false,
+			--HQ_Ping_ID = false,
+			killCount = 0,
+			killStreak = 0,
+			thresholdkillstate = {false, false, false},
+			thresholdtable = {10, 20, 30},
+--~ 			threshold1kills = false,
+--~ 			threshold2kills = false,
+--~ 			threshold3kills = false,
+			playerRace = Player_GetRaceName(World_GetPlayerAt(i)),
+			setobjective = false,
+			setobjective2 = false,
+			setobjective3 = false,
+			setobjective4 = false,
+			setobjective5 = false,
+			objective = 
+			{
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000200,
+				Description = 10000250,
+				TitleEnd = 10000250,
+				Type = OT_Primary,
+				
+				},
+				
+
+			},
+			
+			objective2 = 
+			{
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000230,
+				Description = 10000231,
+				TitleEnd = 10000232,
+				Type = OT_Primary,
+				
+				},
+			},
+			
+			objective3 = 
+			{
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000210,
+				Description = 10000211,
+				TitleEnd = 10000212,
+				Type = OT_Primary,
+				
+				},
+			},
+			
+			
+			objective4 = 
+			{
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000201,
+				Description = 10000201,
+				TitleEnd = 10000201,
+				Type = OT_Primary,
+				
+				},
+			},
+			
+			objective5 = 
+			{
+				{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				 
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+				
+								{
+				SetupUI = function() 
+
+				end,
+				
+				OnStart = function()
+				end,
+				
+				OnComplete = function()
+				end,
+				
+				IsComplete = function()
+					return false
+				end,
+				
+				OnFail = function()		
+				end,
+				
+				Title = 10000202,
+				Description = 10000202,
+				TitleEnd = 10000202,
+				Type = OT_Primary,
+				
+				},
+			},
+			
+			
+		}
+		
+		
+		t.setobjective = t.objective[i]
+		t.setobjective2 = t.objective2[i]
+		t.setobjective3 = t.objective3[i]
+		t.setobjective4 = t.objective4[i]
+		t.setobjective5 = t.objective5[i]
+		
+		
+		table.insert(t_Player, t)
+		
+	end
+	
+	for k, v in pairs(t_Player) do
+		--print(k)
+		Objective_Register(v.setobjective, v.player)
+		Objective_Register(v.setobjective2, v.player)
+		Objective_Register(v.setobjective3, v.player)
+		Objective_Register(v.setobjective4, v.player)
+		Objective_Register(v.setobjective5, v.player)		
+	end
+
+-- adding in the destroy MG nest obj 
+	OBJ_MgNest = {
+		
+		SetupUI = function() 
+			-- OBJ_Territory.mapElementID = Objective_AddUIElements(OBJ_MgNest, mkr_marker, true, 000000, true)
+		end,
+		
+		OnStart = function()
+			
+		end,
+		
+		OnComplete = function()
+			
+		end,
+		
+		IsComplete = function()
+			return false
+		end,
+		
+		OnFail = function()
+			
+		end,
+		
+		Title = 10000224,
+		Description = 10000224,
+		TitleEnd = 10000224,
+		Type = OT_Secondary,
+		
+	}
+	-- Register Objective
+	Objective_Register(OBJ_MgNest)	
+	
+	
+	t_attackedMsg = {
+		
+		-- allies data
+		{name = eg_Team1HQ, timer = "AlliesHQAttackedTimer", racename = TRACE_ALLIES, speech = soundData.building.fuelTank.underAttack.allies},
+		
+		-- axis data
+		{name = eg_Team2HQ, timer = "AxisHQAttackedTimer", racename = TRACE_AXIS, speech = soundData.building.fuelTank.underAttack.axis},
+		
+	}
+	
+	
+	t_weapon_upgrades = {}
+	t_armor_upgrades = {}
+	t_grenade_upgrades = {}
+	
+	for i = 1, 9999 do
+		local path = "upgrade/push_generic_player_damage_upgrade" .. i
+		if not BP_IsPropertyBagGroupValid(path) then
+			break
+		end
+		
+		table.insert(t_weapon_upgrades, BP_GetUpgradeBlueprint(path))
+	end
+	
+	for i = 1, 9999 do
+		local path = "upgrade/push_generic_player_armor_upgrade" .. i
+		if not BP_IsPropertyBagGroupValid(path) then
+			break
+		end
+		
+		table.insert(t_armor_upgrades, BP_GetUpgradeBlueprint(path))
+	end
+	
+	for i = 1, 9999 do
+		local path = "upgrade/push_generic_grenade" .. i
+		if not BP_IsPropertyBagGroupValid(path) then
+			break
+		end
+		
+		table.insert(t_grenade_upgrades, BP_GetUpgradeBlueprint(path))
+	end
+	
+	for i = 1, 9999 do
+		local path = "upgrade/push_generic_grenade" .. i .. "_allied"
+		if not BP_IsPropertyBagGroupValid(path) then
+			break
+		end
+		
+		table.insert(t_grenade_upgrades, BP_GetUpgradeBlueprint(path))
+	end	
+	
+end
+
+
+
+
+
+-------------------------------------------------------------------------
+
+-- MISSION START 
+
+-------------------------------------------------------------------------
+
+function Push_MissionStart()
+	Rule_AddOneShot(Rule_SetHQBunkerOwner,0)
+	Rule_AddDelayedInterval(HeroTrack_WinCheck, 3, 1)
+	Rule_AddDelayedInterval(Rule_KillCountTrack, 4, 1)
+	
+	Rule_AddDelayedInterval(Hero_Track_AliveAndDead, 1, 1)
+	Rule_Add(Rule_FirstTimeHeroCheck)
+	-- delay first objective
+	Rule_AddOneShot(Push_DelayObjTitle, 1)
+	
+	Rule_AddOneShot(Rule_TurretSpawn, 1)
+	Rule_AddInterval(Rule_TrackSpawn, 1)
+	
+	Rule_AddOneShot(Rule_BuildingSpawn, 1)
+	
+	Rule_AddOneShot(Rule_Creep_Mines_Init, 2)
+	Rule_AddOneShot(Rule_Creep_Mines_Spawn, 3)
+	
+	Rule_AddDelayedInterval(Rule_AlliedVehicleSpawn, 30, 1)
+	Rule_AddDelayedInterval(Rule_AxisVehicleSpawn, 30, 1)
+	
+	Rule_AddDelayedInterval(Rule_AlliedVehicleBehaviour, 31, 5)
+	Rule_AddDelayedInterval(Rule_AxisVehicleBehaviour, 31, 5)
+	
+	Rule_AddDelayedInterval(Rule_BuildingCheck, 5, 0.1)
+	Rule_AddDelayedInterval(Rule_TrackTurrets, 5, 1)
+	Rule_AddInterval(Rule_HeroSpawn, 1)
+	Rule_AddInterval(Rule_HeroSpawnDestructTracker, 1)
+	
+	Rule_AddDelayedInterval(Rule_AlliedCreepSpawner, 1, 1)
+	Rule_AddDelayedInterval(Rule_AxisCreepSpawner, 1.5, 1)
+	
+	Rule_AddDelayedInterval(Rule_AlliedCreepActionB, 5, 3)
+	Rule_AddDelayedInterval(Rule_AxisCreepActionB, 4, 3)
+	Rule_AddDelayedInterval(Rule_AlliedCreepActionA, 3, 3)
+	Rule_AddDelayedInterval(Rule_AxisCreepActionA, 2, 3)
+	Rule_AddDelayedInterval(Rule_CreepSurrender, 1, 3)
+	
+	Rule_AddDelayedInterval(Rule_EngineerSpawn, 6, 1)
+	Rule_AddDelayedInterval(Rule_EngineerBehaviour, 7, 1)
+	
+	Rule_AddOneShot(Rule_HQDefenderInit, 0)
+	Rule_AddOneShot(Rule_HQDefenderSpawn, 0)
+	Rule_AddDelayedInterval(Rule_HQDefenderRespawn, 1, 1)
+	Rule_AddInterval(FuelTankAttackedSpeech, 1)
+	
+	-- mvoes the camera to the closest mortar bunker
+	Rule_Set_Camera()
+	
+	--local rand = World_GetRand(45, 90)
+	Rule_AddInterval(Rule_MortarBarrageControl, 45)
+	
+	-- only add if the player count is greater than 3
+	-- 2 humans + 2 cpu's
+	if World_GetPlayerCount() > 3 then
+		Rule_Add(Push_PlayerDropWin)
+	end
+	
+	-- observe players so we can play sounds when they upgrade weapons, armor or grenades.
+	-- we observe every player because you can switch local player during replays
+	for i = 1, World_GetPlayerCount() do
+		Rule_AddPlayerEvent(OnUpgradeComplete, World_GetPlayerAt(i), GE_UpgradeComplete)
+	end
+	
+end
+
+-- play sound when player upgrades
+function OnUpgradeComplete(player, upgrade)
+
+	-- this function plays a sound, so we only care about the local player (which can change during a replay)
+	if player ~= Game_GetLocalPlayer() then
+		return
+	end
+
+	local upgradeTableToSoundMap =
+	{
+		{ t_weapon_upgrades, soundData.misc.weaponUpgrade },
+		{ t_armor_upgrades, soundData.misc.armorUpgrade },
+		{ t_grenade_upgrades, soundData.misc.grenadeUpgrade },
+	}
+	
+	for k, this in pairs(upgradeTableToSoundMap) do
+		local upgrade_table = this[1]
+		local sound_path = this[2]
+		for i = 1, table.getn(upgrade_table) do
+			if upgrade_table[i] == upgrade then
+				Sound_Play2D(sound_path)
+				return
+			end
+		end
+	end
+	
+end
+
+-- a contingency for when opponents drop
+-- and there is only 1 human player left
+function Push_PlayerDropWin()
+	local count = World_GetPlayerCount()
+	local human = {index = 0, count = 0, axis = 0, allies = 0}
+
+	-- iterate through players
+	if count > 0 then
+		for i = 1, count do 
+			local player = World_GetPlayerAt(i)
+			if Player_IsHuman(player) then
+				human.index = i
+				human.count = human.count+1
+				-- track race
+				local race = Player_GetRaceName(player)
+				if race == TRACE_AXIS then
+					human.axis = human.axis+1
+				elseif race == TRACE_ALLIES then
+					human.allies = human.allies+1
+				end
+			end
+		end
+	end
+
+	if ( human.axis == 0 or human.allies == 0 ) and human.count >= 1 then
+		World_SetPlayerWin(World_GetPlayerAt(human.index), "ZANNIHILATE")
+		World_SetGameOver()
+		Rule_RemoveAll()
+	end
+end
+
+--------------------------------------------------------------------------------------------------
+--[[ Initial Objective Rules ]]
+--------------------------------------------------------------------------------------------------
+
+
+function Push_DelayObjTitle()
+	
+	for k, this in pairs(t_Player) do
+		
+		if Player_IsHuman(this.player) then
+			
+			Objective_Start(this.setobjective, false)
+			Objective_Show(this.setobjective, false)
+			
+			Objective_StartTimer(this.setobjective, COUNT_DOWN, 2)
+			Timer_Start(this.timer, 3)
+			Timer_Start(this.timer3, 2)
+			
+		end
+		
+	end
+
+	Game_FadeToBlack(false, 1)
+	Rule_AddOneShot(Push_DelayMenuEnable, 1)
+
+	
+	-- go straight to "Build Heroes Here"
+	-- skip "Mortar bunkers are Invulnerable"
+	Rule_AddOneShot(Push_DelayObjTitle3, 1)
+end
+
+function Push_DelayMenuEnable()
+	
+	-- re-enable the menu button
+	UI_BindingSetEnabled( "system_menu", true)
+
+end
+
+function Push_DelayDestroyHQObjective()
+	for k, this in pairs(t_Player) do
+		if Player_IsHuman(this.player) then
+			if Game_GetLocalPlayer() == this.player then
+				-- destroy Fuel Tanks message
+				Objective_Start(this.setobjective2, true)
+				Objective_AddUIElements(this.setobjective2, this.enemy, true, 1339141, false, 2)
+				--[[ -- removed sync error causeing
+				this.arrowUI = EGroup_CreateIfNotFound("eg_objFlatArrow"..k)
+				Util_CreateEntities(this.player, this.arrowUI, EBP.SP.UI_ARROW, this.enemy, 1)
+				EGroup_SetAnimatorState(this.arrowUI, "arrow_state", "flat")
+				]]
+				-- destroy MG nests
+				Objective_Start(OBJ_MgNest, false)
+				
+			end
+		end
+	end
+	if Rule_Exists(Push_MGNest_Tracker) == false then
+		Rule_AddInterval(Push_MGNest_Tracker, 3)
+	end
+end
+
+-- pulling a table from Assault_Creep.scar because it was already tracking the desired elements - deg 8/dec/08
+function Push_MGNest_Tracker()
+	
+	local player = Game_GetLocalPlayer()
+	local areAnyLeft = false
+	
+	if t_SpawnStates == nil then return end
+	for i = 1, #(t_SpawnStates) do 
+		for x = 1, #(t_SpawnStates[i]) do 
+			-- adds hint arrows to the mg nests as they are spotted
+			for k,this in pairs(t_SpawnStates[i][x].locInfo) do 
+				-- done parallel because its easier to work with the table this way - deg 9/dec/08
+				local mgnest1 = this.buildings[1]
+				local mgnest2 = this.buildings[2]
+				local mortar = this.mortargroup
+				local team = t_SpawnStates[i][x].team
+				
+				-- check mg 1
+				if this.MGhint1 == nil and EGroup_IsEmpty(mgnest1) == false and Player_GetTeam(player) ~= team -- zero based index
+				and Player_CanSeeEGroup(player, mgnest1, false) then
+					this.MGhint1 = Objective_AddUIElements(OBJ_MgNest, mgnest1, nil, 10000224, true)
+				end
+				-- check mg 2
+				if this.MGhint2 == nil and EGroup_IsEmpty(mgnest2) == false and Player_GetTeam(player) ~= team -- zero based index
+				and Player_CanSeeEGroup(player, mgnest2, false) then
+					this.MGhint2 = Objective_AddUIElements(OBJ_MgNest, mgnest2, nil, 10000224, true)
+				end
+				-- this.mortargroup = the mortar bunker				
+				if this.MortarHint == nil and EGroup_IsEmpty(mortar) == false and Player_GetTeam(player) ~= team -- zero based index
+				and Player_CanSeeEGroup(player, mortar, false) then
+					this.MortarHint = Objective_AddUIElements(OBJ_MgNest, mortar, nil, 10000223, true)
+				end
+				
+				-- tracks mortar state - deg 28/jan/09
+				if EGroup_IsEmpty(mortar) == false and Player_GetTeam(player) ~= team then
+					areAnyLeft = true
+				end
+			end
+		end
+	end
+	
+	-- tracks objective complete - deg 28/jan/09
+	if areAnyLeft == false then
+		Objective_Show(OBJ_MgNest, false) 
+	end
+end
+
+function Push_DelayObjTitle2()
+	for k, this in pairs(t_Player) do
+		if Player_IsHuman(this.player) then
+			if Game_GetLocalPlayer() == this.player then
+				
+				Objective_Start(this.setobjective3, true)
+				if this.UIhint == nil then 
+					this.UIhint = {} 
+				end
+				-- "Mortar Bunkers are Invulnerable"
+				local AddUIElement = function(gid, idx, eid)
+					this.UIhint[idx] = Objective_AddUIElements(this.setobjective3, eid, nil, 10000222, true, -3)
+				end
+				
+				local egroup = Util_GetAllHeroSpawners()
+				if EGroup_IsEmpty(egroup) == false then
+					EGroup_ForEach(egroup, AddUIElement)
+				end
+				
+			end
+		end
+	end
+	
+	Rule_AddOneShot(Push_DelayObjTitle3, 5)
+end
+
+function Push_DelayObjTitle3()
+	for k, this in pairs(t_Player) do
+		if Player_IsHuman(this.player) then
+			if Game_GetLocalPlayer() == this.player then
+				
+				if this.UIhint == nil then 
+					this.UIhint = {} 
+				else
+					for i = 1, #(this.UIhint) do 
+						Objective_RemoveUIElements(this.setobjective3, this.UIhint[i])
+					end
+				end
+				-- "Build Heroes Here"
+				local AddUIElement = function(gid, idx, eid)
+					this.UIhint[idx] = Objective_AddUIElements(this.setobjective3, eid, nil, 10000221, true, -3)
+				end
+				
+				local egroup = Util_GetAllHeroSpawners()
+				
+				if EGroup_IsEmpty(egroup) == false then
+					EGroup_ForEach(egroup, AddUIElement)
+				end
+				
+			end
+		end
+	end
+	
+	Rule_AddOneShot(Push_DelayObjTitle4, 10)
+end
+
+
+
+
+function Push_DelayObjTitle4()
+	for k, this in pairs(t_Player) do
+		if Player_IsHuman(this.player) then
+			if Game_GetLocalPlayer() == this.player then
+				
+				Objective_Show(this.setobjective3, false)
+				
+			end
+		end
+	end
+end
+
+
+--------------------------------------------------------------------------------------------------
+--[[ Toggle Functions ]]
+--------------------------------------------------------------------------------------------------
+
+function HeroTrack_ToggleOn(boolean)
+	
+	HeroTrack_ToggleSelectableOn(boolean)
+	HeroTrack_ToggleUIElementsOn(boolean)
+
+end
+
+function HeroTrack_ToggleDestroyHQobjOn(boolean)
+	for k, this in pairs(t_Player) do
+		if Player_IsHuman(this.player) and Game_GetLocalPlayer() == this.player then
+			-- destroy HQ
+			Objective_Show(this.setobjective2, boolean)  
+			-- destroy MG nests
+			Objective_Show(OBJ_MgNest, boolean)  
+		end
+	end
+end
+
+function HeroTrack_ToggleSelectableOn(boolean)
+	local egroup = Util_GetAllHeroSpawners()
+	if EGroup_IsEmpty(egroup) == false then
+		EGroup_SetSelectable(egroup, boolean)
+	end
+end
+
+function HeroTrack_ToggleUIElementsOn(boolean)
+	for k, this in pairs(t_Player) do
+		if Player_IsHuman(this.player) and Game_GetLocalPlayer() == this.player then
+			if boolean then
+				Objective_Show(this.setobjective3, true)
+				local AddUIElement = function(gid, idx, eid)
+					if this.UIhint == nil then this.UIhint = {} end
+					this.UIhint[idx] = Objective_AddUIElements(this.setobjective3, eid, nil, 10000221, true, -3)
+				end
+				
+				local egroup = Util_GetAllHeroSpawners()
+				if EGroup_IsEmpty(egroup) == false then
+					EGroup_ForEach(egroup, AddUIElement)
+				end
+			else
+				Objective_Show(this.setobjective3, false)
+				
+				if this.UIhint == nil then 
+					this.UIhint = {} 
+				else
+					for i = 1, #(this.UIhint) do 
+						Objective_RemoveUIElements(this.setobjective3, this.UIhint[i])
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function SGroup_SelectSquad(sgroup)
+	local squad = SGroup_GetSpawnedSquadAt(sgroup, 1)
+	return Misc_SelectSquad(squad, true)
+	
+end
+
+
+--------------------------------------------------------------------------------------------------
+--[[ Hero Tracking Functions ]]
+--------------------------------------------------------------------------------------------------
+
+-- updates the text that says what type of hero the player has currently
+function Hero_Track_AliveAndDead()
+	
+	for k, v in pairs(t_Player) do
+		if Player_IsHuman(v.player) then
+			if SGroup_IsEmpty(v.sgroup) == false  and v.heronamed == false then
+				for x, y in pairs(t_HeroTypes) do
+					if SGroup_ContainsBlueprints(v.sgroup, y.herotype, ANY) then
+						
+						v.heronamed = true
+						v.lastheronamed = false
+						v.lasthero = y.herotype
+						
+						UI_SetSGroupSpecialLevel(v.sgroup, v.level)
+						
+						Util_ApplyModifier(v.sgroup, "modifiers\\cost_manpower_modifier.lua", (v.level*1.2), MUT_MultiplyAdd, true)
+						
+						if Game_GetLocalPlayer() == v.player then
+							
+							Camera_FollowSGroup(v.sgroup)
+							Misc_SetSquadControlGroup(SGroup_GetSpawnedSquadAt(v.sgroup, 1), 1)
+							HeroTrack_ToggleOn(false)
+							
+							HeroTrack_ToggleDestroyHQobjOn(true)
+							
+							if v.destroyHQobjGranted ~= true then
+								v.destroyHQobjGranted = true
+								Push_DelayDestroyHQObjective()
+							end
+						else
+							
+							local l_localplayer = Game_GetLocalPlayer()
+							
+							-- if not local player and an enemy then add threat arrow
+							if (Player_GetTeam(l_localplayer) == Player_GetTeam(v.player)) == false then
+							
+							-- if not local player and is an ally, add green arrow
+							elseif (Player_GetTeam(l_localplayer) == Player_GetTeam(v.player)) == true then
+								
+								ThreatArrow_Add(v.threatID, v.sgroup)
+								
+							end
+						end
+						
+						if Player_HasUpgrade(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO) == true then
+							
+							Player_SetUpgradeAvailability(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO, ITEM_LOCKED)
+							
+						end
+					end
+				end
+				
+			elseif SGroup_IsEmpty(v.sgroup) == true and v.heronamed == true then
+				
+				
+				if v.lastheroobjectiveon == false then
+					
+					v.lastheroobjectiveon = true
+					
+				end	
+				
+				if v.lastheroobjectiveon == true and v.lastheronamed == false then
+					print("HERO DEAD 2")
+					
+					if (Push_IsAllies(v.player) and Player_GetRaceName(Game_GetLocalPlayer()) == TRACE_ALLIES) or (Push_IsAxis(v.player) and Player_GetRaceName(Game_GetLocalPlayer()) == TRACE_AXIS) then
+						
+						local speechPath = soundData.hero.playerherokilled
+						PlayPushSpeech(v.player, speechPath)
+						
+					elseif (Push_IsAllies(v.player) and Player_GetRaceName(Game_GetLocalPlayer()) == TRACE_AXIS) or (Push_IsAllies(v.player) and Player_GetRaceName(Game_GetLocalPlayer()) == TRACE_ALLIES) then
+					
+						local speechPath = soundData.hero.enemyherokilled
+						PlayPushSpeech(v.player, speechPath)
+					
+					end
+					
+					v.heronamed = false
+					
+					for x, y in pairs(t_LastHeroTypes) do
+						
+						if v.lasthero == y.herotype and v.lastheronamed == false then
+							
+							v.lastheronamed = true
+							
+							if Player_HasUpgrade(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO) == true then
+								
+								Player_SetUpgradeAvailability(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO, ITEM_UNLOCKED)
+								
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function HeroTrack_Killer(sgroup, attacker)
+	if SGroup_CountSpawned(sgroup) > 0 then
+		SGroup_Clear(attacker)
+		SGroup_GetLastAttacker(sgroup, attacker)
+	end
+end
+
+function HeroTrack_WinCheck()
+	
+	for k, this in pairs(t_Player) do
+		
+		if Player_IsHuman(this.player) then
+			
+			Player_GetAll(this.player, this.sgroup)
+			
+			-- track killer
+			HeroTrack_Killer(this.sgroup, this.attacker)
+	
+			if SGroup_CountSpawned(this.sgroup) == 0 and Timer_GetRemaining(this.timer3) == 0 
+			and this.grant == 1 and SGroup_IsEmpty(this.sgroup) == true and Player_GetResource(this.player, RT_Manpower) <= 0 then
+			--Game_GetLocalPlayer() == this.player   -- Objective_GetTimerSeconds(this.setobjective) == 0
+				
+				Player_SetResource(this.player, RT_Manpower, 1)	
+				
+				-- UI_CreateMinimapBlip(this.spawn, 3, BT_GeneralPing)
+				
+				if Game_GetLocalPlayer() == this.player then
+					
+					Objective_Show(this.setobjective, false)
+					-- bring the player to the closest production facility
+					HeroTrack_ToggleOn(true)
+					Rule_Set_Camera()
+					
+				end
+				this.grant = 2
+			end
+			
+			if SGroup_CountSpawned(this.sgroup) > 0 and this.grant == 2 then 
+				--Player_SetResource(this.player, RT_Manpower, 0)	
+				this.grant = 3
+			end
+			
+			if SGroup_CountSpawned(this.sgroup) > 0 and this.grant == 3 then 
+				
+				this.experience = Stats_EntitiesKilled(this.player) + (Stats_StructuresKilled(this.player)*3)
+				
+				for i = table.getn(t_veterancy_table),1, -1 do			
+					--print(t_veterancy_table[i].Level)
+					--if the current experience is higher than the one stored in the table then set the one in the table to match the current xp
+					if this.experience >= t_veterancy_table[i].Xp then
+						
+						if (this.level ~= t_veterancy_table[i].Level) then	
+							
+							this.level = t_veterancy_table[i].Level
+							
+							UI_SetSGroupSpecialLevel(this.sgroup, this.level)
+							
+							Player_AddResource(this.player,RT_Munition, t_veterancy_table[i].Value)
+							
+							-- instant health upgrade for leveling up
+							Cmd_InstantUpgrade(this.player, UPG.COHO.PUSH.GENERIC_HEALTH_UPGRADE)
+							
+							-- brw - turning on the effect for the hero leveling up
+							SGroup_SetAnimatorState(this.sgroup, "gold_splash", "on")
+							print("Applying Level Up Effect")
+							Timer_Start(this.timer2, 3) -- making it last for 3 seconds.  Using the wait "wait until squad is dead timer", because it isn't use while alive until now.
+							this.grant = 5
+							
+							if Game_GetLocalPlayer() == this.player then
+								
+								if this.playerRace == TRACE_AXIS  then 
+									
+									EventCue_Create(CUE.UPGRADE, 10000315, 10000315, this.sgroup, nil, nil, 10, true)
+									
+								elseif this.playerRace == TRACE_ALLIES  then 
+									
+									EventCue_Create(CUE.UPGRADE, 10000315, 10000315, this.sgroup, nil, nil, 10, true)								
+									
+								end
+								
+							elseif (Game_GetLocalPlayer() == this.player) == false then
+								
+								if (Player_GetRaceName(Game_GetLocalPlayer()) == this.playerRace) == false then
+									
+									if this.playerRace == TRACE_AXIS  then 
+										
+										EventCue_Create(CUE.UPGRADE, 10000316, 10000316, this.sgroup, nil, nil, 10, true)
+										
+									elseif this.playerRace == TRACE_ALLIES  then 
+										
+										EventCue_Create(CUE.UPGRADE, 10000316, 10000316, this.sgroup, nil, nil, 10, true)
+										
+									end
+									
+								elseif (Player_GetRaceName(Game_GetLocalPlayer()) == this.playerRace) == true then
+									
+									if this.playerRace == TRACE_AXIS  then 
+										
+										EventCue_Create(CUE.UPGRADE, 10000317, 10000317, this.sgroup, nil, nil, 10, true)
+										
+									elseif this.playerRace == TRACE_ALLIES  then 
+										
+										EventCue_Create(CUE.UPGRADE, 10000317, 10000317, this.sgroup, nil, nil, 10, true)
+										
+									end
+								end
+							end
+						end
+						
+						break
+					end
+				end
+			end
+			
+			-- not sure why this cares about resources - deg
+			-- modifying the grant state to have a 5 state to indicate that the hero died
+			-- when the leveling effect went off.
+			if SGroup_CountSpawned(this.sgroup) == 0 and (this.grant == 3 or this.grant == 5) and Player_GetResource(this.player, RT_Manpower) == 0 then 
+				print("***HERO LOGGED AS DEAD***")
+				Timer_Start(this.timer2, 2)
+				this.grant = 4
+				
+				-- post hero killer
+				if Game_GetLocalPlayer() == this.player then
+					if SGroup_Count(this.attacker) > 0 then
+						local lastAttacker = Util_GetPlayerOwner(this.attacker)
+						local attackstring = Loc_FormatText(10000516, Player_GetDisplayName(lastAttacker))
+						UIWarning_Show(attackstring)
+					end
+				end
+				
+			end	
+			
+			-- brw 12/18/2008 - adding a check for when the squad has leveled up, we need to turn off the animator state
+			-- once the effect has kicked off for leveling up.
+			if Timer_GetRemaining(this.timer2) == 0 
+			and SGroup_CountSpawned(this.sgroup) > 0 
+			and this.grant == 5 then
+				print("Removing Level Up Effect")
+				SGroup_SetAnimatorState(this.sgroup, "gold_splash", "off")
+				this.grant = 3
+			end
+			
+			-- removed a script check for SGroup_CountSpawned() - it seemed redundant - deg
+			if Timer_GetRemaining(this.timer2) == 0 and this.grant == 4 then --Game_GetLocalPlayer() == this.player 
+				print("***HERO DEAD RESPONSE***")
+				
+				if Game_GetLocalPlayer() == this.player then
+					Camera_ResetToDefault()
+					HeroTrack_ToggleDestroyHQobjOn(false)
+					Objective_Show(this.setobjective, true)
+					Objective_UpdateText(this.setobjective, 10000200, 10000200)
+				end
+				
+				-- making respawn time based on level
+				local timer = this.level+10
+				Objective_StartTimer(this.setobjective, COUNT_DOWN, timer, 5) -- replaced this.timecounter
+				Timer_Start(this.timer3, timer) -- replaced a default of 20
+				
+				this.grant = 1
+			end
+			
+			
+		end
+	end
+end
+
+
+
+function Rule_KillCountTrack() -- we can optimize this!
+	
+	for k, v in pairs(t_Player) do 
+		--print(v.level)
+		local oldKills = v.killCount
+		local newKills = 0
+		local killDiff = 0
+		
+		if Player_IsHuman(v.player) and v.player == Game_GetLocalPlayer() then
+			newKills = Stats_KillsTotal(v.player)
+			
+			if newKills > oldKills then
+				killDiff = newKills - oldKills
+				v.killCount = newKills
+			end	
+			
+			-- if player dead, then reset killstreak
+			if v.lastheronamed == true and v.killStreak >= 1 then
+				-- reset the variable
+				v.killStreak = 0
+				-- turn the score board off
+				if v.displayScore ~= false then
+					v.displayScore = false
+					UI_SetDisplayIngameScore(false, false)
+				end
+				
+				--print("killstreak reset")
+				
+				-- display the UI warning
+				for i = 1, table.getn(v.thresholdtable) do
+					if v.thresholdkillstate[i] == true then
+						
+						local streakEnd = Loc_FormatText(10000343, Player_GetDisplayName(v.player))
+						UIWarning_Show(streakEnd)
+						
+					end
+					v.thresholdkillstate[i] = false
+				end
+				
+			-- if hero is back, then keep track of kill difference and if there is one add to killstreak		
+			elseif v.lastheronamed == false then
+				
+				-- calculate the kill streak
+				if killDiff >= 1 then
+					v.killStreak = v.killStreak + killDiff
+					-- turn the score board on if its not on
+					if v.displayScore ~= true then
+						v.displayScore = true
+						UI_SetDisplayIngameScore(true, false)
+					end
+					UI_SetScoreSingle(10000344, Loc_ConvertNumber(v.killStreak))
+				end
+				
+				-- if killstreak is higher than threshold, then print a congratulatory message
+				for i = 1, table.getn(v.thresholdtable) do
+					
+					if v.killStreak >= v.thresholdtable[i] and v.thresholdkillstate[i] == false then
+						
+						v.thresholdkillstate[i] = true
+						
+						local kills = Loc_ConvertNumber(v.thresholdtable[i])
+						local killStreak = Loc_FormatText(10000340, Player_GetDisplayName(v.player), kills)
+						
+						UIWarning_Show(killStreak)
+						
+						local localPlayer = Game_GetLocalPlayer()
+						
+						if v.player == localPlayer then
+							
+							local speechPath = soundData.misc.compliment
+							PlayPushSpeech(localPlayer, speechPath)
+							
+						end
+					end
+				end 
+			end	
+		end	
+	end
+end
+
+
+
+
+
+-------------------------------------------------------------------------
+
+-- Buildings
+
+-------------------------------------------------------------------------
+
+function Push_BuildingInit()
+
+	eg_AlliedHealing = EGroup_CreateIfNotFound("eg_AlliedHealing")
+	eg_AxisHealing = EGroup_CreateIfNotFound("eg_AxisHealing")
+	
+	eg_AllyHQ = EGroup_CreateIfNotFound("eg_AllyHQ")
+	eg_AxisHQ = EGroup_CreateIfNotFound("eg_AxisHQ")
+	eg_AllyInvisible = EGroup_CreateIfNotFound("eg_AllyInvisible")
+	eg_AxisInvisible = EGroup_CreateIfNotFound("eg_AxisInvisible")
+
+
+	t_AxisBuildingTypes = {EBP.AXIS.BARRACKS, EBP.AXIS.ARMORY, EBP.AXIS.KAMPFKRAFT, EBP.AXIS.QUARTERS}
+	t_AlliedBuildingTypes = {EBP.ALLIES.BARRACKS, EBP.ALLIES.ARMORY, EBP.ALLIES.QUARTER_MASTER, EBP.ALLIES.MOTORPOOL}
+	
+	t_Team1BaseBuildingMarkers = {mkr_Team1Building1, mkr_Team1Building2, mkr_Team1Building3, mkr_Team1Building4}
+	t_Team2BaseBuildingMarkers = {mkr_Team2Building1, mkr_Team2Building2, mkr_Team2Building3, mkr_Team2Building4}
+	
+	
+	--teg_Overgroups = {{playerteam = 2, group = eg_Team1BuildingOvergroups}, {playerteam = 1, group = eg_Team2BuildingOvergroups}}
+	teg_Overgroups = {{playerteam = Team_FindByRace(TRACE_AXIS), group = eg_Team1HQ, HQDestroyed = false, focalpoint = mkr_Team1HQFocus, dec = 0.5, zoom = 40, orbit = 1.6}, 
+					  {playerteam = Team_FindByRace(TRACE_ALLIES), group = eg_Team2HQ, HQDestroyed = false, focalpoint = mkr_Team2HQFocus, dec = 0.5, zoom = 40, orbit = 4.7}}
+
+	teg_HQDestructionOrder = {{eg_Team1HQSideTank1, eg_Team1HQSideTank2}, {eg_Team2HQSideTank1, eg_Team2HQSideTank2}}
+	
+	teg_PipeGroupOrder = {
+					{{eg_Team1PipeGroup1}, {eg_Team2PipeGroup1}},  --[[group 1]] 
+					{{eg_Team1PipeGroup2}, {eg_Team2PipeGroup2}},  --[[group 2]] 
+					{{eg_Team1PipeGroup3}, {eg_Team2PipeGroup3}},  --[[group 3]] 
+					{{eg_Team1PipeGroup4}, {eg_Team2PipeGroup4}},  --[[group 4]] 
+					{{eg_Team1PipeGroup5}, {eg_Team2PipeGroup5}},} --[[group 5]] 
+					
+	teg_FuelGroupOrder = {
+					{{eg_Team1FuelGroup1_1, eg_Team1FuelGroup1_2, 
+						eg_Team1FuelGroup1_3}, 
+						{eg_Team2FuelGroup1_1, eg_Team2FuelGroup1_2, 
+						eg_Team2FuelGroup1_3}},  --[[group 1]] 
+						
+					{{eg_Team1FuelGroup2_1, eg_Team1FuelGroup2_2}, 
+					{eg_Team2FuelGroup2_1, eg_Team2FuelGroup2_2}},} --[[group 2]] 
+
+					
+					
+	teg_OilGroupOrder = {
+					{{eg_Team1OilGroup1_1, eg_Team1OilGroup1_2}, {eg_Team2OilGroup1_1, eg_Team2OilGroup1_2}}, --[[group 1]] 
+					{{eg_Team1OilGroup2_1}, {eg_Team2OilGroup2_1}},} --[[group 2]] 
+
+	
+	
+	g_BlowUpStateInitiated = false
+	g_BlowUpFocusGroup = SGroup_CreateIfNotFound("focusgroup")
+	g_sidebuildingnumber = 1
+	g_PipesFinished = false
+	g_FuelTanksFinished = false
+	tg_PipeDelayCalled = {{status = false,}, {status = false,}, {status = false,}, {status = false,}, {status = false,},}
+	tg_PipeGroupNumber = {{number = 1,}, {number = 1,}, {number = 1,}, {number = 1,}, {number = 1,},}
+	tg_FuelDelayCalled = {{status = false,}, {status = false,}, }
+	tg_FuelGroupNumber = {{number = 1,}, {number = 1,}, }
+	
+	tg_OilDelayCalled = {{status = false,}, {status = false,}, }
+	tg_OilGroupNumber = {{number = 1,}, {number = 1,}, }
+	
+end
+
+
+-- this function is for spawning the target buildings for both teams
+function Rule_BuildingSpawn()
+
+	
+	
+	
+	Util_CreateEntities(g_AlliedCreepPlayer, eg_AllyInvisible, EBP.COHO.PUSH_ALLIES_INVISIBLECP, mkr_Team1Building2, 1) 
+	Util_CreateEntities(g_AxisCreepPlayer, eg_AxisInvisible, EBP.COHO.PUSH_AXIS_INVISIBLECP, mkr_Team2Building2, 1) 
+	
+	
+end
+
+
+-- this function checks to see if all the target buildings for a side are destroyed.  If so, the opposite side wins
+function Rule_BuildingCheck()
+
+	for i = 1, table.getn(teg_Overgroups) do
+		--print(EGroup_IsEmpty(teg_Overgroups[i].group))
+		if EGroup_IsEmpty(teg_Overgroups[i].group) == true and g_BlowUpStateInitiated == false then
+			
+			g_BlowUpStateInitiated = true
+			g_BlowUpFocusGroup = teg_Overgroups[i].group
+			t_FocusTable = teg_Overgroups[i]
+			Game_Letterbox(true, 1)
+			
+			Rule_AddOneShot(CinematicEnding, 2.5)
+			Rule_AddOneShot(Rule_HQRetreat, 2.75)
+			Rule_AddOneShot(Rule_TeamWinDelay, 10)
+			Rule_AddOneShot(Rule_CinematicEndingCameraMove, 1)
+ 			
+			g_WinDelayCalled = true
+			
+			Rule_RemoveMe()
+			
+		end
+
+	end	
+
+end
+
+function Rule_CinematicEndingCameraMove()
+
+	Camera_FocusOnPosition(Marker_GetPosition(t_FocusTable.focalpoint), true)
+	Camera_SetDeclination(t_FocusTable.dec)
+	Camera_SetZoomDist(t_FocusTable.zoom)
+	Camera_SetOrbit(t_FocusTable.orbit) 
+
+end
+
+function CinematicEnding()
+-- For Kevin, so he can manually determine what to blow up at precisely when
+-- Things are just simply called with whatever delay indicated in Rule_AddOneShot
+
+--Start Sequence here
+	if EGroup_IsEmpty(g_BlowUpFocusGroup) then
+		
+		-- example
+		--Rule_AddOneShot(Rule_DestroySideTank1, 0.5)
+		
+		--Destroying central objects
+		Rule_AddOneShot(Rule_DestroySideTank1, 0.5)
+		Rule_AddOneShot(Rule_Demo1, 0.5)
+		Rule_AddOneShot(Rule_DestroySideTank2, 0.6)
+		Rule_AddOneShot(Rule_Demo2, 0.6)
+		Rule_AddOneShot(Rule_DestroyPipe1, 0.6)
+		
+		--Destroying Central Tunnel
+		Rule_AddOneShot(Rule_DemoBase, 0.7)
+		
+		--Destroying 1st chain of objects
+		Rule_AddOneShot(Rule_DestroyOilGroup1_1, 0.75)
+		Rule_AddOneShot(Rule_DestroyPipe2, 1.0)
+		Rule_AddOneShot(Rule_DestroyOilGroup1_2, 1.2)
+		Rule_AddOneShot(Rule_DestroyPipe5, 1.8)
+		Rule_AddOneShot(Rule_DestroyFuelGroup2_2, 2.2)
+		Rule_AddOneShot(Rule_Demo4, 2.2)
+		Rule_AddOneShot(Rule_DestroyPipe4, 2.5)
+		Rule_AddOneShot(Rule_DestroyFuelGroup2_1, 2.8)
+		Rule_AddOneShot(Rule_Demo5, 2.8)
+		
+		--Destroying 2nd chain of objects
+		Rule_AddOneShot(Rule_DestroyOilGroup2_1, 1.0)
+		Rule_AddOneShot(Rule_DestroyPipe3, 1.2)
+		Rule_AddOneShot(Rule_Demo3, 1.2)
+		Rule_AddOneShot(Rule_DestroyFuelGroup1_1, 1.6)
+		Rule_AddOneShot(Rule_DestroyFuelGroup1_2, 1.9)
+		Rule_AddOneShot(Rule_Demo6, 2)
+		Rule_AddOneShot(Rule_DestroyFuelGroup1_3, 2.3)
+		
+		--Destroying Bunkers
+		Rule_AddOneShot(Rule_DestroyBunker1, 2.5)
+		Rule_AddOneShot(Rule_DestroyMGNest1, 2.6)
+		Rule_AddOneShot(Rule_DestroyMGNest2, 2.7)
+		
+		
+		
+
+	end
+
+
+end
+
+
+function Rule_DestroySideTank1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		if EGroup_IsEmpty(eg_Team1HQSideTank1) == false then
+		
+			EGroup_Kill(eg_Team1HQSideTank1)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		if EGroup_IsEmpty(eg_Team2HQSideTank1) == false then
+		
+			EGroup_Kill(eg_Team2HQSideTank1)
+			
+		end
+		
+	end
+	
+end
+
+
+function Rule_DestroySideTank2()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		if EGroup_IsEmpty(eg_Team1HQSideTank2) == false then
+			
+			EGroup_Kill(eg_Team1HQSideTank2)
+			
+		end	
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2HQSideTank2) == false then
+		
+			EGroup_Kill(eg_Team2HQSideTank2)
+		
+		end
+	
+	end
+end
+
+
+function Rule_DestroyPipe1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		if EGroup_IsEmpty(eg_Team1PipeGroup1) == false then
+
+			EGroup_Kill(eg_Team1PipeGroup1)
+			
+		end
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2PipeGroup1) == false then		
+
+			EGroup_Kill(eg_Team2PipeGroup1)
+		
+		end
+		
+	end
+	
+end
+
+
+function Rule_DestroyPipe2()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		if EGroup_IsEmpty(eg_Team1PipeGroup2) == false then
+		
+			EGroup_Kill(eg_Team1PipeGroup2)
+			
+		end
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2PipeGroup2) == false then		
+
+			EGroup_Kill(eg_Team2PipeGroup2)
+		
+		end
+	end	
+end
+
+function Rule_DestroyPipe3()
+
+	
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1PipeGroup3) == false then
+		
+			EGroup_Kill(eg_Team1PipeGroup3)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2PipeGroup3) == false then
+		
+			EGroup_Kill(eg_Team2PipeGroup3)
+			
+		end
+	
+	end
+	
+end
+
+function Rule_DestroyPipe4()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1PipeGroup4) == false then
+		
+			EGroup_Kill(eg_Team1PipeGroup4)
+		
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2PipeGroup4) == false then
+		
+			EGroup_Kill(eg_Team2PipeGroup4)
+		
+		end
+	
+	end
+	
+end
+
+function Rule_DestroyPipe5()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1PipeGroup5) == false then
+		
+			EGroup_Kill(eg_Team1PipeGroup5)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2PipeGroup5) == false then
+			
+			EGroup_Kill(eg_Team2PipeGroup5)
+			
+		end
+	
+	end
+	
+end
+
+
+function Rule_DestroyOilGroup1_1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1OilGroup1_1) == false then
+		
+			EGroup_Kill(eg_Team1OilGroup1_1)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2OilGroup1_1) == false then
+		
+			EGroup_Kill(eg_Team2OilGroup1_1)
+			
+		end
+	
+	end
+	
+end
+
+
+
+function Rule_DestroyOilGroup1_2()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1OilGroup1_2) == false then
+		
+			EGroup_Kill(eg_Team1OilGroup1_2)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2OilGroup1_2) == false then
+		
+			EGroup_Kill(eg_Team2OilGroup1_2)
+			
+		end
+	
+	end
+	
+end
+
+
+
+function Rule_DestroyOilGroup2_1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1OilGroup2_1) == false then
+		
+			EGroup_Kill(eg_Team1OilGroup2_1)
+		
+		end
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2OilGroup2_1) == false then
+		
+			EGroup_Kill(eg_Team2OilGroup2_1)
+			
+		end
+	
+	end
+	
+end
+
+
+
+
+function Rule_DestroyFuelGroup1_1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1FuelGroup1_1) == false then
+		
+			EGroup_Kill(eg_Team1FuelGroup1_1)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2FuelGroup1_1) == false then
+		
+			EGroup_Kill(eg_Team2FuelGroup1_1)
+			
+		end
+	
+	end
+	
+end
+
+
+
+
+function Rule_DestroyFuelGroup1_2()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1FuelGroup1_2) == false then
+		
+			EGroup_Kill(eg_Team1FuelGroup1_2)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2FuelGroup1_2) == false then
+		
+			EGroup_Kill(eg_Team2FuelGroup1_2)
+		
+		end
+	
+	end
+	
+end
+
+
+
+function Rule_DestroyFuelGroup1_3()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1FuelGroup1_3) == false then
+		
+			EGroup_Kill(eg_Team1FuelGroup1_3)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2FuelGroup1_3) == false then
+		
+			EGroup_Kill(eg_Team2FuelGroup1_3)
+		
+		end
+	
+	end
+	
+end
+
+
+function Rule_DestroyBunker1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1HQBunker) == false then
+		
+			EGroup_Kill(eg_Team1HQBunker)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2HQBunker) == false then
+		
+			EGroup_Kill(eg_Team2HQBunker)
+		
+		end
+	
+	end
+	
+end
+
+function Rule_DestroyMGNest1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1BaseMG1) == false then
+		
+			EGroup_Kill(eg_Team1BaseMG1)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2BaseMG1) == false then
+		
+			EGroup_Kill(eg_Team2BaseMG1)
+		
+		end
+	
+	end
+	
+end
+
+function Rule_DestroyMGNest2()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1BaseMG2) == false then
+		
+			EGroup_Kill(eg_Team1BaseMG2)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2BaseMG2) == false then
+		
+			EGroup_Kill(eg_Team2BaseMG2)
+		
+		end
+	
+	end
+	
+end
+
+
+
+function Rule_Demo1()
+	
+	eg_demo1 = EGroup_CreateIfNotFound("eg_demo1")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo1_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo1_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_Demo2()
+	
+	eg_demo2 = EGroup_CreateIfNotFound("eg_demo2")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo2_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo2_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_Demo3()
+	
+	eg_demo3 = EGroup_CreateIfNotFound("eg_demo3")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo3_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo3_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_Demo4()
+	
+	eg_demo4 = EGroup_CreateIfNotFound("eg_demo4")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo4_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo4_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_Demo5()
+	
+	eg_demo5 = EGroup_CreateIfNotFound("eg_demo5")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo5_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo5_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_Demo6()
+	
+	eg_demo6 = EGroup_CreateIfNotFound("eg_demo6")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo6_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo6_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_DemoBase()
+	
+	eg_demo4 = EGroup_CreateIfNotFound("eg_demo4")
+	
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		
+		Util_CreateEntities(g_AxisCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo_base_side1, 1)
+		Cmd_DetonateDemolitions(g_AxisCreepPlayer, eg_demo1)
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+	
+		Util_CreateEntities(g_AlliedCreepPlayer, eg_demo1, BP_GetEntityBlueprint("ebps/props/demo_charge.lua"), mkr_demo_base_side2, 1)
+		Cmd_DetonateDemolitions(g_AlliedCreepPlayer, eg_demo1)
+	
+	end
+	
+end
+
+function Rule_HQRetreat()
+
+	
+	
+		local l_PlayerNumber = World_GetPlayerCount()
+		local l_RetreatGroup1 = SGroup_CreateIfNotFound("l_RetreatGroup1")
+		local l_moved = false
+		
+		if g_BlowUpFocusGroup == eg_Team1HQ then
+			print("team1")
+			for i = 1, l_PlayerNumber do
+				print("moving")
+				World_GetSquadsNearMarker(World_GetPlayerAt(l_PlayerNumber), l_RetreatGroup1, mkr_Team1HQWeaponDetect, OT_Player)
+				World_GetSquadsNearMarker(World_GetPlayerAt(l_PlayerNumber), l_RetreatGroup1, mkr_Team1HQWeaponDetect, OT_Ally)
+				World_GetSquadsNearMarker(World_GetPlayerAt(l_PlayerNumber), l_RetreatGroup1, mkr_Team1HQWeaponDetect, OT_Enemy)
+				print("count is: "..SGroup_Count(l_RetreatGroup1))	
+				
+				
+			end
+			Cmd_Retreat(l_RetreatGroup1, mkr_AxisHQ)
+			--Cmd_Move(l_RetreatGroup1, mkr_AxisHQ)
+			
+			
+		elseif g_BlowUpFocusGroup == eg_Team2HQ then
+			print("team2")
+			for i = 1, l_PlayerNumber do
+			print("moving2")
+				World_GetSquadsNearMarker(World_GetPlayerAt(l_PlayerNumber), l_RetreatGroup1, mkr_Team2HQWeaponDetect, OT_Player)
+				World_GetSquadsNearMarker(World_GetPlayerAt(l_PlayerNumber), l_RetreatGroup1, mkr_Team2HQWeaponDetect, OT_Ally)
+				World_GetSquadsNearMarker(World_GetPlayerAt(l_PlayerNumber), l_RetreatGroup1, mkr_Team2HQWeaponDetect, OT_Enemy)
+				print("count is: "..SGroup_Count(l_RetreatGroup1))	
+				--Cmd_Retreat(l_RetreatGroup1, mkr_AllyHQ)
+				
+			end
+			Cmd_Retreat(l_RetreatGroup1, mkr_AllyHQ)
+			--Cmd_Move(l_RetreatGroup1, mkr_AllyHQ)
+		
+		
+		end
+			
+
+end
+
+
+
+
+
+
+function Rule_DestroyFuelGroup2_1()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1FuelGroup2_1) == false then
+		
+			EGroup_Kill(eg_Team1FuelGroup2_1)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2FuelGroup2_1) == false then
+		
+			EGroup_Kill(eg_Team2FuelGroup2_1)
+			
+		end
+	
+	end
+	
+end
+
+function Rule_DestroyFuelGroup2_2()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+	
+		if EGroup_IsEmpty(eg_Team1FuelGroup2_2) == false then
+		
+			EGroup_Kill(eg_Team1FuelGroup2_2)
+			
+		end
+	
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+
+		if EGroup_IsEmpty(eg_Team2FuelGroup2_2) == false then
+		
+			EGroup_Kill(eg_Team2FuelGroup2_2)
+			
+		end
+	
+	end
+	
+end
+
+function FuelTankAttackedSpeech()
+
+	if g_BlowUpStateInitiated == true then
+		
+		Rule_RemoveMe()
+		
+	else
+		
+		-- makes sure that the speech for the fuel tanks is not repeated more than once every 15 seconds it's under attack
+		
+		for k, v in pairs(t_attackedMsg) do
+			
+			if EGroup_IsUnderAttack(v.name, ANY, 5) 
+			and (Timer_Exists(v.timer) == false or Timer_GetRemaining(v.timer) <= 0)
+			and Player_GetRaceName(Game_GetLocalPlayer()) == v.racename then
+				
+				for x,y in pairs(t_Player) do -- checks to see if it's the local player.  If so then play the attack message
+					
+					if Game_GetLocalPlayer() == y.player then
+						
+						PlayPushSpeech(Game_GetLocalPlayer(), v.speech)
+						
+						Timer_Start(v.timer, 15)
+						
+						UI_CreateMinimapBlip(v.name, 5, BT_CombatPing)
+						
+					end
+					
+				end
+				
+			end
+			
+		end
+		
+	end	
+	
+end
+
+
+
+--------------------------------------------
+
+function Rule_TeamWinDelay()
+
+	if g_BlowUpFocusGroup == eg_Team1HQ then
+		local winteam = Team_FindByRace(TRACE_AXIS)
+		Game_Letterbox(false, 0)
+		Rule_TeamWin(winteam)
+		
+		Rule_RemoveMe()
+		
+	elseif g_BlowUpFocusGroup == eg_Team2HQ then
+		Game_Letterbox(false, 0)
+		local winteam = Team_FindByRace(TRACE_ALLIES)
+		
+		Rule_TeamWin(winteam)
+		
+		Rule_RemoveMe()
+	end
+	
+
+
+
+end
+
+
+function Rule_TeamWin(team)
+
+
+	if g_BlowUpStateInitiated == true then
+
+		World_SetTeamWin(team, "ZANNIHILATE")
+		g_GameOver = true
+		return
+		Rule_RemoveMe()
+
+	end	
+
+
+end
+	
+	
+	
+
+
+
+function Rule_MortarBarrageControl()
+	-- loop to randomly select mortar bunker to fire
+	local randBranch = nil
+	
+	for z = 1, table.getn(t_mortar) do-- where z = number of "teams"
+		
+		-- if selected branch is undefined
+		if t_mortar[z].selectedBranch == nil then
+			
+			-- grabs random branch
+			local randNum = World_GetRand(1, table.getn(t_mortar[z].branchInfo))
+			
+			randBranch = t_mortar[z].branchInfo[randNum]
+			
+			for p = 1, table.getn(randBranch.egroup) do			
+				
+				if EGroup_IsEmpty(randBranch.egroup[p]) == false and World_OwnsEGroup(randBranch.egroup[p], ALL) == false 
+				and randBranch.selected == false then
+					-- setting mortar info variables
+					t_mortar[z].branchInfo[randNum].selectedGroup = t_mortar[z].branchInfo[randNum].egroup[p]
+					t_mortar[z].branchInfo[randNum].rank = p
+					t_mortar[z].branchInfo[randNum].selected = true
+					t_mortar[z].selectedBranch = t_mortar[z].branchInfo[randNum]
+					
+					
+				end
+			end
+		end
+		
+	end	
+	
+	-- loop to fire barrage
+	for z = 1, table.getn(t_mortar) do-- where z = number of "teams"
+		
+		local teamBranch = t_mortar[z].selectedBranch
+		
+		if teamBranch ~= nil then
+			
+			if teamBranch.selectedGroup ~= nil then
+				
+				local i = World_GetRand(1,table.getn(t_directions)) -- t_directions contains north center south
+				local temptarget = t_directions[i] -- decides if it attacks north area, center, or south
+				
+				for x, y in pairs(teamBranch.targetInfo) do
+					
+					if teamBranch.targetInfo[x].matchdir == temptarget then
+						
+						local targetnum = World_GetRand(1, teamBranch.rank)
+						
+						-- randomize area in target to hit.  Marker is rectangular so needed to get its position and then indirectly
+						-- get range from it
+						local target = Util_GetRandomPosition(Marker_GetPosition(teamBranch.targetInfo[x].targetarea[targetnum]), 40)
+						
+						-- remember that targetting is dependent on whether or not the attacking team has FOW in the area!!!
+						if teamBranch.selectedGroup ~= nil and EGroup_IsEmpty(teamBranch.selectedGroup) == false then
+							
+							Cmd_Ability(teamBranch.selectedGroup, ABILITY.AXIS.BUNKER_MORTAR, target , nil, true)
+							
+						end
+						-- clearing out mortar info variables
+						t_mortar[z].selectedBranch.selectedGroup = nil
+						t_mortar[z].selectedBranch.selected = false
+						t_mortar[z].selectedBranch = nil
+						
+					end
+				end
+			end
+			
+		end
+	end
+end
+
+--sets the initial camera position for each player
+function Rule_Set_Camera()
+	
+	eg_targetcam = EGroup_CreateIfNotFound("eg_targetcam")
+	EGroup_Clear(eg_targetcam)
+	
+	local t_allies = Team_GetPlayers(Team_FindByRace(TRACE_ALLIES))
+	for i = 1, table.getn(t_allies) do
+		if Game_GetLocalPlayer() == t_allies[i] then
+			
+			Player_GetAll(g_AlliedCreepPlayer)
+			EGroup_Filter(eg_allentities, EBP.COHO.PUSH_ALLIES_HERO_SPAWN, FILTER_KEEP)
+			
+		end
+	end
+	
+	local t_axis = Team_GetPlayers(Team_FindByRace(TRACE_AXIS))
+	for i = 1, table.getn(t_axis) do
+		if Game_GetLocalPlayer() == t_axis[i] then
+			
+			Player_GetAll(g_AxisCreepPlayer)
+			EGroup_Filter(eg_allentities, EBP.COHO.PUSH_AXIS_HERO_SPAWN, FILTER_KEEP)
+			
+		end
+	end
+	
+	EGroup_AddEGroup(eg_targetcam, Util_GetClosestEntityInEGroup(mkr_Center, eg_allentities))
+	
+	if EGroup_IsEmpty(eg_targetcam) == false then
+		Camera_FocusOnPosition(EGroup_GetPosition(eg_targetcam),true)
+		Misc_SelectEntity(EGroup_GetSpawnedEntityAt(eg_targetcam, 1))
+	end
+end
+ 
+function Util_GetAllHeroSpawners()
+	
+	local t_allies = Team_GetPlayers(Team_FindByRace(TRACE_ALLIES))
+	for i = 1, table.getn(t_allies) do
+		if Game_GetLocalPlayer() == t_allies[i] then
+			
+			Player_GetAll(g_AlliedCreepPlayer)
+			EGroup_Filter(eg_allentities, EBP.COHO.PUSH_ALLIES_HERO_SPAWN, FILTER_KEEP)
+			
+		end
+	end
+	
+	local t_axis = Team_GetPlayers(Team_FindByRace(TRACE_AXIS))
+	for i = 1, table.getn(t_axis) do
+		if Game_GetLocalPlayer() == t_axis[i] then
+			
+			Player_GetAll(g_AxisCreepPlayer)
+			EGroup_Filter(eg_allentities, EBP.COHO.PUSH_AXIS_HERO_SPAWN, FILTER_KEEP)
+			
+		end
+	end
+	
+	return eg_allentities
+	
+end
+
+function Util_GetClosestEntityInEGroup(var, egroupid)
+	if EGroup_IsEmpty(egroupid) then fatal("egroup pased in to Util_GetClosestEntityInEGroup()") end 
+	
+	eg_dist = EGroup_CreateIfNotFound("eg_dist")
+	EGroup_Clear(eg_dist)
+	local dist
+	local closest = 99999
+	
+	local CheckEntity = function(gid, idx, eid)
+		
+		dist = World_DistancePointToPoint(Util_GetPosition(var), Util_GetPosition(eid))
+		if dist < closest then
+			closest = dist
+			EGroup_Clear(eg_dist)
+			EGroup_Add(eg_dist, eid)
+		end
+		
+	end
+	
+	EGroup_ForEach(egroupid, CheckEntity)
+	if EGroup_IsEmpty(eg_dist) then
+		EGroup_Add(eg_dist, EGroup_GetSpawnedEntityAt(egroupid, 1))
+	end
+	return eg_dist
+
+end
+
+function Rule_FirstTimeHeroCheck()
+
+	
+
+	for k,v in pairs(t_Player) do
+	
+		if Player_IsHuman(v.player) then
+		
+			
+				for x, y in pairs(t_LastHeroTypes) do
+				
+					if v.lasthero == y.herotype and v.heroactivation == false and Player_HasUpgrade(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO) == false then
+				
+						Cmd_InstantUpgrade(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO)
+						Player_SetUpgradeAvailability(v.player, UPG.COHO.PUSH.SPAWN_LAST_HERO, ITEM_LOCKED)
+						
+						v.heroactivation = true
+						
+					end
+					
+				end
+
+		end
+		
+	end
+
+
+end
+
+
+
+
+---------------
+--SPEECH--
+---------------
+	
+function PlayPushSpeech(player, speechPath)
+	if type(speechPath) == "table" then
+		if type(speechPath.speech) == "string" then
+			Sound_Play2D(speechPath.speech)
+		elseif Push_IsAllies(player) and type(speechPath.allies) == "table" then
+			if type(speechPath.allies.speech) == "string" then
+				Sound_Play2D(speechPath.allies.speech)
+			else
+				bug("Expected a string to play sound, not a "..type(speechPath.allies.speech))
+			end
+		elseif Push_IsAxis(player) and type(speechPath.axis) == "table" then
+			if type(speechPath.axis.speech) == "string" then
+				Sound_Play2D(speechPath.axis.speech)
+			else
+				bug("Expected a string to play sound, not a "..type(speechPath.axis.speech))
+			end
+		end
+	else
+		Util_PrintObject(speechPath)
+		bug("Invalid sound data was passed in to play speech. See logs for what was passed in.")
+	end
+end
+
+
+function Push_IsAllies(player)
+	if Player_GetRaceName(player) == TRACE_ALLIES or Player_GetRaceName(player) == TRACE_ALLIES_COMMONWEALTH then
+		return true
+	elseif Player_GetRaceName(player) == TRACE_AXIS or Player_GetRaceName(player) == TRACE_AXIS_PANZER_ELITE then
+		return false
+	else
+		print("Push Team Check doesn't identify any race that isn't in Opposing Fronts, please update script")
+		return false
+	end
+end 
+
+
+function Push_IsAxis(player)
+	if Player_GetRaceName(player) == TRACE_AXIS or Player_GetRaceName(player) == TRACE_AXIS_PANZER_ELITE then
+		return true
+	elseif Player_GetRaceName(player) == TRACE_ALLIES or Player_GetRaceName(player) == TRACE_ALLIES_COMMONWEALTH then
+		return false
+	else
+		print("Push Team Check doesn't identify any race that isn't in Opposing Fronts, please update script")
+		return false
+	end
+end
+
+function Push_PrecacheSound()
+
+	-- set up the global sound cache to prevent improper audio from conflicting
+	-- with custom Intel speech.
+	Sound_SetGlobalControlSource("GameType", SOUND_SOURCE.ASSAULT)
+
+	SoundPrecacheRecursive(soundData, "speech")
+	
+
+	Sound_PreCacheSound(soundData.misc.weaponUpgrade)
+	Sound_PreCacheSound(soundData.misc.armorUpgrade)
+	Sound_PreCacheSound(soundData.misc.grenadeUpgrade)
+
+end
+
+
+function SoundPrecacheRecursive(tablePath, keyValidation)
+	local stack = {}
+	
+	_soundPrecacheRecursive = function(path, pathKey)
+		if type(path) == "string" then
+			if pathKey == keyValidation then
+				Sound_PreCacheSound(path)
+			end
+			
+		elseif type(path) == "table" then
+			for newPathKey, newPath in pairs(path) do
+				local canDo = true
+				for k2, stackpile in pairs(stack) do
+					
+					if newPath == stackpile then
+						canDo = false
+						break
+					end
+				end
+				
+				if canDo then
+					table.insert(stack, newPath)
+					_soundPrecacheRecursive(newPath, newPathKey)
+				end
+				
+			end
+		end
+	end
+	
+	if type(tablePath) == "table" then
+		_soundPrecacheRecursive(tablePath)
+	end
+end
+

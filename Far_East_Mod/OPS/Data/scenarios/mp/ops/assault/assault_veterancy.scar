@@ -1,0 +1,235 @@
+
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- UMS Push! Veterancy Tables
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+-- XP table 
+g_value = 4
+t_veterancy_table = {
+
+--~ 	{
+--~ 		Xp = 1, --Xp = 5,
+--~ 		Level = 1,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+
+	{
+		Xp = 3,
+		Level = 2,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+
+	{
+		Xp = 7, 
+		Level = 3,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+
+	{
+		Xp = 11, 
+		Level = 4,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 17, 
+		Level = 5,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 23,
+		Level = 6,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 29,
+		Level = 7,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 37,
+		Level = 8,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 45, 
+		Level = 9,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 54, 
+		Level = 10,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	{
+		Xp = 64,
+		Level = 11,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+
+	{
+		Xp = 75,
+		Level = 12,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+
+	{
+		Xp = 87,
+		Level = 13,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 100,
+		Level = 14,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 114,
+		Level = 15,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 129,
+		Level = 16,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+
+	{
+		Xp = 145,
+		Level = 17,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 162,
+		Level = 18,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	
+	{
+		Xp = 180,
+		Level = 19,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+	{
+		Xp = 199,
+		Level = 20,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+		{
+		Xp = 219,
+		Level = 21,
+		Resource = RT_Munition,
+		Value = 5,
+	},
+
+--~ 	{
+--~ 		Xp = 340,
+--~ 		Level = 22,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+
+--~ 	{
+--~ 		Xp = 370,
+--~ 		Level = 23,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+--~ 	
+--~ 	{
+--~ 		Xp = 405,
+--~ 		Level = 24,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+--~ 	
+--~ 	{
+--~ 		Xp = 440,
+--~ 		Level = 25,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+--~ 	
+--~ 	{
+--~ 		Xp = 475,
+--~ 		Level = 26,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+
+--~ 	
+--~ 	{
+--~ 		Xp = 510,
+--~ 		Level = 27,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+--~ 	
+--~ 	{
+--~ 		Xp = 545,
+--~ 		Level = 28,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+--~ 	
+--~ 	{
+--~ 		Xp = 580,
+--~ 		Level = 29,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+--~ 	{
+--~ 		Xp = 620,
+--~ 		Level = 30,
+--~ 		Resource = RT_Munition,
+--~ 		Value = 5,
+--~ 	},
+}
+
+-- table of hero types
+	t_hero_types = {SBP.COHO.PUSH_ALLIES_COMMANDO_DEFENSIVE, SBP.COHO.PUSH_ALLIES_COMMANDO_OFFENSIVE, SBP.COHO.PUSH_ALLIES_ENGINEER_DEFENSIVE, SBP.COHO.PUSH_ALLIES_ENGINEER_OFFENSIVE,
+	SBP.COHO.PUSH_ALLIES_HEAVY_DEFENSIVE, SBP.COHO.PUSH_ALLIES_HEAVY_OFFENSIVE, SBP.COHO.PUSH_ALLIES_MEDIC_DEFENSIVE, SBP.COHO.PUSH_ALLIES_MEDIC_OFFENSIVE,
+	SBP.COHO.PUSH_ALLIES_RECON_DEFENSIVE, SBP.COHO.PUSH_ALLIES_RECON_OFFENSIVE, SBP.COHO.PUSH_ALLIES_SCOUT_DEFENSIVE, SBP.COHO.PUSH_ALLIES_SCOUT_OFFENSIVE,
+	SBP.COHO.PUSH_ALLIES_SNIPER_DEFENSIVE, SBP.COHO.PUSH_ALLIES_SNIPER_OFFENSIVE, SBP.COHO.PUSH_ALLIES_SPOTTER_DEFENSIVE, SBP.COHO.PUSH_ALLIES_SPOTTER_OFFENSIVE,}
+
+
+		
+	
+
+	
+	
+	

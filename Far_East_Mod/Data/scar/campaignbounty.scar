@@ -1,0 +1,122 @@
+_gmbp = nil
+
+function Mission_EnableBounties(targetplayer)
+
+	_gmbp = targetplayer;
+
+	sg_MissionBounty 	= SGroup_CreateIfNotFound("sg_MissionBounty");
+	sg_Missiontemp		= SGroup_CreateIfNotFound("sg_Missiontemp");
+
+	g_HasSyncWeapon = false
+	
+	cb_cost = {
+		infantry = 15,
+		fieldguns = 30,
+		teamweapons = 25,
+		vehicles = 40,
+		tanks = 50,
+	};
+	
+	cb_str = {
+		["infantry"] = cb_cost.infantry,
+		["fieldguns"] = cb_cost.fieldguns,
+		["teamwep"] = cb_cost.teamweapons,
+		["vehicles"] = cb_cost.vehicles,
+		["tanks"] = cb_cost.tanks,
+	}
+	
+	cb_rewards = {};
+	
+	local t_gothrough = {
+		japan = {
+			["infantry"] = FEConst.GetSBPFromRace(TRACE_JAPAN).INFANTRY,
+			["fieldguns"] = FEConst.GetSBPFromRace(TRACE_JAPAN).FIELD_GUNS,
+			["teamwep"] = FEConst.GetSBPFromRace(TRACE_JAPAN).TEAM_WEAPONS,
+			["vehicles"] = FEConst.GetSBPFromRace(TRACE_JAPAN).VEHICLES,
+			["tanks"] = FEConst.GetSBPFromRace(TRACE_JAPAN).TANKS,
+		},
+		china = {
+			["infantry"] = FEConst.GetSBPFromRace(TRACE_CHINA).INFANTRY,
+			["fieldguns"] = FEConst.GetSBPFromRace(TRACE_CHINA).FIELD_GUNS,
+			["teamwep"] = FEConst.GetSBPFromRace(TRACE_CHINA).TEAM_WEAPONS,
+			["vehicles"] = FEConst.GetSBPFromRace(TRACE_CHINA).VEHICLES,
+			["tanks"] = FEConst.GetSBPFromRace(TRACE_CHINA).TANKS,
+		},
+	};
+	
+	for k1, v1 in pairs(t_gothrough.japan) do
+		for i=1, #v1 do
+			table.insert(cb_rewards,
+				{
+					sbp = v1[i],
+					value = cb_str[k1],
+				}
+			);
+		end
+	end
+	
+	for k1, v1 in pairs(t_gothrough.china) do
+		for i=1, #v1 do
+			table.insert(cb_rewards,
+				{
+					sbp = v1[i],
+					value = cb_str[k1],
+				}
+			);
+		end
+	end
+	
+	SGroup_Clear(sg_MissionBounty);
+	Rule_AddInterval(_bountyRuleAdd, 5);
+
+end
+
+function _bountyDeadEvent(squad)
+	
+	for k, this in pairs(cb_rewards) do 
+		
+		if Squad_GetBlueprint(squad) == this.sbp and (Squad_GetBlueprint(squad) ~= SBP.AXIS.HEAVYMG and Squad_GetBlueprint(squad) ~= SBP.AXIS.MORTAR) then
+			Player_AddResource(Game_GetLocalPlayer(), RT_Munition, this.value)
+			local num = Loc_ConvertNumber(this.value)
+			local text = Loc_FormatText(6019800, num)
+			UI_CreateColouredPositionKickerMessage( Game_GetLocalPlayer(), Squad_GetPosition( squad ), text, 198, 120, 74, 0);
+			break;
+		elseif Squad_GetBlueprint(squad) == this.sbp and (Squad_GetBlueprint(squad) == SBP.AXIS.HEAVYMG or Squad_GetBlueprint(squad) == SBP.AXIS.MORTAR) then		
+			if g_HasSyncWeapon == false then				
+				Player_AddResource(Game_GetLocalPlayer(), RT_Munition, this.value)
+				local num = Loc_ConvertNumber(this.value);
+				local text = Loc_FormatText(6019800, num);
+				UI_CreateColouredPositionKickerMessage( Game_GetLocalPlayer(), Squad_GetPosition( squad ), text, 198, 120, 74, 0);
+				g_HasSyncWeapon = true				
+				if Rule_Exists(_bountyRestoreSyncWeapon) == false then
+					Rule_Add(_bountyRestoreSyncWeapon)
+				end
+			end
+			break;
+		end
+		
+	end
+	
+end
+
+function _bountyRestoreSyncWeapon()
+	if g_HasSyncWeapon == true then
+		g_HasSyncWeapon = false
+		Rule_RemoveMe()	
+	end
+end
+
+
+function _bountyRuleAdd()
+
+	SGroup_Clear(sg_Missiontemp);
+	Player_GetAll(_gmbp, sg_Missiontemp);
+	SGroup_RemoveGroup(sg_Missiontemp, sg_MissionBounty);
+	
+	if SGroup_IsEmpty(sg_Missiontemp) == false then
+		Rule_AddSGroupEvent(_bountyDeadEvent, sg_Missiontemp, GE_SquadKilled);
+	end
+	
+	SGroup_AddGroup(sg_MissionBounty, sg_Missiontemp);
+
+end

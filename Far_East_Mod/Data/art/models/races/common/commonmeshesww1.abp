@@ -1,0 +1,29 @@
+model =
+{
+	-- Allies Meshes for Slot Weapons
+	"..\\Allies\\Soldiers\\Weapons\\60mmMortar2_sync",
+	"..\\Allies\\Soldiers\\Weapons\\30cal_M1917_Browning_Sync",
+--	"..\\Allies\\Soldiers\\Weapons\\Chauchat",
+
+	-- Axis Meshes for Slot Weapons
+--	"..\\Axis\\Soldiers\\Weapons\\Granatwerfer_34_sync",
+--	"..\\Axis\\Soldiers\\Weapons\\MG42_Heavy_Tripod_Sync",
+
+	-- Allied Commonwealth for Slot Weapons
+	"..\\commonwealth\\Soldiers\\Weapons\\vickers_HMG_sync",
+	--"..\\commonwealth\\Soldiers\\Weapons\\light_MG",
+	
+	-- TGW mod weapons
+	"..\\Axis\\soldiers\\Weapons\\Bergmann",
+--	"..\\commonwealth\\Soldiers\\Weapons\\Lewis",
+	"..\\Axis\\soldiers\\Weapons\\tg18",
+--	"..\\Axis\\soldiers\\Weapons\\0815-lewis",
+	
+}
+
+
+-- Intermediate ABP
+simvis_attributes =
+{
+	Intermediate_Model = 1
+}

@@ -1,0 +1,3 @@
+import("ScarUtil.scar")
+import("Testmod_Surrender.scar")
+import("winconditions/vptickerwin-annihilate.scar");

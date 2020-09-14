@@ -1,0 +1,19 @@
+HeaderInfo =  
+{
+	scenarioname = "6p_coastline",
+	scenariodescription = "",
+	maxplayers = 6,
+	date = "08/07/2017 02:56",
+	scenarioabbrname = "",
+	savedname = "",
+	version = 2004,
+	mapsize =  
+	{
+		512,
+		384,
+	},
+	music = "",
+	scenariotype = 2,
+	modname = "Far_East_Mod",
+}
+

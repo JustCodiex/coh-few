@@ -1,0 +1,7 @@
+model =
+{
+	"jap_tiaobao",
+       "..\\..\\..\\axis\\structures\\Flag.abp",
+        "..\\t92_pintle\\t92_pintle",
+
+}

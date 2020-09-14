@@ -1,0 +1,43 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "flame",
+		subtype = "",
+		transform_m00 = -1,
+		transform_m01 = -0.00000,
+		transform_m02 = 0.00000,
+		transform_m10 = -0.00000,
+		transform_m11 = 1,
+		transform_m12 = -0.00000,
+		transform_m20 = -0.00000,
+		transform_m21 = -0.00000,
+		transform_m22 = -1,
+		transform_m30 = -0.05564,
+		transform_m31 = 0.21804,
+		transform_m32 = 0.00000,
+		type = "",
+	},
+	Marker001 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "flame_dir",
+		subtype = "",
+		transform_m00 = -1,
+		transform_m01 = -0.00000,
+		transform_m02 = 0.00000,
+		transform_m10 = -0.00000,
+		transform_m11 = 1,
+		transform_m12 = -0.00000,
+		transform_m20 = -0.00000,
+		transform_m21 = -0.00000,
+		transform_m22 = -1,
+		transform_m30 = -0.03886,
+		transform_m31 = 0.31091,
+		transform_m32 = 0.00000,
+		type = "",
+	},
+}

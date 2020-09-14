@@ -1,0 +1,297 @@
+
+function TW_GlobalVariables()
+	
+	t_Resources = {
+		manpower = {
+			resource = RT_Manpower,
+			rate = 2,
+			start = 10,
+		},
+		munition = {
+			resource = RT_Munition,
+			rate = 20,
+			start = 40,
+			point = {
+				captureExperience = 20,
+				blueprints = {
+					BP_GetEntityBlueprint("ebps\\gameplay\\munition_point.lua"),
+					BP_GetEntityBlueprint("ebps\\gameplay\\munition_point_medium.lua"),
+					BP_GetEntityBlueprint("ebps\\gameplay\\munition_point_high.lua"),
+					BP_GetEntityBlueprint("ebps\\gameplay\\tankwars_munition_point_high.lua"),
+				},
+				actions = {
+					name = "action list",
+					VictoryPointRewardExperience,
+				},
+			},
+		},
+		fuel = {
+			resource = RT_Fuel,
+		},
+		action = {
+			resource = RT_Action,
+			capturePointDefault = 30,
+		},
+	}
+	
+	t_AlliedTanks = {
+		tank1 = {
+			name = "hellcat",
+			blueprint = BP_GetSquadBlueprint("sbps/races/allies/vehicles/tankwars_m18_hellcat.lua"),
+			upgrade = BP_GetUpgradeBlueprint("upgrade/m18_hellcat_tankwars.lua"),
+			value = 20,
+			respawnDelay = 15,
+			sound = soundData.tanks.hellcat,
+		},
+		tank2 = {
+			name = "sherman",
+			blueprint = BP_GetSquadBlueprint("sbps/races/allies/vehicles/m4_sherman_squad_tankwars.lua"),
+			upgrade = BP_GetUpgradeBlueprint("upgrade/sherman_tankwars.lua"),
+			value = 25,
+			respawnDelay = 15,
+			sound = soundData.tanks.sherman,
+		},
+		tank3 = {
+			name = "churchill",
+			blueprint = BP_GetSquadBlueprint("sbps/races/allies_commonwealth/vehicles/churchill_squad_tankwars.lua"),
+			upgrade = BP_GetUpgradeBlueprint("upgrade/churchill_tankwars.lua"),
+			value = 30,
+			respawnDelay = 15,
+			sound = soundData.tanks.churchill,
+		},
+	}
+	
+	t_AxisTanks = {
+		tank1 = {
+			name = "hotchkiss",
+			blueprint = BP_GetSquadBlueprint("sbps/races/axis/vehicles/tankwars_hotchkiss_squad.lua"),
+			upgrade = BP_GetUpgradeBlueprint("upgrade/hotchkiss_tankwars.lua"),
+			value = 20,
+			respawnDelay = 15,
+			sound = soundData.tanks.hotchkiss,
+		},
+		tank2 = {
+			name = "panzer",
+			blueprint = BP_GetSquadBlueprint("sbps/races/axis/vehicles/panzer_iv_squad_tankwars.lua"),
+			upgrade = BP_GetUpgradeBlueprint("upgrade/panzeriv_tankwars.lua"),
+			value = 25,
+			respawnDelay = 15,
+			sound = soundData.tanks.panzer,
+		},
+		tank3 = {
+			name = "panther",
+			blueprint = BP_GetSquadBlueprint("sbps/races/axis/vehicles/panther_squad_tankwars.lua"),
+			upgrade = BP_GetUpgradeBlueprint("upgrade/panther_tankwars.lua"),
+			value = 30,
+			respawnDelay = 15,
+			sound = soundData.tanks.panther,
+		},
+	}
+	
+	t_entrypoints = EGroup_GetSequence("eg_Entry")
+	
+	victoryPoints = { 
+		
+		center = {
+			name = "center",
+			egroup = eg_VP1,
+			sector = World_GetTerritorySectorID(EGroup_GetPosition(eg_VP1)),
+			actions = {
+				name = "action list",
+				CenterPointAction,
+				SpawnVictoryDefender,
+				VictoryPointSpeech,
+				VictoryPointRewardExperience,
+			},
+			spawnDelayTime = 20,
+			captureExperience = 30,
+			squads = { },
+			spawner = { },
+			sound = soundData.victoryPoints.center,
+		},
+		
+		bunker = {
+			name = "bunker",
+			egroup = eg_VP2,
+			actions = {
+				name = "action list",
+				BunkerPointAction,
+				SpawnVictoryDefender,
+				VictoryPointSpeech,
+				VictoryPointRewardExperience,
+			},
+			sound = soundData.victoryPoints.bunker,
+		},
+		
+		airstrip = {
+			name = "airstrip",
+			egroup = eg_VP3,
+			actions = {
+				name = "action list",
+				VictoryPointAbilityManager,
+				SpawnVictoryDefender,
+				VictoryPointSpeech,
+				VictoryPointRewardExperience,
+			},
+			
+			abilities = {
+				allies = {
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tank_wars_air_recon_ability.lua"),
+						-- sound = soundData.abilities.airRecon.obtained, -- overlapping
+					},
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tankwars_air_strike_ability_strafe.lua"),
+						objective = objectiveData.obj_airstrip_strafe,
+						sound = soundData.abilities.strafingRun.obtained,
+					},
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tank_wars_bombing_run.lua"),
+						objective = objectiveData.obj_airstrip_bomb,
+						sound = soundData.abilities.bombingRun.obtained,
+					},
+				},
+				axis = {
+					{
+						ability = BP_GetAbilityBlueprint("abilities/tankwars_flares.lua"),
+						-- sound = soundData.abilities.flares.obtained, -- overlapping
+					},
+					{
+						ability = BP_GetAbilityBlueprint("abilities/tankwars_firestorm.lua"),
+						objective = objectiveData.obj_airstrip_arty,
+						sound = soundData.abilities.firestorm.obtained,
+					},
+					{
+						ability = BP_GetAbilityBlueprint("abilities/panzer_elite_henschel_at_strike_tankwars.lua"),
+						objective = objectiveData.obj_airstrip_henschel,
+						sound = soundData.abilities.henschel.obtained,
+					},
+				},
+			},
+			unlocktime = 90,
+			defaultabilities = 1,
+			sound = soundData.victoryPoints.airstrip
+		},
+		
+		repair = {
+			name = "repair",
+			egroup = eg_VP4,
+			actions = {
+				name = "action list",
+				RepairPointAction,
+				SpawnVictoryDefender,
+				VictoryPointSpeech,
+				VictoryPointRewardExperience,
+			},
+			defense = nil,
+			repairToggle = BP_GetAbilityBlueprint("abilities/ums_tankwars_toggle_repair.lua"),
+			sound = soundData.victoryPoints.repair,
+		},
+		
+		manpower = {
+			name = "manpower", 
+			egroup = eg_VP5,
+			actions = {
+				name = "action list",
+				ManpowerPointAction,
+				VictoryPointAbilityManager,
+				SpawnVictoryDefender,
+				VictoryPointSpeech,
+				VictoryPointRewardExperience,
+			},
+			
+			abilities = {
+				allies = {
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tankwars_reinforcements_allied_anti_infantry.lua"),
+						objective = objectiveData.obj_manpower_anti_infantry,
+						sound = soundData.abilities.antiInfantryOffMap.obtained,
+					},
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tankwars_reinforcements_allied_stealth_infantry.lua"),
+						objective = objectiveData.obj_manpower_stealth,
+						sound = soundData.abilities.stealthInfantryOffMap.obtained,
+					},
+				},
+				axis = {
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tankwars_reinforcements_axis_anti_infantry.lua"),
+						objective = objectiveData.obj_manpower_anti_infantry,
+						sound = soundData.abilities.antiInfantryOffMap.obtained,
+					},
+					{
+						ability = BP_GetAbilityBlueprint("abilities/ums_tankwars_reinforcements_axis_stealth_infantry.lua"),
+						objective = objectiveData.obj_manpower_stealth,
+						sound = soundData.abilities.stealthInfantryOffMap.obtained,
+					},
+				},
+			},
+			unlocktime = 45,
+			defaultabilities = 0,
+			rate = 2,
+			sound = soundData.victoryPoints.manpower
+		},
+	}
+	
+	tankActions = {
+		alive = {
+			name = "action list",
+			ApplyTankExperienceValue,
+			SetSquadLevelDecorator,
+			CameraFollowTank,
+			SelectTankForPlayer,
+			SetTankAsDefaultControlGroup,
+		},
+		dead = {
+			name = "action list",
+			DecrementVPoints,
+			DeathTimerDisplay,
+			RespawnDelayOnDeath,
+			DeathKicker,
+			DeathSpeech,
+			ResetSpeechKillStreak,
+		},
+	}
+	
+	t_defenses = { 
+		allies = { egroup = eg_AlliesDefense, team = "Allies" },
+		axis = { egroup = eg_AxisDefense, team = "Axis" },
+	}
+
+	levelUpActions = {
+		name = "action list",
+		ApplyTankExperienceValue,
+		SetSquadLevelDecorator,
+	}
+	
+	ruleList = {
+		player = {
+			TrackTankHealth,
+			TrackTankAlive,
+			TrackCommanderLevel,
+			TrackKills,
+			TrackKiller,
+			TrackVictoryPoints,
+			TrackResourcePoints,
+		},
+		ai = {
+			CheckAnnihilateWin,
+			TriggerSpecialInfantryAbilities,
+		},
+	}
+	
+	-- These are abilities equipped on infantry squads that will automatically be used when near any enemy Tank
+	specialInfantryAbilities = {
+		stickyBomb = {
+			infantry = {
+				Allies = BP_GetSquadBlueprint("sbps/races/allies/soldiers/ranger_team_tank_wars_stealth.lua"),
+				Axis = BP_GetSquadBlueprint("sbps/races/axis/soldiers/stormtrooper_squad_tank_wars_stealth.lua"),
+			},
+			ability = BP_GetAbilityBlueprint("abilities/ally_throw_sticky_bombs_no_prereq.lua"),
+			minDistance = 20,
+		},
+	}
+	
+	TankWars_Custom_Data()
+	
+end

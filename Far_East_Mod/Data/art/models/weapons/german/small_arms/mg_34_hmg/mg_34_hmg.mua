@@ -1,0 +1,43 @@
+Markers =  
+{
+	Marker000 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "hmg_gun_bone",
+		subtype = "",
+		transform_m00 = 0.00000,
+		transform_m01 = -0.06617,
+		transform_m02 = -0.99781,
+		transform_m10 = -0.00000,
+		transform_m11 = 0.99781,
+		transform_m12 = -0.06617,
+		transform_m20 = 1,
+		transform_m21 = 0.00000,
+		transform_m22 = 0.00000,
+		transform_m30 = -0.03000,
+		transform_m31 = 1.00864,
+		transform_m32 = 0.72982,
+		type = "",
+	},
+	Marker001 =  
+	{
+		destructibleBuildingPanelID = -1,
+		loadingSlotTypeID = -1,
+		name = "hmg_gun_bone01",
+		subtype = "",
+		transform_m00 = 0.00000,
+		transform_m01 = -0.06617,
+		transform_m02 = -0.99781,
+		transform_m10 = -0.00000,
+		transform_m11 = 0.99781,
+		transform_m12 = -0.06617,
+		transform_m20 = 1,
+		transform_m21 = 0.00000,
+		transform_m22 = 0.00000,
+		transform_m30 = -0.09000,
+		transform_m31 = 1.00864,
+		transform_m32 = 0.72982,
+		type = "",
+	},
+}
