@@ -226,7 +226,7 @@ function Hook_Objectives()
 		Title = 11005512,
 		Description = 11005512,
 		Type = OT_Medal,
-		MedalID = CONSTANTS.CAMPAIGN.MUKDEN.M01,
+		MedalID = CONSTANTS.CAMPAIGN.PRELUDE.M01,
 		
 	}
 	

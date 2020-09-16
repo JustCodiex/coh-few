@@ -1,0 +1,115 @@
+
+Name = "$1309000"
+Description = "$1309140"
+ModName = "Far_East_Mod"
+Group = "Far_East_Mod"
+
+UI =
+{
+	-- brw 12/09/2008 - putting in missing art for the campaign main menu file because
+	-- it is not being hooked up correctly.
+--~ 	EnabledImage = [[Data:art\ui\textures\textures_fe\caen_icon]],
+	EnabledImage = [[Data:art\ui\textures\textures_fe\not_used]],
+	HoverImage = [[Data:art\ui\textures\textures_fe\caen_icon_on]],-- this doesn't appear to be working nor is it used
+	CampaignNameKey = "$559204",
+	MainTooltipKey = "$559205",
+	ContinueTooltipKey = "$559206",
+	DisabledTooltipKey = "$559207",
+}
+
+Missions =
+{
+	{
+		mission = "Authie",
+		medals =
+		{
+			"medals/authie.lua",
+		},
+	},
+
+	{
+		mission = "Hill_112",
+		sandmap = "CXP1_SM01-02",
+		SubtitleFile = "CXP1_SM01-02.lua",
+		medals =
+		{
+			"medals/hill_112.lua",
+		},
+	},
+
+	{
+		mission = "Carpiquet_Airport",
+		sandmap = "CXP1_SM02-03",
+		SubtitleFile = "CXP1_SM02-03.lua",
+		medals =
+		{
+			"medals/carpiquet.lua",
+		},
+	},
+	
+	{
+		mission = "Carpiquet_Airport_B",
+		counterattack = "Carpiquet_Airport",
+		medals =
+		{
+			"medals/carpiquet_b.lua",
+		},
+	},
+	
+	{
+		mission = "Hill_112_Defense",
+		counterattack = "Hill_112",
+		sandmap = "CXP1_SM04-05",
+		SubtitleFile = "CXP1_SM04-05.lua",
+		medals =
+		{
+			"medals/hill_112_defense.lua",
+		},
+	},
+	
+	{
+		mission = "Caen_Assault",
+		sandmap = "CXP1_SM05-06",
+		SubtitleFile = "CXP1_SM05-06.lua",
+		medals =
+		{
+			"medals/caen_assault.lua",
+		},
+	},
+	
+	{
+		mission = "Caen_Clear",
+		counterattack = "Caen_Assault",
+		medals =
+		{
+			"medals/caen_clear.lua",
+		},
+	},
+	
+	{
+		mission = "Caen_Counter",
+		counterattack = "Caen_Clear",
+		medals =
+		{
+			"medals/caen_counter.lua",
+		},
+	},
+	
+	{
+		mission = "Goodwood",
+		sandmap = "CXP1_SM08-09",
+		SubtitleFile = "CXP1_SM08-09.lua",
+		medals =
+		{
+			"medals/goodwood.lua",
+		},
+	},
+	
+}
+
+CompletionMedals =
+{
+	"medals/caen_completion",
+}
+
+CreditsMovie = "CXPCreditsMovie"

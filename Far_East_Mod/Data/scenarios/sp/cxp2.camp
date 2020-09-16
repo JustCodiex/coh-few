@@ -1,0 +1,107 @@
+
+Name = "$1309200"
+Description = "$1309240"
+ModName = "Far_East_Mod"
+Group = "Far_East_Mod"
+
+UI =
+{
+	-- brw 12/09/2008 - putting in missing art for the campaign main menu file because
+	-- it is not being hooked up correctly.
+--~ 	EnabledImage = [[Data:art\ui\textures\textures_fe\omg_icon]],
+	EnabledImage = [[Data:art\ui\textures\textures_fe\not_used]],
+	HoverImage = [[Data:art\ui\textures\textures_fe\omg_on]],-- this doesn't appear to be working nor is it used
+	CampaignNameKey = "$559208",
+	MainTooltipKey = "$559209",
+	ContinueTooltipKey = "$559210",
+	DisabledTooltipKey = "$559211",
+}
+
+Missions =
+{
+	{
+ 		mission = "WolfhezeGlider",
+		medals =
+		{
+			"medals/wolfheze_glider.lua",
+		},
+	},
+
+	{
+ 		mission = "WolfhezeAttack",
+		counterattack = "WolfhezeGlider",
+		medals =
+		{
+			"medals/wolfheze_attack.lua",
+		},
+	},
+	
+	{
+ 		mission = "Oosterbeek_Defense",
+ 		sandmap = "CXP1_OMG_SM02-03",
+		SubtitleFile = "CXP1_OMG_SM02-03.lua",
+		medals =
+		{
+			"medals/oosterbeek_defense.lua",
+		},
+	},
+
+	{
+ 		mission = "Hells_Highway_Ambush",
+ 		sandmap = "CXP1_OMG_SM03-04",
+		SubtitleFile = "CXP1_OMG_SM03-04.lua",
+		medals =
+		{
+			"medals/hells_highway_ambush.lua",
+		},
+	},
+	
+	{
+ 		mission = "Best",
+ 		sandmap = "CXP1_OMG_SM04-05",
+		SubtitleFile = "CXP1_OMG_SM04-05.lua",
+		medals =
+		{
+			"medals/best.lua",
+		},
+	},
+	
+	{
+ 		mission = "Arnhem",
+ 		sandmap = "CXP1_OMG_SM05-06",
+		SubtitleFile = "CXP1_OMG_SM05-06.lua",
+		medals =
+		{
+			"medals/arnhem.lua",
+		},
+	},
+	
+	{
+ 		mission = "Hells_Highway_Hunt",
+		counterattack = "Hells_Highway_Ambush",
+ 		sandmap = "CXP1_OMG_SM06-07",
+		SubtitleFile = "CXP1_OMG_SM06-07.lua",
+		medals =
+		{
+			"medals/hells_highway_hunt.lua",
+		},
+	},
+	
+	{
+ 		mission = "Oosterbeek_Crossing",
+		counterattack = "Oosterbeek_Defense",
+ 		sandmap = "CXP1_OMG_SM07-08",
+		SubtitleFile = "CXP1_OMG_SM07-08.lua",
+		medals =
+		{
+			"medals/oosterbeek_crossing.lua",
+		},
+	},
+}
+
+CompletionMedals =
+{
+	"medals/omg_completion",
+}
+
+CreditsMovie = "CXPCreditsMovie"

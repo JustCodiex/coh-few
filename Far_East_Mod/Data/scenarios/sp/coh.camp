@@ -1,0 +1,50 @@
+Name = "$11005475"
+Description = "$11005480"
+ModName = "Far_East_Mod"
+Group = "Far_East_Mod"
+
+UI =
+{
+	EnabledImage = [[Data:art\ui\textures\textures_fe\not_used]],
+	HoverImage = [[Data:art\ui\textures\textures_fe\m02_paradrop_icon_on]], -- Ignore this one
+	CampaignNameKey = "$11005475",
+	MainTooltipKey = "$11005542",
+	ContinueTooltipKey = "$11005543",
+	DisabledTooltipKey = "$11005544",
+}
+
+Missions =
+{
+	-- Mukden Incident, 1931
+	{
+		mission = "Railway_North_Camp",
+		medals =
+		{
+			"medals/mukden_a",
+		},
+	},
+	{
+		mission = "Railway_North_Camp_Garrison",
+		--counterattack = "Railway_North_Camp",
+		medals =
+		{
+			"medals/mukden_b",
+		},
+	},
+	
+	-- July 7th Incident, 1937
+	{
+		mission = "Marco_Polo_Bridge_Incident",
+		medals =
+		{
+			"medals/july_7th",
+		},
+	},
+}
+
+CompletionMedals =
+{
+	"medals/prelude_completion",
+}
+
+CreditsMovie = "CreditsMovie"

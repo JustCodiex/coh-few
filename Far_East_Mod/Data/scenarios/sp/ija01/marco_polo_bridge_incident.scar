@@ -1,0 +1,11 @@
+import("ScarUtil.scar");
+
+function OnGameSetup()
+
+end
+
+function OnGameInit()
+
+end
+
+Scar_AddInit(OnGameInit);
