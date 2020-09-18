@@ -6,7 +6,9 @@ Instead of cloning this repository directly into your Company of Heroes folder, 
 
 Then open your git-tool (preferably the terminal version) and clone it
 ```
-git clone https://github.com/JustCodiex/coh-few.git
+git init .
+git remote add origin https://github.com/JustCodiex/coh-few.git
+git pull origin master
 ```
 Once cloned - boot up the mod studio and select ***Far_East_Mod.module***. If you wish to modify the operations, select ***Far_East_ModOps.module***. Please note that this is technically a separate mod and attributes and art files are somewhat shared.
 
