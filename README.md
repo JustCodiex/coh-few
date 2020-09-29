@@ -36,11 +36,11 @@ git pull
 ```
 This will pull the latest online version down to your machine. Keep in mind that .rgd files are binary files. Binary files do not function well with git (for good reasons). So any changes you make or made by others - one version will overwrite the others file.
 
-### Missing/Corrupt Files
-If there are any missing files - or files that cannot be used due to corruption please contact CodiEx @ codiex1944@gmail.com
-
 ## Large project
 This is a large project that has been put up on Github, ~4.5 GB. The project will, therefore, also take time to download and upload. Try to utilize Github (origin) as little as possible.
+
+### Missing/Corrupt Files
+If there are any missing files - or files that cannot be used due to corruption please contact CodiEx @ codiex1944@gmail.com
 
 ## Tools
 The tool required to mod CoH1 files (.rgd, .rgm, ...) is [Corsix Mod Studio](http://modstudio.corsix.org/). Note, some files, like .ucs and .scar/.lua can be edited directly by a text editor (Some files may be sensitive to encoding).
