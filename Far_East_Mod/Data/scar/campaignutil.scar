@@ -173,19 +173,6 @@ function Util_SplitSquads(target, toRemove, product, once)
 
 end
 
-function Util_SelectBasedOnDifficulty(a,b,c,d)
-	local v = Game_GetSPDifficulty();
-	if (g_difficulty == GD_EXPERT) then
-		return a
-	elseif (g_difficulty == GD_HARD) then
-		return b
-	elseif (g_difficulty == GD_NORMAL) then
-		return c
-	elseif (g_difficulty == GD_EASY) then
-		return d
-	end
-end
-
 --? @shortdesc: Get all the strategic points in the world
 --? @result Table
 --? @args Boolean countvp

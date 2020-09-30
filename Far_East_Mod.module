@@ -26,9 +26,6 @@ folder = CoH\DataPreview
 folder = WW2\Movies
 
 [movies:common:01]
-folder = Far_East_Mod\Movies
-
-[movies:common:02]
 folder = Engine\Movies
 
 [data:common:01]

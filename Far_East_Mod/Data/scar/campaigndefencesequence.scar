@@ -9,7 +9,7 @@ function Mission_CreateDefenceSequence( attacker, defender, t, instant )
 
 	if t.units ~= nil and instant then
 		_spawnObjects( defender, t.units, t.id );
-		--t.units = nil; -- We can now forget about the stuff we don't need
+		--t.units = nil; -- We can now forget about the stuff we dont need
 	end
 	
 	_md[t.id] = t;

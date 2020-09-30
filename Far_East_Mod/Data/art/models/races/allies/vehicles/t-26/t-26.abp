@@ -1,6 +1,8 @@
 model =
 {
 	"t-26",
+		-- Main Mesh
+	"..\\..\\Structures\\Hull_Down_M\\Hull_Down_M",
 	}
 
 simvis_attributes =

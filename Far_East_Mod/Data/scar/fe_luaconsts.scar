@@ -1,7 +1,5 @@
 FEConst = {};
 
--- A lot of these are currently duplicates from the vCoH luaconsts.scar file. However, the idea is they'll be removed from that file some day.
-
 SBP.CHINA = {
 
 	INFANTRY = {
@@ -48,7 +46,6 @@ SBP.JAPAN = {
 	INFANTRY = {
 		
 		KWANTUNG_ARMY										= BP_GetSquadBlueprint("sbps/races/axis/soldiers/guangdong_squad.lua"), -- Kwantung Infantry (Northeast China army stuff)
-		REGULARS											= BP_GetSquadBlueprint("sbps/races/axis/soldiers/j11_squad.lua"), -- IJA REGULARS
 		
 	},
 	
