@@ -6,9 +6,12 @@ Instead of cloning this repository directly into your Company of Heroes folder, 
 
 Then open your git-tool (preferably the terminal version) and download it by using the following commands:
 ```
+git init .
 git clone https://github.com/JustCodiex/coh-few.git
+git remote add origin https://github.com/JustCodiex/coh-few.git
+git pull origin master
 ```
-Note: Do not use "git clone" unless you know what you're doing or do not intend to test the mod. 
+Note: Do not use "git clone" unless you know what you're doing or do not intend to test the mod.
 
 The above commands will create a new local repository in the folder and connect to this repository and then download the latest version of the repository unto your machine.
 

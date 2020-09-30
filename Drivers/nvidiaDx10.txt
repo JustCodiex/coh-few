@@ -1,0 +1,84 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Config file for all nVidia cards
+;
+; Dear Inquirer,
+;     Hi again! Thank you for your sleuthy skillz in the Dawn of War
+; config files - I've always wanted my work published. w00t!
+;
+
+
+; Unsupported cards
+;begin device 0x0000
+	; Don't even allow these cards
+;	allowdevice 0
+	; For completeness
+;	performancelevel 0
+;end
+
+; Low-end cards
+begin device 0x0421 0x0422 0x0423
+	; 'low'
+	; G86 Series (8400) slow as hell Don't even allow these cards on dx10
+	allowdevice 0
+	performancelevel 1
+	; Default to Dx9, not Dx10
+    nonpreferreddevice 1
+end
+
+; Mid-range cards
+;begin device 0x0000
+	; 'medium'
+;	performancelevel 2
+;end
+
+; High-end cards
+begin device 0x0400 0x0402
+	; 'high'
+	performancelevel 2
+end
+
+; Very-high-end cards
+;begin device 0x0000
+	; 'ultra'
+;	performancelevel 4
+;end
+
+; Very-very-high-end cards
+begin device 0x0191 0x0193
+	; 'uber-ultra'
+	performancelevel 5
+end
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; All known devices at this time (May 9 2007)
+;
+
+
+; NVIDIA G86 (8300?, 8400, 8500)
+;begin device 0x0421 0x0422 0x0423
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+    ;nonpreferreddevice 0
+;end
+
+; NVIDIA G84 (8600)
+;begin device 0x0400 0x0402
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+    ;nonpreferreddevice 0
+;end
+
+; NVIDIA G80 (8800)
+;begin device 0x0191 0x0193
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+    ;nonpreferreddevice 0
+;end
+

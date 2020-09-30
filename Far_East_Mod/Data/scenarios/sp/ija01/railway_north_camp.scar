@@ -107,7 +107,7 @@ function SetupPlayer()
 	
 	g_manpowerMod = Modify_PlayerResourceRate( player1, RT_Manpower, 0.05 );
 	g_munitionMod = Modify_PlayerResourceRate( player1, RT_Munition, 1.6 );
-	g_fuelMod = Modify_PlayerResourceRate( player1, RT_Fuel, 0 ); -- We dont need fuel in this mission	
+	g_fuelMod = Modify_PlayerResourceRate( player1, RT_Fuel, 0 ); -- We don't need fuel in this mission	
 	
 	Modify_PlayerProductionRate( player1, 5 ); -- For when reinforcing
 	
@@ -226,7 +226,7 @@ function Hook_Objectives()
 		Title = 11005512,
 		Description = 11005512,
 		Type = OT_Medal,
-		MedalID = CONSTANTS.CAMPAIGN.MUKDEN.M01,
+		MedalID = CONSTANTS.CAMPAIGN.PRELUDE.M01,
 		
 	}
 	

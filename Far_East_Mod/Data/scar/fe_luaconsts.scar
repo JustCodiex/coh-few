@@ -1,5 +1,7 @@
 FEConst = {};
 
+-- A lot of these are currently duplicates from the vCoH luaconsts.scar file. However, the idea is they'll be removed from that file some day.
+
 SBP.CHINA = {
 
 	INFANTRY = {
@@ -15,7 +17,7 @@ SBP.CHINA = {
 	
 	FIELD_GUNS = {
 		
-		
+		GER_FK96_NA											= BP_GetSquadBlueprint("sbps/races/allies/vehicles/rw_feldkanone_96_na_squad.lua"), -- Krupp Field Gun
 		
 	},
 	
@@ -45,13 +47,14 @@ SBP.JAPAN = {
 
 	INFANTRY = {
 		
-		KWANTUNG_ARMY										= BP_GetSquadBlueprint("sbps/races/axis/soldiers/guangdong_squad.lua"), -- Kwantung Infantry (Northeast China army stuff)
+		KWANTUNG_ARMY										= BP_GetSquadBlueprint("sbps/races/axis/soldiers/guangdong_squad.lua"), -- Kwantung Infantry (Army in the Chinese Northeast)
+		REGULARS											= BP_GetSquadBlueprint("sbps/races/axis/soldiers/j11_squad.lua"), -- IJA REGULARS
 		
 	},
 	
 	FIELD_GUNS = {
 		
-		
+		TYPE94_MOUNTAIN_GUN									= BP_GetSquadBlueprint("sbps/races/axis/vehicles/94shanpao.lua"), -- Type 94 75mm Mountain Gun
 		
 	},
 	

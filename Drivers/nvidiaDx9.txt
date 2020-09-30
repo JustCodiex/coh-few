@@ -1,0 +1,1359 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Config file for all nVidia cards
+;
+; Dear Inquirer,
+;     Hi again! Thank you for your sleuthy skillz in the Dawn of War
+; config files - I've always wanted my work published. w00t!
+;
+
+
+; Unsupported cards (TNT, GF1/2/4mx, etc)
+begin device 0x0020 0x0028 0x00A0 0x002C 0x0029 0x002D 0x0100 0x0101 0x0103 0x0110 0x0111 0x0113 0x01A0 0x0150 0x0151 0x0152 0x0153 0x0170 0x0171 0x0172 0x0173 0x0178 0x017A 0x0181 0x0182 0x0183 0x0185 0x0188 0x018A 0x018B 0x018C 0x01F0 0x0112 0x0174 0x0175 0x0176 0x0177 0x0179 0x017D 0x017C 0x0186 0x0187 0x018D 0x0286 0x028C 
+	; Don't even allow these cards
+    allowdevice 0
+	; For completeness
+	performancelevel 0
+end
+
+; Low-end cards
+begin device 0x0320 0x032A 0x032B 0x032F 0x014F 0x0160 0x0161 0x0162 0x0163 0x0165 0x016E 0x0220 0x0221 0x0222 0x00F3 0x00FC 0x0316 0x0317 0x031A 0x031B 0x031C 0x0324 0x0325 0x0328 0x0329 0x032C 0x032D 0x0347 0x0348 0x0240 0x0241 0x0242 
+	; 'low'
+	performancelevel 1
+    preferredshadermodel 1
+end
+
+; Mid-range cards
+begin device 0x0301 0x0302 0x0308 0x0309 0x0330 0x0331 0x0332 0x0333 0x0334 0x0338 0x033F 0x0345 0x034E 0x034F 0x00CC 0x00CD 0x00FA 0x00FB 0x00FD 0x00FE 0x00FF 0x031D 0x031E 0x031F 0x00C8 0x00C9 0x00CC 0x0140 0x0144 0x0147 0x0148 0x0149 0x014C 0x0164 0x0167 0x0169 0x016B 0x016C 0x016D 0x0228 0x01DF 0x01D1 0x0421 0x0422 0x0423 0x0393 0x01D3 0x01DD
+	; 'medium'
+	performancelevel 2
+    preferredshadermodel 2
+end
+
+; High-end cards
+begin device 0x0040 0x0041 0x0042 0x0043 0x0045 0x0049 0x004E 0x00C0 0x00C1 0x00C2 0x00CE 0x0140 0x0141 0x0142 0x0143 0x0145 0x014B 0x014C 0x014D 0x014E 0x0211 0x0212 0x0215 0x00F0 0x00F1 0x00F2 0x00F8 0x00F9 0x0391 0x0400 0x0402 0x0392 0x02E1 0x0394 
+	; 'high'
+	performancelevel 3
+end
+
+; Very-high-end cards
+begin device 0x0091 0x0092 0x009D 0x0290 0x0291 0x0293 0x0294 0x0295 0x0191 0x0193 0x00F5 0x0098 0x0099 0x0298 0x0299
+	; 'ultra'
+	performancelevel 4
+end
+
+; GeForce FX series
+begin device 0x0301 0x0302 0x0308 0x0309 0x0320  0x032A 0x032B 0x032F 0x0330 0x0331 0x0332 0x0333 0x0334 0x0338 0x033F 0x0345 0x034E 0x034F 0x0316 0x0317 0x031A 0x031B 0x031C 0x031D 0x031E 0x031F 0x0324 0x0325 0x0328 0x0329 0x032C 0x032D 0x0347 0x0348 0x0349 0x034B 0x034C
+    ; Slow as hell in SM2
+    preferredshadermodel 1
+end
+
+; Really Low-end cards that work but require the absolute minimum possible settings (800x600 by default)
+begin device 0x0200 0x0201 0x0202 0x0203 0x0250 0x0251 0x0252 0x0253 0x0258 0x0259 0x025B 0x0280 0x0281 0x0282 0x0288 0x0289 0x0311 0x0312 0x0313 0x0314 0x0321 0x0322 0x0323 0x0326 
+0x0327 0x0341 0x0342 0x0343 0x0344 0x053A 0x053B 0x053E 0x016A
+ 	; 'superlow'
+	performancelevel 0
+    preferredshadermodel 1
+end
+
+; NVIDIA G86 series (8400)
+begin device 0x0421 0x0422 0x0423
+    ; Slow as hell on anything but SM1
+    preferredshadermodel 1
+	performancelevel 1
+	maxshadermodel 2
+end
+
+; NVIDIA G84 series (8600)
+begin device 0x0400 0x0402
+	; slow on ps
+	preferredshadermodel 2
+    maxshadermodel 3
+    performancelevel 2
+end
+
+; cards that look bad with antialising - 5100's and 5200's
+begin device 0x0320 0x0321 0x0322 0x0323 0x0324 0x0325 0x0327 0x0328 0x032D
+    allowantialias 0
+end
+
+; Disable Object Scarring (decals) on 91.31 drivers - they're broken
+begin build 9131
+	enableobjectscarring 0
+end
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; All known devices at this time (Jul 25 2006)
+;
+
+
+; GeForce3
+;begin device 0x0200
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce3 Ti 200
+;begin device 0x0201
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce3 Ti 500
+;begin device 0x0202
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro DCC
+;begin device 0x0203
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 Ti 4600
+;begin device 0x0250
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 Ti 4400
+;begin device 0x0251
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV25
+;begin device 0x0252
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 Ti 4200
+;begin device 0x0253
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 900 XGL
+;begin device 0x0258
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 750 XGL
+;begin device 0x0259
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 700 XGL
+;begin device 0x025B
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 Ti 4800
+;begin device 0x0280
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 Ti 4200 with AGP8X
+;begin device 0x0281
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 Ti 4800 SE
+;begin device 0x0282
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 980 XGL
+;begin device 0x0288
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 780 XGL
+;begin device 0x0289
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5800 Ultra
+;begin device 0x0301
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5800
+;begin device 0x0302
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 2000
+;begin device 0x0308
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 1000
+;begin device 0x0309
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5600 Ultra
+;begin device 0x0311
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5600
+;begin device 0x0312
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV31
+;begin device 0x0313
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5600XT
+;begin device 0x0314
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5200
+;begin device 0x0320
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5200 Ultra
+;begin device 0x0321
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5200
+;begin device 0x0322
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5200LE
+;begin device 0x0323
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5500
+;begin device 0x0326
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5100
+;begin device 0x0327
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro NVS 280 PCI
+;begin device 0x032A
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 500/FX 600
+;begin device 0x032B
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV34GL
+;begin device 0x032F
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5900 Ultra
+;begin device 0x0330
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5900
+;begin device 0x0331
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5900XT
+;begin device 0x0332
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5950 Ultra
+;begin device 0x0333
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5900ZT
+;begin device 0x0334
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 3000
+;begin device 0x0338
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 700
+;begin device 0x033F
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5700 Ultra
+;begin device 0x0341
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5700
+;begin device 0x0342
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5700LE
+;begin device 0x0343
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX 5700VE
+;begin device 0x0344
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV36
+;begin device 0x0345
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 1100
+;begin device 0x034E
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV36GL
+;begin device 0x034F
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 Ultra
+;begin device 0x0040
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800
+;begin device 0x0041
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 LE
+;begin device 0x0042
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV40
+;begin device 0x0043
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 GT
+;begin device 0x0045
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV40GL
+;begin device 0x0049
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 4000
+;begin device 0x004E
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV41
+;begin device 0x00C0
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800
+;begin device 0x00C1
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 LE
+;begin device 0x00C2
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX Go1400
+;begin device 0x00CC
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 3450/4000 SDI
+;begin device 0x00CD
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 1400
+;begin device 0x00CE
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6600 GT
+;begin device 0x0140
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6600
+;begin device 0x0141
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43
+;begin device 0x0142
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43
+;begin device 0x0143
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6610 XL
+;begin device 0x0145
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43
+;begin device 0x014B
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43GL
+;begin device 0x014C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43GL
+;begin device 0x014D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 540
+;begin device 0x014E
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6200
+;begin device 0x014F
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44
+;begin device 0x0160
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6200 TurboCache(TM)
+;begin device 0x0161
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44
+;begin device 0x0162
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44
+;begin device 0x0163
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro NVS 285
+;begin device 0x0165
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44GL
+;begin device 0x016E
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44
+;begin device 0x0220
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44
+;begin device 0x0221
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44
+;begin device 0x0222
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800
+;begin device 0x0211
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 LE
+;begin device 0x0212
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 GT
+;begin device 0x0215
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 Ultra/GeForce 6800
+;begin device 0x00F0
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6600 GT
+;begin device 0x00F1
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6600
+;begin device 0x00F2
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6200
+;begin device 0x00F3
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 4400
+;begin device 0x00F8
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 3400/Quadro FX 3400/4400
+;begin device 0x00F8
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce 6800 Ultra/GeForce 6800 GT/GeForce 6800 Series GPU
+;begin device 0x00F9
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce PCX 5750
+;begin device 0x00FA
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce PCX 5900
+;begin device 0x00FB
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce PCX 5300/Quadro FX 330/GeForce PCX 5300
+;begin device 0x00FC
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro NVS 280 PCI-E/Quadro FX 330/Quadro PCI-E Series
+;begin device 0x00FD
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX 1300
+;begin device 0x00FE
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce PCX 4300
+;begin device 0x00FF
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 440 Go
+;begin device 0x0174
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 420 Go
+;begin device 0x0175
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 420 Go 32M
+;begin device 0x0176
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 460 Go
+;begin device 0x0177
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 440 Go 64M
+;begin device 0x0179
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 410 Go 16M
+;begin device 0x017D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 500 GoGL
+;begin device 0x017C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 448 Go
+;begin device 0x0186
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 488 Go
+;begin device 0x0187
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 448 Go
+;begin device 0x018D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce4 4200 Go
+;begin device 0x0286
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro4 700 GoGL
+;begin device 0x028C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV31M
+;begin device 0x0316
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV31M Pro
+;begin device 0x0317
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5600
+;begin device 0x031A
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5650
+;begin device 0x031B
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX Go700
+;begin device 0x031C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV31GLM
+;begin device 0x031D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV31GLM Pro
+;begin device 0x031E
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV31GLM Pro
+;begin device 0x031F
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5200
+;begin device 0x0324
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5250
+;begin device 0x0325
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5200 32M/64M
+;begin device 0x0328
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV34MAP
+;begin device 0x0329
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go53xx
+;begin device 0x032C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5100
+;begin device 0x032D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5700
+;begin device 0x0347
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce FX Go5700
+;begin device 0x0348
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV36M Pro
+;begin device 0x0349
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV36MAP
+;begin device 0x034B
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX Go1000
+;begin device 0x034C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce Go 6800
+;begin device 0x00C8
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce Go 6800 Ultra
+;begin device 0x00C9
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; Quadro FX Go1400
+;begin device 0x00CC
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43
+;begin device 0x0140
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce Go 6600
+;begin device 0x0144
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43
+;begin device 0x0147
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce Go 6600
+;begin device 0x0148
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43
+;begin device 0x0149
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV43GL
+;begin device 0x014C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce Go 6200
+;begin device 0x0164
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; GeForce Go 6200
+;begin device 0x0167
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44M
+;begin device 0x0169
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44GLM
+;begin device 0x016B
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44GLM
+;begin device 0x016C
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44GLM
+;begin device 0x016D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NV44M
+;begin device 0x0228
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7800 GTX
+;begin device 0x0091
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7800 GT
+;begin device 0x0092
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA Quadro FX 4500
+;begin device 0x009D
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 6150
+;begin device 0x0240
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 6150 LE
+;begin device 0x0241
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 6100
+;begin device 0x0242
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7900 GTX
+;begin device 0x0290
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7900 GT
+;begin device 0x0291
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7300 LE
+;begin device 0x01D1
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7300 GS
+;begin device 0x01DF
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA GeForce 7600 GT
+;begin device 0x0391
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end
+
+; NVIDIA G86 (8300?, 8400, 8500)
+;begin device 0x0421 0x0422 0x0423
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+    ;nonpreferreddevice 0
+;end
+
+; NVIDIA G84 (8600)
+;begin device 0x0400 0x0402
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+    ;nonpreferreddevice 0
+;end
+
+; NVIDIA nforce630 (7050 for HTPC)
+;begin device 0x053A 0x053B 0x053E
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 0
+    ;nonpreferreddevice 0
+;end
+
+; NVIDIA 7100GS 
+;begin device  0x016A
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 0
+    ;nonpreferreddevice 0
+;end
+
+
+
+
+
+
+
+
+
+
+

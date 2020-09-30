@@ -1,0 +1,121 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Configuration for the Dx9 PC spooge driver
+;
+
+; configfile : set of shader compiler scripts
+
+; allowdevice : allows cards to always fail initialization
+allowdevice 1
+
+; allowhwtnl : allows hardware TnL to be used
+allowhwtnl 1
+
+; allowtfactor : allows the TFactor to be used as a constant colour
+allowtfactor 1
+
+; allowhwcursor : allows the use of the Dx9 cursor system
+allowhwcursor 1
+
+; allow32bitdisplay : allows 32bit display modes
+allow32bitdisplay 1
+
+; allowantialias : allows cards to activate antialiasing
+allowantialias 1
+
+; disableslowalpha : when alpha flipping is not available, don't allow dest alpha
+disableslowalpha 1
+
+; hardwareskinned : use hardware skinning where available
+hardwareskinned 1
+
+; maxshadermodel : limit the shader model a card reports as being supported
+maxshadermodel 3
+
+; preferredshadermodel : the default (preferred) shader model for a device
+preferredshadermodel 3
+
+; performancelevel : expected level of performance, useful for auto-detecting settings
+; 0 = unsupported, 1 = low, 2 = medium, 3 = high, 4 = very-high, 5 = ULTRA!
+performancelevel 3
+
+; enableobjectscarring : control the availablity of object scarring
+; 0 = disable, 1 = enable
+enableobjectscarring 1
+
+; nonpreferreddevice : prefer other devices over this one at auto-detect time (but this one can still be used)
+; 0 = no, 1 = yes
+nonpreferreddevice 0
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	ATI
+;
+begin vendor 0x1002
+	configfile atiDx9.txt
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	nVidia
+;
+begin vendor 0x10de
+	configfile nvidiaDx9.txt
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	Intel
+;
+begin vendor 0x8086
+	preferredshadermodel 1
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	S3
+;
+begin vendor 0x5333
+	preferredshadermodel 1
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	SiS
+;
+begin vendor 0x1039
+	preferredshadermodel 1
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	3dfx
+;
+begin vendor 0x121a
+	allowdevice 0
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	Matrox
+;
+begin vendor 0x102b
+    allowdevice 0
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	PowerVR
+;
+begin vendor 0x104A
+	allowdevice 0
+end
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;	Trident
+;
+begin vendor 0x1023
+    allowdevice 0
+end
+

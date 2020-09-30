@@ -1,4 +1,6 @@
-
+__ONHEALTLIST = {};
+__ONSPOTTEDLIST = {};
+__ONSGEMPTY = {};
 
 function COHEvent_OnHealth(callback, callbackParameters, target, delay)
 
@@ -32,6 +34,16 @@ function COHEvent_OnPlayerCanSee(callback, callbackParameters, target, player, d
 
 end
 
+function COHEvent_OnSGroupEmpty(callback, callbackParameters, sgroup, delay)
+	
+	table.insert(__ONSGEMPTY, {cbb = callback, cpar = callbackParameters, object = sgroup, d = delay});
+	
+	if not Rule_Exists(_UPDATESGROUPEMPTY) then
+		Rule_Add(_UPDATESGROUPEMPTY);
+	end
+	
+end
+
 function COHEvent_RemoveCallback(callback)
 	
 	for i = 1, #__ONHEALTLIST do
@@ -44,8 +56,6 @@ function COHEvent_RemoveCallback(callback)
 	return false;
 	
 end
-
-__ONHEALTLIST = {};
 
 function _UPDATEONHEALTH()
 	for i=1, #__ONHEALTLIST do
@@ -80,8 +90,6 @@ function _UPDATEONHEALTH()
 	end
 end
 
-__ONSPOTTEDLIST = {};
-
 function _UPDATEONSPOTTED()
 	for i = 1, #__ONSPOTTEDLIST do
 		if Player_CanSeeElement(__ONSPOTTEDLIST[i].spotter, __ONSPOTTEDLIST[i].object, ALL) then
@@ -91,6 +99,19 @@ function _UPDATEONSPOTTED()
 		end
 	end
 	if (#__ONSPOTTEDLIST == 0) then
+		Rule_RemoveMe();
+	end
+end
+
+function _UPDATESGROUPEMPTY()
+	for i = 1, #__ONSGEMPTY do
+		if (SGroup_Count(__ONSGEMPTY[i].object) == 0) then
+			Rule_AddDelayedOneShotWithParameters(__ONSGEMPTY[i].cbb, __ONSGEMPTY[i].d, __ONSGEMPTY[i].cpar);
+			table.remove(__ONSGEMPTY, i);
+			break;
+		end
+	end
+	if (#__ONSGEMPTY == 0) then
 		Rule_RemoveMe();
 	end
 end

@@ -1,0 +1,68 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Config file for all DX10 ATI cards
+;
+; Dear Inquirer,
+;     Hi again! Thank you for your sleuthy skillz in the Dawn of War
+; config files - I've always wanted my work published. w00t!
+;
+
+
+;	ATI cards don't handle emulated cursor well, so we turn it off
+;allowhwcursor 0
+
+;	Disable luminance textures as the ATI cards have problems with the FOW when it uses one. -ian
+allowluminancetextures 0
+
+; Unsupported cards
+;begin device 0x0000
+	; Don't even allow these cards
+;	allowdevice 0
+	; For completeness
+;	performancelevel 0
+;end
+
+; Low-end cards
+;begin device 0x0000
+	; 'low'
+;	performancelevel 1
+;	preferredshadermodel 1
+;end
+
+; Mid-range cards
+begin device 0x94C0 0x94C1 0x94C3 0x94C7
+	; 'medium'
+	performancelevel 2
+	preferredshadermodel 2
+end
+
+; High-end cards
+begin device 0x9580 0x9588 0x9589 0x95A0 0x95A8 0x95A9
+	; 'high'
+	performancelevel 3
+end
+
+; Very-high-end cards
+;begin device 0x0000
+	; 'ultra'
+;	performancelevel 4
+;end
+
+; Very-very-high-end cards
+begin device 0x9400 0x9401 0x9402 0x9403 0x9420 0x9421 0x9422 0x9423
+	; 'uber-ultra'
+	performancelevel 5
+end
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; All known devices at this time (May 10 2007)
+;
+
+
+; ATI 
+;begin device 0x0000
+    ;allowdevice 0
+    ;preferredshadermodel 1
+    ;maxshadermodel 1
+    ;performancelevel 1
+;end

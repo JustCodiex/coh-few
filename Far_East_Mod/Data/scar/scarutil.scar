@@ -41,6 +41,7 @@ if Misc_IsCommandLineOptionSet("dev_FEW") then
 	import("cheatmod.scar")
 	import("fe_achive.scar"); -- Just having them in here while the achievements are being tested
 	print("FEW: Enabled Cheatmod!");
+	dev_FEW = true
 end
 
 if (Misc_IsCommandLineOptionSet("enable_observermode")) then

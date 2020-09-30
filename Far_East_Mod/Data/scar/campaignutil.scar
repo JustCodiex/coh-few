@@ -36,10 +36,10 @@ CONSTANTS = {
 		},
 	},
 	CAMPAIGN = {
-		MUKDEN = {
+		PRELUDE = {
 			M01								= BP_GetMedalBlueprint("medals/mukden_a"),
 			M02								= BP_GetMedalBlueprint("medals/mukden_b"),
-			M03								= BP_GetMedalBlueprint("medals/mukden_c"),
+			M03								= BP_GetMedalBlueprint("medals/july_7th"),
 		},
 	},
 }
@@ -64,6 +64,18 @@ function Util_GetRandomOffset(pos, mindist, maxdist)
 	return newpos
 end
 
+function Util_SimulateArtillery(targets, radius)
+	target = targets[World_GetRand(1, #targets)];
+	if target ~= nil then
+		if (scartype(target) == ST_MARKER) then
+			target = Marker_GetPosition(target);
+		end
+		return Util_GetRandomOffset(target, -radius, radius);
+	else
+		return { x = 0, y = 1, z = 1 };
+	end
+end
+
 --? @shortdesc: Returns a EGroup (__ENTITYEG) containing an entity. Basically converts an entity into an EGroup
 --? @result EGroup
 --? @args Entity entity
@@ -82,6 +94,10 @@ function SGroup_FromSquad(squad)
 	SGroup_Clear(__SQUADSG);
 	SGroup_Add(__SQUADSG, squad);
 	return __SQUADSG;
+end
+
+function SGroup_FromSquadIndex(sid)
+	return SGroup_FromSquad(Squad_FromWorldID(sid));
 end
 
 function Squad_DestroyAmount(squad, amount)
@@ -173,6 +189,19 @@ function Util_SplitSquads(target, toRemove, product, once)
 
 end
 
+function Util_SelectBasedOnDifficulty(a,b,c,d)
+	local v = Game_GetSPDifficulty();
+	if (g_difficulty == GD_EXPERT) then
+		return a
+	elseif (g_difficulty == GD_HARD) then
+		return b
+	elseif (g_difficulty == GD_NORMAL) then
+		return c
+	elseif (g_difficulty == GD_EASY) then
+		return d
+	end
+end
+
 --? @shortdesc: Get all the strategic points in the world
 --? @result Table
 --? @args Boolean countvp
@@ -238,3 +267,21 @@ function Game_EndDelay( win, delay )
 	end	
 	Rule_AddOneShot(_delaycall, delay);		-- Kick off the delay
 end
+
+--? @shortdesc: End the game in victory, but will show a historical message before the game is actually ended
+--? @result Void
+--? @args Localized string historical_title, Localized string historical_text, Real delay
+function Game_EndHistorical(historical_title, historical_text, delay)
+	local _delaycall = function()			-- Create local function to call
+		UI_MessageBoxShow(_gm_h_endfinal);
+		UI_MessageBoxSetButton(1, 11005545, 11005546, true);
+		UI_MessageBoxSetText(historical_title, historical_text);
+	end	
+	Rule_AddOneShot(_delaycall, delay);		-- Kick off the delay
+end
+
+function _gm_h_endfinal(selected)
+	Game_EndSP(true);
+	Rule_RemoveAll();
+end
+
